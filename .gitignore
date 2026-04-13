@@ -39,3 +39,28 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.project
+.classpath
+.settings/
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Caches and Logs
+.eslintcache
+.stylelintcache
+*.log
+.cache/
+tmp/
+temp/
+
+# AI Tooling
+.gemini/
+.antigravity/
