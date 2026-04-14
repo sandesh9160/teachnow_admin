@@ -7,6 +7,12 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import CharacterCount from "@tiptap/extension-character-count";
+import { Image } from "@tiptap/extension-image";
+import { Youtube } from "@tiptap/extension-youtube";
+import { Table } from "@tiptap/extension-table";
+import { TableRow } from "@tiptap/extension-table-row";
+import { TableCell } from "@tiptap/extension-table-cell";
+import { TableHeader } from "@tiptap/extension-table-header";
 import { 
   Bold, 
   Italic, 
@@ -23,10 +29,13 @@ import {
   Palette,
   Highlighter,
   ChevronDown,
-  Columns
+  Columns,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  Table as TableIcon
 } from "lucide-react";
 import { clsx } from "clsx";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 
 interface TipTapEditorProps {
   value: string;
@@ -87,7 +96,13 @@ export function TipTapEditor({ value, onChange, placeholder = "Start typing desc
     }),
     Placeholder.configure({ placeholder }),
     TextAlign.configure({ types: ["heading", "paragraph"] }),
-    CharacterCount
+    CharacterCount,
+    Image.configure({ inline: true }),
+    Youtube.configure({ inline: false, width: 840, height: 472.5 }),
+    Table.configure({ resizable: true }),
+    TableRow,
+    TableHeader,
+    TableCell,
   ], [placeholder]);
 
   const editor = useEditor({
@@ -103,6 +118,13 @@ export function TipTapEditor({ value, onChange, placeholder = "Start typing desc
       },
     },
   });
+
+  // Sync external value changes into the editor (e.g., when editing an existing resource)
+  useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value || "");
+    }
+  }, [value, editor]);
 
   const setLink = useCallback(() => {
     if (!editor) return;
@@ -197,6 +219,26 @@ export function TipTapEditor({ value, onChange, placeholder = "Start typing desc
            </MenuButton>
         </div>
 
+        <div className="flex items-center gap-0.5">
+           <MenuButton onClick={() => {
+             const url = window.prompt("Enter image URL");
+             if (url) editor.chain().focus().setImage({ src: url }).run();
+           }} title="Insert Image">
+             <ImageIcon size={14} />
+           </MenuButton>
+           <MenuButton onClick={() => {
+             const url = window.prompt("Enter YouTube URL");
+             if (url) editor.chain().focus().setYoutubeVideo({ src: url }).run();
+           }} title="Insert YouTube Video">
+             <VideoIcon size={14} />
+           </MenuButton>
+           <MenuButton onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Insert Table">
+             <TableIcon size={14} />
+           </MenuButton>
+        </div>
+
+        <ToolbarDivider />
+
         <div className="flex-1" />
 
         <MenuButton onClick={() => {}} title="Layout">
@@ -272,6 +314,35 @@ export function TipTapEditor({ value, onChange, placeholder = "Start typing desc
           padding-left: 1rem;
           font-style: italic;
           color: var(--color-surface-500);
+        }
+        .prose img {
+          max-width: 100%;
+          border-radius: 8px;
+          margin: 1rem auto;
+        }
+        .prose iframe {
+          max-width: 100%;
+          border-radius: 8px;
+          margin: 1rem auto;
+        }
+        .prose table {
+          border-collapse: collapse;
+          table-layout: fixed;
+          width: 100%;
+          margin: 1rem 0;
+          overflow: hidden;
+        }
+        .prose table td,
+        .prose table th {
+          border: 1px solid var(--color-surface-300);
+          padding: 0.5rem;
+          vertical-align: top;
+          box-sizing: border-box;
+          position: relative;
+        }
+        .prose table th {
+          font-weight: bold;
+          background-color: var(--color-surface-100);
         }
       `}</style>
     </div>

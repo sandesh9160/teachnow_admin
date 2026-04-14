@@ -107,3 +107,35 @@ export const getAdminUser = async (): Promise<AdminUser | null> => {
     return null;
   }
 };
+
+export const adminForgotPassword = async (email: string) => {
+  try {
+    const res = await api.post("/auth/forgot-password", { email });
+    return res.data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || err.message || "Failed to send reset code.");
+  }
+};
+
+export const adminVerifyOTP = async (email: string, otp: string) => {
+  try {
+    const res = await api.post("/auth/verify-otp", { email, otp: Number(otp) });
+    return res.data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || err.message || "Invalid or expired OTP.");
+  }
+};
+
+export const adminResetPassword = async (data: { email: string; otp: string; password: any; password_confirmation: any; }) => {
+  try {
+    const res = await api.post("/auth/reset-password", { 
+      email: data.email, 
+      otp: Number(data.otp),
+      password: data.password,
+      password_confirmation: data.password_confirmation
+    });
+    return res.data;
+  } catch (err: any) {
+    throw new Error(err.response?.data?.message || err.message || "Failed to reset password.");
+  }
+};

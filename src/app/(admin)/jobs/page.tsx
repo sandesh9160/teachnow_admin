@@ -85,12 +85,12 @@ export default function JobsPage() {
       render: (_: unknown, row: Job) => (
         <div className="flex items-center justify-center">
             {row.admin_featured ? (
-                <div className="flex items-center gap-1 px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg shadow-sm">
-                    <Star size={10} className="fill-current" />
-                    <span className="text-[10px] font-medium">Featured</span>
+                <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-50 border border-amber-200 text-amber-600 rounded-lg shadow-sm">
+                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-sm animate-pulse" />
+                    <span className="text-[10px] font-bold uppercase tracking-tight">Featured</span>
                 </div>
             ) : (
-                <span className="text-[10px] font-medium text-slate-400">Standard</span>
+                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-tight">Standard</span>
             )}
         </div>
       )

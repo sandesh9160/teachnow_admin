@@ -1,4 +1,5 @@
 @import "tailwindcss";
+/* Recompile trigger to load the newly installed Typography plugin */
 @plugin "@tailwindcss/typography";
 
 @theme {

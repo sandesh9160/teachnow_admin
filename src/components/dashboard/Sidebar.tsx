@@ -80,9 +80,10 @@ const navGroups: { label: string; items: SidebarItem[] }[] = [
           { title: "FAQs", href: "/content/faqs" },
           { title: "Privacy Policy", href: "/content/privacy" },
           { title: "Terms & Conditions", href: "/content/terms" },
-          { title: "Teaching Resources", href: "/content/teaching-resources" },
+          { title: "Teaching Resources", href: "/resources" },
           { title: "Blogs", href: "/content/blogs" },
           { title: "Testimonials", href: "/content/testimonials" },
+          { title: "Email Templates", href: "/email/templates" },
         ]
       },
     ]

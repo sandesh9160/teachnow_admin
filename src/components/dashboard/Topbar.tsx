@@ -4,6 +4,7 @@ import React from "react";
 import { Search, Menu, ChevronDown } from "lucide-react";
 import { clsx } from "clsx";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { adminSignOut } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
 
 interface TopbarProps {
@@ -14,6 +15,15 @@ interface TopbarProps {
 export default function Topbar({ onMenuToggle, collapsed }: TopbarProps) {
   const { user } = useAdminAuth();
   const [showProfile, setShowProfile] = React.useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      await adminSignOut();
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <header
@@ -99,7 +109,10 @@ export default function Topbar({ onMenuToggle, collapsed }: TopbarProps) {
                   <button className="w-full px-4 py-2 text-left text-sm text-surface-600 hover:bg-surface-50 transition-colors">
                     Profile Settings
                   </button>
-                  <button className="w-full px-4 py-2 text-left text-sm text-danger-500 hover:bg-danger-50 transition-colors">
+                  <button 
+                    onClick={handleSignOut}
+                    className="w-full px-4 py-2 text-left text-sm text-danger-500 hover:bg-danger-50 transition-colors"
+                  >
                     Sign Out
                   </button>
                 </div>

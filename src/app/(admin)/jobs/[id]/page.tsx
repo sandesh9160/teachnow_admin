@@ -26,7 +26,7 @@ import {
   ShieldCheck,
   Zap
 } from "lucide-react";
-import { getJob, approveJob, rejectJob, featureJob, deleteJob, updateJobSEO } from "@/services/admin.service";
+import { getJob, approveJob, rejectJob, featureJob, deleteJob, updateJobSEO, updateJob } from "@/services/admin.service";
 import { Job } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
@@ -63,7 +63,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       setProcessing(true);
       if (action === "approve") await approveJob(job.id);
       else if (action === "reject") await rejectJob(job.id);
-      else if (action === "feature") await featureJob(job.id);
+      else if (action === "feature") {
+        await featureJob(job.id);
+      }
       else if (action === "delete") {
         if (!confirm("Permanently delete this job?")) return;
         await deleteJob(job.id);
@@ -131,20 +133,35 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <ChevronLeft size={12} /> Back
         </Link>
         <div className="flex items-center gap-2">
-           {/* Featured Toggle */}
-           <button
-            onClick={() => handleAction("feature")}
-            disabled={processing}
-            className={clsx(
-                "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all text-[11px] font-semibold",
-                job.admin_featured 
-                  ? "bg-amber-50 border-amber-200 text-amber-700 shadow-inner" 
-                  : "bg-white border-slate-200 text-slate-500 hover:border-amber-200 hover:text-amber-600"
-            )}
-           >
-             <Star size={14} className={job.admin_featured ? "fill-current" : ""} />
-             {job.admin_featured ? "Featured Active" : "Mark as Featured"}
-           </button>
+           {/* Featured Toggle Switch */}
+           <div className={clsx(
+             "flex items-center gap-3 px-3 py-1.5 bg-white border rounded-xl shadow-sm transition-all",
+             job.admin_featured ? "border-amber-200" : "border-slate-200"
+           )}>
+             <span className={clsx(
+               "text-[10px] font-bold uppercase tracking-wider",
+               job.admin_featured ? "text-amber-600" : "text-slate-400"
+             )}>
+               Featured
+             </span>
+             <button
+               type="button"
+               disabled={processing}
+               onClick={() => handleAction("feature")}
+               className={clsx(
+                 "relative inline-flex h-5 w-9 items-center rounded-full transition-colors outline-none",
+                 job.admin_featured ? "bg-amber-500" : "bg-slate-300",
+                 processing && "opacity-50 cursor-not-allowed"
+               )}
+             >
+               <span
+                 className={clsx(
+                   "inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform",
+                   job.admin_featured ? "translate-x-5" : "translate-x-0.5"
+                 )}
+               />
+             </button>
+           </div>
 
            <button
             onClick={() => handleAction("delete")}

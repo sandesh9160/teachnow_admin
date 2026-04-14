@@ -15,6 +15,8 @@ import type {
   ApiResponse,
   PaginatedResponse,
   CVTemplate,
+  TeachingResource,
+  EmailTemplate,
 } from "@/types";
 
 /**
@@ -317,3 +319,36 @@ export const getSettings = () =>
 
 export const updateSettings = (data: Record<string, unknown>) =>
   dashboardServerFetch("/admin/settings", { method: "PUT", data });
+
+// ─── Resources ───────────────────────────────────────────────────────────────
+
+export const getResources = () =>
+  dashboardServerFetch<ApiResponse<TeachingResource[]>>("/admin/cms/resources");
+
+export const createResource = (data: FormData) =>
+  dashboardServerFetch<ApiResponse<TeachingResource>>("/admin/cms/resources", { method: "POST", data });
+
+export const updateResource = (id: number, data: FormData) =>
+  dashboardServerFetch<ApiResponse<TeachingResource>>(`/admin/cms/resources/${id}`, { method: "POST", data });
+
+export const deleteResource = (id: number) =>
+  dashboardServerFetch(`/admin/cms/resources/${id}`, { method: "DELETE" });
+
+// ─── Email Templates ─────────────────────────────────────────────────────────
+
+export const getEmailTemplates = () =>
+  dashboardServerFetch<ApiResponse<EmailTemplate[]>>("/admin/cms/email-templates");
+
+export const createEmailTemplate = (data: Partial<EmailTemplate>) =>
+  dashboardServerFetch<ApiResponse<EmailTemplate>>("/admin/cms/email-templates", { method: "POST", data });
+
+export const updateEmailTemplate = (id: number, data: Partial<EmailTemplate>) =>
+  dashboardServerFetch<ApiResponse<EmailTemplate>>(`/admin/cms/email-templates/${id}`, { method: "PUT", data });
+
+export const deleteEmailTemplate = (id: number) =>
+  dashboardServerFetch(`/admin/cms/email-templates/${id}`, { method: "DELETE" });
+
+export const toggleEmailTemplateStatus = (id: number) =>
+  dashboardServerFetch<ApiResponse<EmailTemplate>>(`/admin/cms/email-templates/${id}/toggle`, { method: "POST" });
+
+
