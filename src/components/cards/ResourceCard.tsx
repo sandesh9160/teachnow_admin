@@ -69,26 +69,28 @@ export default function ResourceCard({
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 mt-2 bg-slate-100/50 rounded-md p-1.5">
-                        <div className="flex items-center gap-1" title="Pages"><FileText size={12} className="text-slate-400" /> {resource.total_pages}</div>
-                        <div className="flex items-center gap-1" title="Read Time"><Clock size={12} className="text-slate-400" /> {resource.read_time}m</div>
-                        <div className="flex items-center gap-1" title="Answers Included?"><BookOpen size={12} className={resource.answer_include === "included" ? "text-emerald-500" : "text-rose-400"} /> {resource.answer_include === "included" ? "Yes" : "No"}</div>
+                    <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 mt-2 bg-slate-100/30 rounded-md p-1.5">
+                        <div className="flex items-center gap-1" title="Pages"><FileText size={12} className="text-indigo-400" /> {resource.total_pages} pg</div>
+                        <div className="flex items-center gap-1" title="Read Time"><Clock size={12} className="text-amber-400" /> {resource.read_time}m</div>
+                        <div className="flex items-center gap-1" title="Answers Included?"><BookOpen size={12} className={resource.answer_include === "included" ? "text-emerald-500" : "text-rose-400"} /> {resource.answer_include === "included" ? "With Ans" : "No Ans"}</div>
                     </div>
                 </div>
             </div>
 
             {/* ─── Always Visible Action Bar ─────────────────────────────────── */}
-            <div className="p-2.5 flex items-center justify-between bg-white text-[11px] font-semibold">
+            <div className="p-2.5 flex items-center justify-between bg-white text-[11px] font-bold bg-slate-50/20 border-t border-slate-50">
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => onEdit?.(resource)}
-                        className="flex items-center gap-1 text-slate-600 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 px-2.5 py-1.5 rounded-md transition-colors border border-slate-100 font-bold"
+                        suppressHydrationWarning
+                        className="flex items-center gap-1 text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg transition-all border border-indigo-100/50 active:scale-95"
                     >
                         <Pencil size={12} /> Edit
                     </button>
                     <button
                         onClick={() => onDelete?.(resource)}
-                        className="flex items-center gap-1 text-slate-500 hover:text-rose-600 hover:bg-rose-50 px-2 py-1.5 rounded-md transition-colors"
+                        suppressHydrationWarning
+                        className="flex items-center justify-center text-rose-600 bg-rose-50 p-1.5 rounded-lg transition-all border border-rose-100/50 active:scale-95"
                         title="Delete Resource"
                     >
                         <Trash2 size={13} />
@@ -97,15 +99,15 @@ export default function ResourceCard({
 
                 <button
                     onClick={() => onToggleStatus?.(resource)}
+                    suppressHydrationWarning
                     className={clsx(
-                        "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md transition-colors border",
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all border shadow-xs active:scale-95",
                         resource.is_visible
-                            ? "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
-                            : "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100"
+                            ? "bg-amber-50 text-amber-600 border-amber-100/50"
+                            : "bg-emerald-50 text-emerald-600 border-emerald-100/50"
                     )}
                 >
-                    <div className={clsx("w-1.5 h-1.5 rounded-full", resource.is_visible ? "bg-emerald-500" : "bg-rose-500")} />
-                    {resource.is_visible ? "Unpublish" : "Publish"}
+                    {resource.is_visible ? "Offline" : "Go Live"}
                 </button>
             </div>
         </div>

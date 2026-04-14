@@ -199,7 +199,7 @@ export default function DashboardPage() {
         <div className="bg-white rounded-xl border border-surface-100 p-5 shadow-xs">
           <div className="mb-6">
             <h3 className="text-[14px] font-semibold text-surface-900">Revenue Plans</h3>
-            <p className="text-[11px] text-surface-400 font-medium">Monthly growth</p>
+            <p className="text-[11px] text-indigo-400 font-bold">Monthly growth</p>
           </div>
           <div className="w-full flex items-center justify-center text-surface-300 text-[11px] font-medium italic" style={{ height: 180 }}>
             {revenueData.length > 0 ? (
@@ -220,8 +220,8 @@ export default function DashboardPage() {
 
         <div className="bg-white rounded-xl border border-surface-100 p-5 shadow-xs flex flex-col items-center">
           <div className="w-full mb-3">
-            <h3 className="text-[14px] font-semibold text-surface-900">Ratings Dist.</h3>
-            <p className="text-[11px] text-surface-400 font-medium">{stats?.total_applications ? "Platform feedback" : "No reviews yet"}</p>
+            <h3 className="text-[14px] font-semibold text-surface-900">Feedback Score</h3>
+            <p className="text-[11px] text-surface-400 font-medium">{stats?.total_applications ? "Platform feedback" : "No testimonials yet"}</p>
           </div>
           <div className="relative w-full aspect-square max-w-[130px] flex items-center justify-center">
              {reviewData.length > 0 ? (
@@ -261,7 +261,7 @@ export default function DashboardPage() {
         <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs flex flex-col">
            <div className="p-5 pb-3">
               <h3 className="text-[14px] font-semibold text-surface-900">System Activity</h3>
-              <p className="text-[11px] text-surface-400 font-medium pt-0.5">Recent logs</p>
+              <p className="text-[11px] text-indigo-400 font-bold">Recent logs</p>
            </div>
            <div className="flex-1 overflow-y-auto px-1 pb-4 max-h-[220px] no-scrollbar">
              {activityFeed.slice(0, 4).map((item, i) => (
@@ -272,7 +272,7 @@ export default function DashboardPage() {
                    <div className="min-w-0 flex-1">
                      <div className="flex items-center justify-between gap-2">
                         <p className="text-[12px] font-semibold text-surface-900 leading-tight truncate">{item.title}</p>
-                        <span className="text-[9px] text-[#94A3B8] font-semibold whitespace-nowrap uppercase">{item.time}</span>
+                        <span className="text-[9px] text-indigo-400 font-bold whitespace-nowrap">{item.time}</span>
                      </div>
                      <p className="text-[11px] text-surface-400 mt-0.5 line-clamp-1 italic font-medium">{item.desc}</p>
                    </div>
@@ -357,7 +357,7 @@ function StatWidget({ label, value, trend, icon, color }: any) {
     <div className="bg-white p-4 rounded-xl border border-surface-100 shadow-xs group transition-all hover:bg-[#F8FAFC]">
       <div className="flex justify-between items-start">
         <div className="space-y-1.5">
-          <p className="text-[11px] font-semibold text-surface-400 uppercase tracking-wide">{label}</p>
+          <p className="text-[12px] font-bold text-indigo-500/80 tracking-normal">{label}</p>
           <h4 className="text-xl font-bold text-surface-900 tracking-tight leading-none">{value}</h4>
           <span className="text-[11px] font-semibold text-emerald-500 opacity-80">{trend}</span>
         </div>

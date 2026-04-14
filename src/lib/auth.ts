@@ -52,7 +52,10 @@ export const adminSignIn = async (data: { email: string; password: string }) => 
         ...(xsrf ? { "X-XSRF-TOKEN": decodeURIComponent(xsrf) } : {}),
       },
     });
-    
+
+    if (res.data.status === false) {
+      throw new Error(res.data.message || "Invalid credentials");
+    }
     // 3. Set login cookies
     const resCookies = res.headers["set-cookie"] || [];
     resCookies.forEach((cookieString: string) => {

@@ -26,7 +26,8 @@ import {
   GraduationCap,
   ChevronDown,
   Layout,
-  Bell
+  Bell,
+  Quote
 } from "lucide-react";
 import { adminSignOut } from "@/lib/auth";
 import { clsx } from "clsx";
@@ -62,9 +63,9 @@ const navGroups: { label: string; items: SidebarItem[] }[] = [
   {
     label: "PLATFORM",
     items: [
-      { title: "Manage Plans", href: "/plans", icon: CreditCard },
+      { title: "Plans", href: "/plans", icon: CreditCard },
       { title: "Master Data", href: "/master-data", icon: Database },
-      { title: "Reviews", href: "/reviews", icon: Star },
+      { title: "Testimonials", href: "/testimonials", icon: Quote },
     ]
   },
   {
@@ -82,7 +83,6 @@ const navGroups: { label: string; items: SidebarItem[] }[] = [
           { title: "Terms & Conditions", href: "/content/terms" },
           { title: "Teaching Resources", href: "/resources" },
           { title: "Blogs", href: "/content/blogs" },
-          { title: "Testimonials", href: "/content/testimonials" },
           { title: "Email Templates", href: "/email/templates" },
         ]
       },
@@ -118,7 +118,6 @@ const navGroups: { label: string; items: SidebarItem[] }[] = [
           { title: "Nav Bar Full", href: "/cms/navbar" },
           { title: "Hero Section", href: "/cms/hero" },
           { title: "Stats Section", href: "/cms/stats" },
-          { title: "Testimonials", href: "/cms/testimonials" },
           { title: "CTA Section", href: "/cms/cta" },
           { title: "Footer Section", href: "/cms/footer" },
           { title: "Footer Links", href: "/cms/footer-links" },
@@ -243,6 +242,7 @@ export default function Sidebar({
           {!collapsed && (
             <button
               onClick={onToggle}
+              suppressHydrationWarning
               className="text-[#94A3B8] hover:text-[#475569] transition-colors p-1"
             >
               <ChevronLeft size={18} className={clsx("transition-transform", collapsed && "rotate-180")} />
@@ -250,12 +250,11 @@ export default function Sidebar({
           )}
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-7 no-scrollbar">
           {navGroups.map((group, groupIndex) => (
             <div key={groupIndex} className="space-y-1">
               {!collapsed && (
-                <p className="px-3 text-[10px] font-bold tracking-widest text-[#94A3B8] mb-3 uppercase">
+                <p className="px-4 text-[11px] font-bold text-indigo-600 mb-2 mt-4">
                   {group.label}
                 </p>
               )}
@@ -272,18 +271,18 @@ export default function Sidebar({
                         "flex items-center justify-between transition-all duration-200 group relative",
                         collapsed ? "justify-center px-0 py-2.5 rounded-lg mb-1" : "px-3 py-2.5 rounded-lg mb-0.5",
                         active && !hasChildren
-                          ? "bg-white text-[#2563EB] shadow-sm border border-[#E2E8F0]"
-                          : "text-[#64748B] hover:text-[#1E293B] hover:bg-white/50"
+                          ? "bg-indigo-50 text-indigo-600 shadow-sm border border-indigo-100"
+                          : "text-[#64748B] hover:text-indigo-600 hover:bg-indigo-50/50"
                       )}
                     >
                       {!hasChildren ? (
                         <Link href={item.href} className="flex items-center gap-3.5 w-full">
-                           <Icon size={18} className={clsx(active ? "text-[#2563EB]" : "text-[#94A3B8] group-hover:text-[#64748B]")} />
+                           <Icon size={18} className={clsx(active ? "text-indigo-600" : "text-[#94A3B8] group-hover:text-indigo-500")} />
                            {!collapsed && (
                              <div className="flex items-center justify-between flex-1">
-                               <span className={clsx("text-[14px] font-medium", active ? "text-[#2563EB]" : "text-[#475569] group-hover:text-[#1E293B]")}>{item.title}</span>
+                               <span className={clsx("text-[14px] font-medium", active ? "text-indigo-600" : "text-[#475569] group-hover:text-indigo-600")}>{item.title}</span>
                                {item.badge === "unread" && unreadCount > 0 && (
-                                   <span className="bg-[#E11D48] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                                   <span className="bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
                                        {unreadCount > 9 ? "9+" : unreadCount}
                                    </span>
                                )}
@@ -293,28 +292,28 @@ export default function Sidebar({
                       ) : (
                         <button 
                             type="button"
+                            suppressHydrationWarning
                             onClick={(e) => toggleDropdown(item.title, e)}
                             className="flex items-center justify-between w-full cursor-pointer bg-transparent border-none outline-none appearance-none"
                         >
                            <div className="flex items-center gap-3.5">
-                              <Icon size={18} className={clsx(active ? "text-[#2563EB]" : "text-[#94A3B8] group-hover:text-[#64748B]")} />
-                              {!collapsed && <span className="text-[14px] font-medium text-[#475569] group-hover:text-[#1E293B]">{item.title}</span>}
+                              <Icon size={18} className={clsx(active ? "text-indigo-600" : "text-[#94A3B8] group-hover:text-indigo-500")} />
+                              {!collapsed && <span className="text-[14px] font-medium text-[#475569] group-hover:text-indigo-600">{item.title}</span>}
                            </div>
                            {!collapsed && <ChevronDown size={14} className={clsx("text-[#94A3B8] transition-transform duration-300", isOpen && "rotate-180")} />}
                         </button>
                       )}
 
                       {collapsed && (
-                         <div className="absolute left-full ml-3 px-3 py-2 bg-[#1E293B] text-white text-[11px] font-bold rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-[100] uppercase tracking-wider">
+                         <div className="absolute left-full ml-3 px-3 py-2 bg-indigo-600 text-white text-[11px] font-bold rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-[100] tracking-wider">
                            {item.title}
                          </div>
                       )}
                     </div>
 
-                    {/* Dropdown Children */}
                     {!collapsed && hasChildren && isOpen && (
                         <div className="mt-1 relative">
-                           <div className="absolute left-[23px] top-0 bottom-2 w-[1.5px] bg-[#E2E8F0]" />
+                           <div className="absolute left-[23px] top-0 bottom-2 w-[1.5px] bg-indigo-100" />
                            <div className="ml-[24px] space-y-1 pt-1 pb-1">
                                {item.children?.map((child) => {
                                    const childActive = isActive(child.href);
@@ -324,7 +323,7 @@ export default function Sidebar({
                                         href={child.href}
                                         className={clsx(
                                             "flex items-center py-2 px-6 text-[14px] transition-all",
-                                            childActive ? "text-[#1E293B] font-semibold" : "text-[#64748B] hover:text-[#1E293B] font-medium"
+                                            childActive ? "text-indigo-600 font-semibold" : "text-[#64748B] hover:text-indigo-600 font-medium"
                                         )}
                                        >
                                           {child.title}
@@ -345,6 +344,7 @@ export default function Sidebar({
         <div className="p-4 border-t border-[#E2E8F0]">
           <button
             onClick={handleLogout}
+            suppressHydrationWarning
             className={clsx(
               "w-full flex items-center gap-3.5 rounded-lg px-4 py-2.5 transition-all duration-200",
               "text-[#64748B] hover:text-[#E11D48] hover:bg-red-50 font-medium text-[13px]",

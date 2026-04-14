@@ -69,7 +69,7 @@ export default function VerificationPage() {
   const columns = [
     { 
         key: "employer", 
-        title: "INSTITUTION", 
+        title: "COMPANY", 
         render: (_: any, r: any) => (
             <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
@@ -77,24 +77,24 @@ export default function VerificationPage() {
                 </div>
                 <div>
                     <span className="font-bold text-slate-900 block leading-none">{r.employer?.company_name || 'Legacy Institute'}</span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase mt-1 inline-block">ID: #{r.employer_id}</span>
+                    <span className="text-[10px] text-indigo-400 font-bold mt-1 inline-block">ID: #{r.employer_id}</span>
                 </div>
             </div>
         ) 
     },
     { 
         key: "document_type", 
-        title: "DOSSIER TYPE", 
+        title: "DOCUMENT TYPE", 
         render: (v: any) => (
             <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
-                <span className="text-[12px] font-bold text-slate-700 uppercase tracking-tighter">{v || "General Credential"}</span>
+                <span className="text-[12px] font-bold text-slate-700 tracking-tighter">{v || "General Credential"}</span>
             </div>
         )
     },
     { 
         key: "document_url", 
-        title: "ASSET", 
+        title: "FILE", 
         render: (v: any) => (
             <a 
                 href={`https://teachnowbackend.jobsvedika.in/${v}`} 
@@ -102,7 +102,7 @@ export default function VerificationPage() {
                 className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors font-bold text-[11px] bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 group shadow-sm active:scale-95"
             >
                 <FileText size={14} className="group-hover:rotate-12 transition-transform" />
-                VIEW DOC
+                View document
             </a>
         )
     },
@@ -135,22 +135,26 @@ export default function VerificationPage() {
             <div className="flex items-center justify-end gap-1.5">
                 {r.status === "pending" && (
                     <>
+                    <div className="flex items-center justify-end gap-1.5">
                         <button 
                             onClick={() => handleAction(r.id, "approve")}
                             disabled={processingId === r.id}
-                            className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all active:scale-90"
-                            title="Verify Identity"
+                            suppressHydrationWarning
+                            className="p-1.5 bg-emerald-50 text-emerald-600 border border-emerald-100/50 rounded-lg transition-all active:scale-90 shadow-sm"
+                            title="Approve"
                         >
-                            <CheckCircle2 size={16} />
+                            <CheckCircle2 size={15} />
                         </button>
                         <button 
                             onClick={() => handleAction(r.id, "reject")}
                             disabled={processingId === r.id}
-                            className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-all active:scale-90"
-                            title="Decline Credential"
+                            suppressHydrationWarning
+                            className="p-1.5 bg-rose-50 text-rose-600 border border-rose-100/50 rounded-lg transition-all active:scale-90 shadow-sm"
+                            title="Reject"
                         >
-                            <XCircle size={16} />
+                            <XCircle size={15} />
                         </button>
+                    </div>
                     </>
                 )}
                 <Link 
@@ -166,9 +170,9 @@ export default function VerificationPage() {
   ];
 
   const stats = [
-    { label: "Pending Review", value: requests.filter(r => r.status === 'pending').length, icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
-    { label: "Authenticated", value: requests.filter(r => r.status === 'approved' || r.status === 'verified').length, icon: ShieldCheck, color: "text-emerald-500", bg: "bg-emerald-50" },
-    { label: "Declined", value: requests.filter(r => r.status === 'rejected').length, icon: XCircle, color: "text-rose-500", bg: "bg-rose-50" }
+    { label: "Pending", value: requests.filter(r => r.status === 'pending').length, icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
+    { label: "Verified", value: requests.filter(r => r.status === 'approved' || r.status === 'verified').length, icon: ShieldCheck, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Rejected", value: requests.filter(r => r.status === 'rejected').length, icon: XCircle, color: "text-rose-500", bg: "bg-rose-50" }
   ];
 
   return (
@@ -179,8 +183,8 @@ export default function VerificationPage() {
             <ShieldCheck size={22} className="text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase leading-none">Trust Center</h1>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-1.5">Validate institutional authenticity & credentials</p>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-none">Account Verifications</h1>
+            <p className="text-[11px] text-indigo-400 font-bold mt-1.5">Approve or reject company verification requests</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -191,7 +195,7 @@ export default function VerificationPage() {
                     </div>
                 ))}
             </div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Active Moderators</p>
+            <p className="text-[10px] font-bold text-indigo-400 tracking-tighter">Active Moderators</p>
         </div>
       </div>
 
@@ -202,8 +206,8 @@ export default function VerificationPage() {
                     <stat.icon size={22} strokeWidth={2.5} />
                 </div>
                 <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{stat.label}</p>
-                    <p className={clsx("text-2xl font-black tracking-tight", stat.color)}>{stat.value}</p>
+                    <p className="text-[10px] font-bold text-indigo-400 mb-0.5">{stat.label}</p>
+                    <p className={clsx("text-2xl font-bold tracking-tight", stat.color)}>{stat.value}</p>
                 </div>
             </div>
         ))}
@@ -220,13 +224,13 @@ export default function VerificationPage() {
             className="w-full pl-11 pr-4 py-3 bg-slate-50/30 border border-slate-100 rounded-[1.5rem] text-[13px] text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-medium" 
           />
         </div>
-        <button className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white text-[11px] font-black rounded-[1.5rem] hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 uppercase tracking-[0.1em] shrink-0">
-          <Zap size={14} className="fill-current" /> Auto Audit
+        <button className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white text-[11px] font-bold rounded-[1.5rem] hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 shrink-0">
+          <Zap size={14} className="fill-current" /> Auto audit
         </button>
       </div>
 
       <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-slate-100/50">
-        <DataTable columns={columns} data={filtered} loading={loading} emptyMessage="Clear queue. No verification requests currently require administrative intervention." />
+        <DataTable columns={columns} data={filtered} loading={loading} emptyMessage="No pending verification requests." />
       </div>
     </div>
   );

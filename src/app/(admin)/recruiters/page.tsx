@@ -9,7 +9,8 @@ import {
     Calendar, Mail, Eye, Trash2, StopCircle, 
     CheckCircle, Shield, Briefcase, Users,
     RotateCcw, ArrowUpRight, Activity, MapPin, 
-    ExternalLink, Building2, MoreHorizontal
+    ExternalLink, Building2,
+    XCircle, CheckCircle2
 } from "lucide-react";
 import { getRecruiters, disableRecruiter, deleteRecruiter } from "@/services/admin.service";
 import { Recruiter } from "@/types";
@@ -34,7 +35,7 @@ export default function RecruitersPage() {
       const list = (res as any).data?.data || (res as any).data || [];
       setRecruiters(Array.isArray(list) ? list : []);
     } catch (err: any) {
-      toast.error("Failed to fetch recruiter registry");
+      toast.error("Failed to fetch recruiter list");
     } finally {
       setLoading(false);
     }
@@ -49,7 +50,7 @@ export default function RecruitersPage() {
           await deleteRecruiter(id);
       }
       
-      toast.success(`Recruiter ${action === 'disable' ? 'status synchronized' : 'permanently purged'}`);
+      toast.success(`Recruiter ${action === 'disable' ? 'status updated' : 'permanently deleted'}`);
       fetchRecruiters();
     } catch (err: any) {
       toast.error(err.response?.data?.message || `Failed to execute ${action} protocol`);
@@ -66,7 +67,7 @@ export default function RecruitersPage() {
 
   const columns = [
     {
-      key: "name", title: "Human Capital Agent",
+      key: "name", title: "Full Name",
       render: (_: any, row: Recruiter) => (
         <div className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-indigo-600 font-bold text-xs shadow-sm shadow-indigo-100 group-hover:scale-105 transition-transform shrink-0">
@@ -84,7 +85,7 @@ export default function RecruitersPage() {
     },
     { 
         key: "employer", 
-        title: "Affiliation", 
+        title: "Company Name", 
         render: (_: any, row: Recruiter) => (
             <div className="max-w-[180px]">
                 <div className="flex items-center gap-2 mb-1">
@@ -108,52 +109,54 @@ export default function RecruitersPage() {
     },
     { 
         key: "created_at", 
-        title: "Registry Date", 
+        title: "Joined On", 
         render: (v: any) => (
-            <div className="flex flex-col gap-0.5">
+            <div className="flex flex-col gap-0.5" suppressHydrationWarning>
                 <div className="flex items-center gap-2 text-slate-700 font-semibold text-[11px] whitespace-nowrap">
                     <Calendar size={12} className="text-slate-300" /> 
-                    {new Date(v).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    {new Date(v).toLocaleDateString()}
                 </div>
-                <p className="text-[9px] text-slate-400 font-medium ml-5">{new Date(v).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
             </div>
         ) 
     },
     { 
-      key: "actions", 
-      title: "Actions", 
-      render: (_: any, row: Recruiter) => (
-        <div className="flex items-center justify-end gap-2">
-            <button 
-                onClick={(e) => { e.stopPropagation(); handleAction(row.id, "disable"); }}
-                disabled={processingId === row.id}
-                className={clsx(
-                    "p-2 rounded-lg transition-all border shadow-sm",
-                    row.is_active 
-                      ? "text-amber-500 bg-amber-50 border-amber-100 hover:bg-amber-100" 
-                      : "text-emerald-500 bg-emerald-50 border-emerald-100 hover:bg-emerald-100"
-                )}
-                title={row.is_active ? "Suspend Account" : "Activate Agent"}
-            >
-                {row.is_active ? <StopCircle size={15} strokeWidth={2} /> : <CheckCircle size={15} strokeWidth={2} />}
-            </button>
-            <button 
-                onClick={(e) => { e.stopPropagation(); router.push(`/recruiters/${row.id}`); }} 
-                className="p-2 bg-slate-50 border border-slate-200 text-slate-600 hover:bg-white hover:shadow-lg rounded-lg transition-all"
-                title="View Details"
-            >
-                <Eye size={15} strokeWidth={2} />
-            </button>
-            <button 
-                onClick={(e) => { e.stopPropagation(); handleAction(row.id, "delete"); }}
-                disabled={processingId === row.id}
-                className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-lg transition-all"
-                title="Delete Account"
-            >
-                <Trash2 size={15} strokeWidth={2} />
-            </button>
-        </div>
-      ) 
+        key: "actions", 
+        title: "Manage", 
+        render: (_: any, row: Recruiter) => (
+            <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+                <button 
+                    onClick={() => router.push(`/recruiters/${row.id}`)}
+                    suppressHydrationWarning
+                    className="p-1 px-2.5 bg-indigo-50 text-indigo-600 border border-indigo-100/50 rounded-lg transition-all active:scale-95 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest shadow-sm"
+                    title="View Profile"
+                >
+                    <Eye size={12} /> View
+                </button>
+                    <button 
+                        onClick={() => handleAction(row.id, "disable")}
+                        disabled={processingId === row.id}
+                        suppressHydrationWarning
+                        className={clsx(
+                            "p-1.5 rounded-lg transition-all active:scale-95 shadow-sm border",
+                            row.is_active 
+                                ? "bg-amber-50 text-amber-600 border-amber-100/50" 
+                                : "bg-emerald-50 text-emerald-600 border-emerald-100/50"
+                        )}
+                        title={row.is_active ? "Disable" : "Enable"}
+                    >
+                        {row.is_active ? <XCircle size={13} /> : <CheckCircle2 size={13} />}
+                    </button>
+                    <button 
+                        onClick={() => handleAction(row.id, "delete")}
+                        disabled={processingId === row.id}
+                        suppressHydrationWarning
+                        className="p-1.5 bg-rose-50 text-rose-600 border border-rose-100/50 rounded-lg transition-all active:scale-95 shadow-sm"
+                        title="Delete"
+                    >
+                        <Trash2 size={13} />
+                    </button>
+            </div>
+        ) 
     },
   ];
 
@@ -169,23 +172,25 @@ export default function RecruitersPage() {
             <div className="flex items-center gap-2 mb-1">
                <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100/50">Human Network</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-none">Hiring Agents</h1>
-            <p className="text-[12px] text-slate-500 font-medium mt-1.5 flex items-center gap-2">
-               <Activity size={12} className="text-indigo-600" /> Manage independent hiring consultants and staff
-            </p>
+            <h1 className="text-xl font-bold text-slate-900  leading-none">Hiring Agents</h1>
+            <p className="text-[11px] text-indigo-400 font-semibold mt-1">Manage and view all hiring agents across the network</p>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
           <button 
             onClick={fetchRecruiters}
+            suppressHydrationWarning
             className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 transition-all shadow-sm active:scale-95"
           >
             <RotateCcw size={16} className={clsx(loading && "animate-spin")} />
           </button>
-          <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white text-[11px] font-semibold hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-indigo-100 group">
-            <Download size={16} /> 
-            Export List
+          <button 
+              suppressHydrationWarning
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white text-[11px] font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-indigo-100 group"
+          >
+              <Download size={16} /> 
+              Export list
           </button>
         </div>
       </div>
@@ -197,7 +202,7 @@ export default function RecruitersPage() {
                   <UserCheck size={18} />
               </div>
               <div>
-                  <p className="text-[10px] font-semibold text-slate-400 leading-none mb-1.5">Active Agents</p>
+                  <p className="text-[10px] font-bold text-indigo-400 mb-1">Active agents</p>
                   <h3 className="text-lg font-bold text-slate-900 leading-none">{recruiters.filter(r => r.is_active).length}</h3>
               </div>
           </div>
@@ -206,7 +211,7 @@ export default function RecruitersPage() {
                   <StopCircle size={18} />
               </div>
               <div>
-                  <p className="text-[10px] font-semibold text-slate-400 leading-none mb-1.5">Suspended</p>
+                  <p className="text-[10px] font-bold text-indigo-400 mb-1">Suspended</p>
                   <h3 className="text-lg font-bold text-slate-900 leading-none">{recruiters.filter(r => !r.is_active).length}</h3>
               </div>
           </div>
@@ -215,7 +220,7 @@ export default function RecruitersPage() {
                   <Building2 size={18} />
               </div>
               <div>
-                  <p className="text-[10px] font-semibold text-slate-400 leading-none mb-1.5">Institutional</p>
+                  <p className="text-[10px] font-bold text-indigo-400 mb-1">Institutional</p>
                   <h3 className="text-lg font-bold text-slate-900 leading-none">{recruiters.filter(r => r.employer_id).length}</h3>
               </div>
           </div>
@@ -224,7 +229,7 @@ export default function RecruitersPage() {
                   <Users size={18} />
               </div>
               <div>
-                  <p className="text-[10px] font-semibold text-slate-400 leading-none mb-1.5">Independent</p>
+                  <p className="text-[10px] font-bold text-indigo-400 mb-1">Independent</p>
                   <h3 className="text-lg font-bold text-slate-900 leading-none">{recruiters.filter(r => !r.employer_id).length}</h3>
               </div>
           </div>
@@ -236,13 +241,17 @@ export default function RecruitersPage() {
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
           <input 
             type="text" 
+            suppressHydrationWarning
             placeholder="Search by name, email or company..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-900 placeholder:text-slate-300 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all tracking-tight" 
           />
         </div>
-        <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 text-[11px] font-bold hover:bg-slate-50 hover:text-indigo-600 transition-all shadow-sm active:scale-95 group shrink-0">
+        <button 
+          suppressHydrationWarning
+          className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 text-[11px] font-bold hover:bg-slate-50 hover:text-indigo-600 transition-all shadow-sm active:scale-95 group shrink-0"
+        >
           <Filter size={14} className="group-hover:rotate-180 transition-transform duration-500" /> 
           Filters
         </button>

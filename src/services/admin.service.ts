@@ -17,6 +17,7 @@ import type {
   CVTemplate,
   TeachingResource,
   EmailTemplate,
+  Testimonial,
 } from "@/types";
 
 /**
@@ -373,5 +374,31 @@ export const deleteEmailTemplate = (id: number) =>
 
 export const toggleEmailTemplateStatus = (id: number) =>
   dashboardServerFetch<ApiResponse<EmailTemplate>>(`/admin/cms/email-templates/${id}/toggle`, { method: "POST" });
+
+// ─── Testimonials ───────────────────────────────────────────────────────────
+
+export const getTestimonials = () =>
+  dashboardServerFetch<ApiResponse<Testimonial[]>>("/admin/cms/testimonials");
+
+export const createTestimonial = (data: FormData) =>
+  dashboardServerFetch<ApiResponse<Testimonial>>("/admin/cms/testimonials", { 
+    method: "POST", 
+    data,
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+
+export const updateTestimonial = (id: number, data: FormData) =>
+  dashboardServerFetch<ApiResponse<Testimonial>>(`/admin/cms/testimonials/${id}`, { 
+    method: "POST", 
+    data,
+    params: { _method: "PUT" },
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+
+export const deleteTestimonial = (id: number) =>
+  dashboardServerFetch(`/admin/cms/testimonials/${id}`, { method: "DELETE" });
+
+export const toggleTestimonialStatus = (id: number) =>
+  dashboardServerFetch(`/admin/cms/testimonials/${id}/toggle`, { method: "PATCH" });
 
 

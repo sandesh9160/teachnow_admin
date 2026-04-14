@@ -46,9 +46,9 @@ export default function CVTemplateCard({
            <div className="flex gap-2 w-full">
               <button 
                 onClick={() => onEdit?.(template)}
-                className="flex-1 bg-white hover:bg-slate-50 text-slate-900 text-[11px] font-semibold py-2 rounded-lg flex items-center justify-center gap-2 shadow-sm transition-all"
+                className="flex-1 bg-white hover:bg-slate-50 text-indigo-600 text-[11px] font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 border border-indigo-100"
               >
-                <Pencil size={13} /> Manage
+                <Pencil size={13} /> Edit Layout
               </button>
            </div>
         </div>
@@ -81,18 +81,20 @@ export default function CVTemplateCard({
              <button 
                 onClick={() => onToggleStatus?.(template)}
                 className={clsx(
-                  "text-[10px] font-semibold px-3 py-1.5 rounded-lg transition-all",
-                  template.is_active ? "bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-600" : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                  "text-[10px] font-bold px-4 py-1.5 rounded-lg transition-all border shadow-sm",
+                  template.is_active 
+                    ? "bg-amber-50 text-amber-600 border-amber-100/50 hover:bg-amber-100" 
+                    : "bg-emerald-50 text-emerald-600 border-emerald-100/50 hover:bg-emerald-100"
                 )}
              >
-                {template.is_active ? "Disable" : "Enable"}
+                {template.is_active ? "Offline" : "Go Live"}
              </button>
              <button 
                 onClick={() => onDelete?.(template)}
-                className="text-slate-300 hover:text-rose-600 p-2 transition-colors"
+                className="bg-rose-50 text-rose-500 hover:bg-rose-100 p-2 rounded-lg transition-all border border-rose-100/50"
                 title="Remove Template"
              >
-                <Trash2 size={15} />
+                <Trash2 size={13} />
              </button>
           </div>
       </div>

@@ -53,22 +53,22 @@ export default function ReviewsPage() {
   const columns = [
     { 
         key: "user_name", 
-        title: "CRITIC", 
+        title: "REVIEWER", 
         render: (_: any, r: Review) => (
-            <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-lg shadow-slate-200">
+            <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-[10px] shadow-lg shadow-indigo-100">
                     {r.user_name?.charAt(0) || "U"}
                 </div>
                 <div>
-                   <span className="font-bold text-slate-900 block leading-none">{r.user_name}</span>
-                   <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight mt-1 inline-block">Reviewer</span>
+                   <span className="font-bold text-slate-900 block leading-tight text-[12px]">{r.user_name}</span>
+                   <span className="text-[9px] text-slate-400 font-bold uppercase tracking-tight mt-0.5 inline-block">User</span>
                 </div>
             </div>
         ) 
     },
     {
       key: "rating", 
-      title: "SENTIMENT",
+      title: "RATING",
       render: (v: any) => (
         <div className="flex items-center gap-0.5">
           {Array.from({ length: 5 }).map((_, i) => (
@@ -80,7 +80,7 @@ export default function ReviewsPage() {
     },
     { 
         key: "comment", 
-        title: "NARRATIVE", 
+        title: "COMMENT", 
         render: (v: any) => (
             <div className="max-w-xs group">
                 <p className="text-[12px] text-slate-600 font-medium leading-relaxed italic line-clamp-2">"{v}"</p>
@@ -89,7 +89,7 @@ export default function ReviewsPage() {
     },
     { 
         key: "status", 
-        title: "PHASE", 
+        title: "STATUS", 
         render: (v: any) => (
             <Badge 
                 variant={v === "approved" ? "success" : v === "pending" ? "warning" : "danger"} 
@@ -102,7 +102,7 @@ export default function ReviewsPage() {
     },
     { 
         key: "created_at", 
-        title: "TIMESTAMP",
+        title: "DATE",
         render: (v: any) => (
             <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[10px] uppercase tracking-tighter" suppressHydrationWarning>
                 <Clock size={12} /> {new Date(v).toLocaleDateString()}
@@ -111,15 +111,16 @@ export default function ReviewsPage() {
     },
     { 
         key: "actions", 
-        title: "MODERATION", 
+        title: "APPROVE", 
         render: (_: any, r: Review) => (
             <div className="flex items-center justify-end gap-1">
                 {r.status !== "approved" && (
                     <button 
                         onClick={() => handleStatusChange(r.id, "approved")}
                         disabled={processingId === r.id}
+                        suppressHydrationWarning
                         className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all active:scale-90"
-                        title="Authorize Review"
+                        title="Approve Review"
                     >
                         <CheckCircle2 size={16} />
                     </button>
@@ -128,8 +129,9 @@ export default function ReviewsPage() {
                     <button 
                         onClick={() => handleStatusChange(r.id, "rejected")}
                         disabled={processingId === r.id}
+                        suppressHydrationWarning
                         className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-all active:scale-90"
-                        title="Dismiss Content"
+                        title="Reject Review"
                     >
                         <XCircle size={16} />
                     </button>
@@ -140,40 +142,44 @@ export default function ReviewsPage() {
   ];
 
   return (
-    <div className="space-y-6 pb-12 antialiased">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-2xl bg-slate-900 shadow-xl shadow-slate-200">
-            <MessageSquare size={22} className="text-white" />
+    <div className="space-y-4 pb-12 antialiased animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-xl bg-indigo-600 shadow-lg shadow-indigo-100">
+            <MessageSquare size={18} className="text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Sentiment Engine</h1>
-            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest">Moderate institutional and candidate discourse</p>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight uppercase">User Reviews</h1>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Manage and moderate site reviews</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-            <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-600 text-[11px] font-black rounded-xl hover:bg-slate-50 transition-all shadow-sm uppercase tracking-widest">
-                <Filter size={14} /> Refine Sort
+            <button 
+              suppressHydrationWarning
+              className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 text-slate-600 text-[10px] font-bold rounded-xl hover:bg-slate-50 transition-all shadow-sm uppercase tracking-widest"
+            >
+                <Filter size={12} /> Refine Sort
             </button>
         </div>
       </div>
 
-      <div className="bg-white p-3 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col sm:flex-row items-center gap-3">
+      <div className="bg-white p-2 rounded-2xl border border-slate-100 shadow-sm flex flex-col sm:flex-row items-center gap-2">
         <div className="relative flex-1 w-full">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-300" />
           <input 
             type="text" 
-            placeholder="Search narratives or identities..." 
+            suppressHydrationWarning
+            placeholder="Search by name or keyword..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="w-full pl-11 pr-4 py-3 bg-slate-50/50 border border-slate-100 rounded-[1.2rem] text-[13px] text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-medium" 
+            className="w-full pl-10 pr-4 py-2 bg-slate-50/50 border border-slate-100 rounded-xl text-[12px] text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-semibold" 
           />
         </div>
-        {loading && <Loader2 size={18} className="animate-spin text-indigo-600 mr-2" />}
+        {loading && <Loader2 size={16} className="animate-spin text-indigo-600 mr-1" />}
       </div>
 
-      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-slate-100/50">
-        <DataTable columns={columns} data={filtered} loading={loading} emptyMessage="No discourse detected in the chosen parameters." />
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-lg hover:shadow-slate-100/50">
+        <DataTable columns={columns} data={filtered} loading={loading} compact emptyMessage="No reviews found." />
       </div>
     </div>
   );

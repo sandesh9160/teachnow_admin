@@ -41,7 +41,7 @@ export default function DataTable<T>({
                 <th
                   key={col.key}
                   className={clsx(
-                    "text-left text-[11px] font-semibold text-[#64748B] uppercase tracking-wider",
+                    "text-left text-[11px] font-bold text-indigo-600 tracking-normal",
                     compact ? "px-4 py-3" : "px-6 py-4"
                   )}
                   style={{ width: col.width }}

@@ -31,7 +31,7 @@ export default function EmailTemplateCard({ template, onEdit }: EmailTemplateCar
               </h3>
               <div className="flex items-center mt-1">
                 <span className={clsx(
-                  "text-[9px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-tighter",
+                  "text-[9px] font-extrabold px-1.5 py-0.5 rounded border tracking-normal",
                   template.is_active 
                     ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
                     : "bg-slate-100 text-slate-500 border-slate-200"
@@ -46,7 +46,7 @@ export default function EmailTemplateCard({ template, onEdit }: EmailTemplateCar
         {/* Middle Section */}
         <div className="flex-1 space-y-2">
           <div className="px-3 py-2 bg-slate-50 rounded-lg border border-slate-100">
-            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Subject Line</div>
+            <div className="text-[10px] font-bold text-indigo-400 mb-1">Subject line</div>
             <p className="text-[11px] font-semibold text-slate-700 line-clamp-2 leading-relaxed italic">
               "{template.subject}"
             </p>

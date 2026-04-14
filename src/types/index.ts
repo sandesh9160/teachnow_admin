@@ -405,3 +405,19 @@ export interface EmailTemplate {
   created_at: string;
   updated_at: string;
 }
+
+export interface Testimonial {
+  id: number;
+  name: string;
+  designation: string;
+  company: string | null;
+  photo: string | null;
+  message: string;
+  display_order: number;
+  is_active: number | boolean;
+  user_id: number | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  rating: number | null;
+}
