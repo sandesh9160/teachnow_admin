@@ -27,6 +27,7 @@ import {
   toggleCMSFooterLink 
 } from "@/services/admin.service";
 import DataTable from "@/components/tables/DataTable";
+import CMSFooterLinkModal from "@/components/modals/CMSFooterLinkModal";
 import Badge from "@/components/ui/Badge";
 import { toast } from "sonner";
 import { clsx } from "clsx";
@@ -35,6 +36,8 @@ export default function CMSFooterLinksPage() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
 
   useEffect(() => {
     fetchFooterLinks();
@@ -79,36 +82,36 @@ export default function CMSFooterLinksPage() {
 
   const filtered = items.filter(item => 
     item.title?.toLowerCase().includes(search.toLowerCase()) ||
-    item.section?.toLowerCase().includes(search.toLowerCase())
+    item.section?.title?.toLowerCase().includes(search.toLowerCase())
   );
 
   const columns = [
     { 
       key: "section", 
-      title: "COLUMN SEGMENT", 
-      render: (v: unknown) => (
+      title: "Column Assignment", 
+      render: (_: unknown, item: any) => (
         <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
                 <Columns size={14} />
             </div>
-            <span className="font-black text-slate-900 text-[11px] uppercase tracking-[0.1em]">{typeof v === "string" && v ? v : "General System"}</span>
+            <span className="font-bold text-slate-900 text-[13px]">{item.section?.title || "System General"}</span>
         </div>
       )
     },
     { 
       key: "title", 
-      title: "IDENTITY", 
-      render: (v: unknown) => <span className="font-bold text-slate-700 text-[13px]">{typeof v === "string" && v ? v : "Untitled Node"}</span> 
+      title: "Link Target", 
+      render: (v: unknown) => <span className="font-bold text-slate-700 text-[13px]">{typeof v === "string" && v ? v : "Untitled Link"}</span> 
     },
     { 
       key: "url", 
-      title: "POINTER", 
+      title: "URL Path", 
       render: (v: unknown) => (
         <div className="flex items-center gap-2">
-            <code className="bg-slate-50 px-2 py-0.5 rounded-lg text-[10px] font-bold text-indigo-600 border border-slate-100 shadow-inner">
+            <code className="bg-slate-50 px-2 py-0.5 rounded-lg text-[11px] font-mono font-bold text-indigo-600 border border-slate-100 shadow-inner">
                 {typeof v === "string" && v ? v : "/"}
             </code>
-            <ExternalLink size={10} className="text-slate-300" />
+            <ExternalLink size={12} className="text-slate-400" />
         </div>
       ) 
     },
@@ -130,11 +133,11 @@ export default function CMSFooterLinksPage() {
     },
     { 
         key: "actions", 
-        title: "REVIEW", 
+        title: "Actions", 
         render: (_: any, item: any) => (
             <div className="flex items-center justify-end gap-1.5">
                 <button 
-                    title="Adjust Parameters"
+                    onClick={() => { setEditingItem(item); setIsModalOpen(true); }}
                     className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
                 >
                     <Pencil size={16} />
@@ -156,85 +159,72 @@ export default function CMSFooterLinksPage() {
       {/* ─── Header Section ────────────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="flex items-start gap-4">
-          <Link href="/cms" className="mt-1 w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shadow-sm hover:shadow-xl hover:-translate-x-1 active:scale-90">
+          <Link href="/dashboard" className="mt-1 w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shadow-sm hover:shadow-xl hover:-translate-x-1 active:scale-90">
             <ArrowLeft size={18} />
           </Link>
           <div>
             <div className="flex items-center gap-2 mb-2">
-               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100/50">Content Architecture</span>
+               <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100/50">Content Management</span>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase leading-none">Footer Hierarchy</h1>
-            <p className="text-[12px] text-slate-400 font-bold uppercase tracking-widest mt-2.5 flex items-center gap-2">
-               <Globe size={12} className="text-emerald-500" /> Manage global site persistence & legal anchors
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-none">Footer Links</h1>
+            <p className="text-[13px] text-slate-500 font-medium mt-2.5 flex items-center gap-2">
+               <Globe size={14} className="text-emerald-500" /> Manage standard global footer links and social profiles
             </p>
           </div>
         </div>
         
-        <button className="flex items-center gap-2 px-8 py-3 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-[0_10px_20px_rgba(0,0,0,0.1)] hover:bg-slate-800 hover:-translate-y-1 transition-all active:scale-95 group">
-          <Plus size={18} className="group-hover:rotate-90 transition-transform" />
-          Inject New Link
+        <button 
+           onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
+           className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-[12px] font-bold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all active:scale-95 group"
+        >
+          <Plus size={16} className="group-hover:rotate-90 transition-transform" />
+          Add Link
         </button>
       </div>
 
       {/* ─── Control Bar ───────────────────────────────────────────────────── */}
-      <div className="bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="relative flex-1 w-full max-w-md">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
           <input 
             type="text" 
-            placeholder="Search hierarchy sectors or identities..." 
+            placeholder="Search column mappings or link targets..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-[13px] text-slate-700 outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-medium placeholder:text-slate-300 shadow-inner" 
+            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium placeholder:text-slate-300" 
           />
         </div>
         <div className="flex items-center gap-3 pr-2">
             <button 
                 onClick={fetchFooterLinks}
                 disabled={loading}
-                className="flex items-center gap-2 px-4 py-2.5 text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-all group"
+                className="flex items-center gap-2 px-4 py-2 text-[12px] font-bold text-slate-400 hover:text-indigo-600 transition-all group"
             >
                 <RotateCcw size={14} className={clsx("group-hover:-rotate-45 transition-transform", loading && "animate-spin")} />
-                Sync Database
+                Refresh
             </button>
         </div>
       </div>
 
       {/* ─── Data Landscape ────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-2xl hover:shadow-slate-100/50">
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-slate-100/50">
         <DataTable 
+          compact
           columns={columns} 
           data={filtered} 
           loading={loading}
-          emptyMessage="No persistence nodes detected in the current footer registry."
+          emptyMessage="No static footer links configured."
         />
       </div>
 
-      {/* ─── Optimization Insights ─────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-6 bg-indigo-50/30 border border-indigo-100/50 rounded-[2rem] flex items-start gap-4 transition-all hover:bg-white hover:shadow-xl hover:shadow-indigo-100/20 group">
-              <div className="w-12 h-12 rounded-2xl bg-white border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">
-                  <Columns size={24} />
-              </div>
-              <div>
-                  <h5 className="text-[12px] font-black text-slate-900 uppercase tracking-widest mb-1.5">Column Segmentation</h5>
-                  <p className="text-[12px] text-slate-500 font-medium leading-relaxed">
-                      Links are grouped by "Column Segment". Ensure consistent naming to maintain structural integrity in the footer layout (e.g., "Resources", "Institutional").
-                  </p>
-              </div>
-          </div>
-          <div className="p-6 bg-slate-900 border border-slate-800 rounded-[2rem] flex items-start gap-4 transition-all hover:shadow-2xl hover:shadow-slate-200/50 group">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:rotate-12 transition-transform">
-                  <Zap size={24} className="fill-current" />
-              </div>
-              <div>
-                  <h5 className="text-[12px] font-black text-white uppercase tracking-widest mb-1.5">SEO Performance</h5>
-                  <p className="text-[12px] text-slate-400 font-medium leading-relaxed">
-                      Utilize descriptive anchors. Semantic link labeling improves platform indexing. All external pointers are automatically proxied for authority tracking.
-                  </p>
-              </div>
-          </div>
-      </div>
+
+
+      <CMSFooterLinkModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchFooterLinks}
+        item={editingItem}
+      />
     </div>
   );
 }

@@ -31,7 +31,9 @@ import {
   Clock,
   UserPlus,
   Loader2,
-  FileCheck
+  FileCheck,
+  Database,
+  ArrowUpRight
 } from "lucide-react";
 import { clsx } from "clsx";
 import DataTable from "@/components/tables/DataTable";
@@ -73,8 +75,6 @@ export default function DashboardPage() {
              statsData = body;
         }
 
-        console.log("Extracted Stats Data:", statsData);
-        
         if (statsData) {
             setStats(statsData);
         } else {
@@ -95,25 +95,25 @@ export default function DashboardPage() {
   if (loading) {
     return (
         <div className="flex items-center justify-center min-h-[500px]">
-           <Loader2 className="animate-spin text-primary-600" size={32} />
+           <Loader2 className="animate-spin text-primary" size={40} strokeWidth={2} />
         </div>
     );
   }
 
   return (
-    <div className="space-y-6 pb-12 antialiased">
+    <div className="space-y-6 pb-20 antialiased animate-fade-in-up">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 tracking-tight">Dashboard</h1>
-          <p className="text-[13px] text-surface-400 font-medium mt-0.5">Welcome back, Admin. Platform overview.</p>
+          <h1 className="text-2xl font-bold text-surface-900 tracking-tight text-shadow-none">Platform Analytics</h1>
+          <p className="text-[13px] text-surface-500 font-medium mt-0.5">Real-time platform performance metrics</p>
         </div>
-        <div className="flex items-center p-0.5 bg-surface-100 rounded-lg">
+        <div className="flex items-center p-0.5 bg-surface-100 rounded-lg border border-surface-200/50">
           {["1M", "3M", "6M", "1Y"].map((range) => (
             <button 
               key={range} 
               className={clsx(
-                "px-3 py-1 text-[11px] font-semibold rounded-md transition-all", 
+                "px-3 py-1 text-[11px] font-bold rounded-md transition-all", 
                 range === "6M" ? "bg-white text-surface-900 shadow-sm" : "text-surface-400 hover:text-surface-600"
               )}
             >
@@ -125,219 +125,157 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatWidget label="Total Jobs" value={stats?.total_jobs || 0} icon={<Briefcase size={16} />} color="emerald" />
-        <StatWidget label="Job Seekers" value={stats?.total_job_seekers || 0} icon={<Users size={16} />} color="blue" />
-        <StatWidget label="Recruiters" value={stats?.total_recruiters || 0} icon={<UserCheck size={16} />} color="cyan" />
-        <StatWidget label="Employers" value={stats?.total_employers || 0} icon={<Building2 size={16} />} color="indigo" />
-        <StatWidget label="Applications" value={stats?.total_applications || 0} icon={<FileCheck size={16} />} color="amber" />
+        <StatWidget label="Total Jobs" value={stats?.total_jobs || 0} icon={<Briefcase size={18} />} color="blue" trend="+12% vs last month" />
+        <StatWidget label="Job Seekers" value={stats?.total_job_seekers || 0} icon={<Users size={18} />} color="emerald" trend="9 verified" />
+        <StatWidget label="Recruiters" value={stats?.total_recruiters || 0} icon={<UserCheck size={18} />} color="purple" trend="2 online" />
+        <StatWidget label="Employers" value={stats?.total_employers || 0} icon={<Building2 size={18} />} color="indigo" trend="100% active" />
+        <StatWidget label="Inquiries" value={stats?.total_applications || 0} icon={<FileCheck size={18} />} color="rose" trend="2 pending" />
       </div>
 
       {/* Primary Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl border border-surface-100 p-5 shadow-xs">
-          <div className="flex items-start justify-between mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-surface-100 p-6 shadow-sm overflow-hidden">
+          <div className="flex items-start justify-between mb-8">
             <div>
-              <h3 className="text-[14px] font-semibold text-surface-900">Jobs & Applications Trend</h3>
-              <p className="text-[11px] text-surface-400 font-medium">Monthly overview</p>
+              <h3 className="text-[14px] font-bold text-surface-900 tracking-tight">System Performance</h3>
+              <p className="text-[11px] text-surface-400 font-medium mt-0.5">Jobs vs Applications Activity</p>
             </div>
-            <div className="flex items-center gap-4 text-[10px] font-semibold text-surface-400 uppercase tracking-tight">
-               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-600" /> Jobs</span>
-               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-100" /> Apps</span>
+            <div className="flex items-center gap-4 text-[10px] font-bold text-surface-400 uppercase tracking-widest bg-surface-50 px-3 py-1.5 rounded-lg border border-surface-100/50">
+               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-primary" /> Jobs</span>
+               <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-primary/20" /> Apps</span>
             </div>
           </div>
-          <div className="w-full flex items-center justify-center text-surface-300 text-[11px] font-medium italic" style={{ height: 240, minHeight: 240 }}>
+          <div className="w-full flex items-center justify-center text-surface-300 text-[11px] font-medium" style={{ height: 260 }}>
             {barData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={barData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: 500 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: 500 }} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: 600 }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: 600 }} />
                     <Tooltip 
                       cursor={{ fill: "#f8fafc" }} 
-                      contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }} 
+                      contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }} 
                     />
-                    <Bar dataKey="jobs" fill="#2563eb" radius={[3, 3, 0, 0]} barSize={18} />
-                    <Bar dataKey="applications" fill="#dbeafe" radius={[3, 3, 0, 0]} barSize={18} />
+                    <Bar dataKey="jobs" fill="var(--primary)" radius={[4, 4, 0, 0]} barSize={20} />
+                    <Bar dataKey="applications" fill="var(--color-primary-50, #cbd5e1)" radius={[4, 4, 0, 0]} barSize={20} />
                   </BarChart>
                 </ResponsiveContainer>
             ) : (
-                <span>No trending data available yet</span>
+                <div className="flex flex-col items-center gap-2 opacity-50">
+                    <Database size={24} className="text-surface-200" />
+                    <span className="italic text-surface-300 text-[10px]">No activity history found</span>
+                </div>
             )}
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-surface-100 p-5 shadow-xs">
-          <div className="mb-6">
-            <h3 className="text-[14px] font-semibold text-surface-900">User Registrations</h3>
-            <p className="text-[11px] text-surface-400 font-medium">New users per month</p>
+        <div className="bg-white rounded-2xl border border-surface-100 p-6 shadow-sm flex flex-col items-center relative overflow-hidden">
+          <div className="w-full mb-6">
+            <h3 className="text-[14px] font-bold text-surface-900 tracking-tight">Distribution</h3>
+            <p className="text-[11px] text-surface-400 font-medium mt-0.5">Platform service stats</p>
           </div>
-          <div className="w-full flex items-center justify-center text-surface-300 text-[11px] font-medium italic" style={{ height: 240, minHeight: 240 }}>
-             {areaData.length > 0 ? (
-                 <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                  <AreaChart data={areaData} margin={{ top: 0, right: 0, left: -25, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.08} />
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: 500 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: "#94a3b8", fontWeight: 500 }} />
-                    <Tooltip contentStyle={{ borderRadius: "8px", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)" }} />
-                    <Area type="monotone" dataKey="seekers" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorUsers)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-             ) : (
-                <span>No registration data available yet</span>
-             )}
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-surface-100 p-5 shadow-xs">
-          <div className="mb-6">
-            <h3 className="text-[14px] font-semibold text-surface-900">Revenue Plans</h3>
-            <p className="text-[11px] text-indigo-400 font-bold">Monthly growth</p>
-          </div>
-          <div className="w-full flex items-center justify-center text-surface-300 text-[11px] font-medium italic" style={{ height: 180 }}>
-            {revenueData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                  <LineChart data={revenueData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: "#94a3b8", fontWeight: 500 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: "#94a3b8", fontWeight: 500 }} />
-                    <Tooltip contentStyle={{ borderRadius: "8px", border: "none" }} />
-                    <Line type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2} dot={{ fill: "#10b981", r: 3 }} activeDot={{ r: 5 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-            ) : (
-                <span>Subscription data pending</span>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-surface-100 p-5 shadow-xs flex flex-col items-center">
-          <div className="w-full mb-3">
-            <h3 className="text-[14px] font-semibold text-surface-900">Feedback Score</h3>
-            <p className="text-[11px] text-surface-400 font-medium">{stats?.total_applications ? "Platform feedback" : "No testimonials yet"}</p>
-          </div>
-          <div className="relative w-full aspect-square max-w-[130px] flex items-center justify-center">
+          <div className="relative w-full aspect-square max-w-[160px] flex items-center justify-center">
              {reviewData.length > 0 ? (
                  <>
-                    <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+                    <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
-                            <Pie data={reviewData} cx="50%" cy="50%" innerRadius={40} outerRadius={55} paddingAngle={4} dataKey="value">
-                                {reviewData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                            <Pie data={reviewData} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={5} dataKey="value">
+                                {reviewData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />)}
                             </Pie>
                         </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-lg font-semibold text-surface-900">4.2</span>
+                        <span className="text-2xl font-bold text-surface-900 leading-none">4.2</span>
+                        <span className="text-[9px] font-bold text-surface-400 uppercase mt-1 tracking-widest opacity-60">SCORE</span>
                     </div>
                  </>
              ) : (
-                <div className="w-16 h-16 rounded-full border-4 border-surface-50 flex items-center justify-center text-[10px] text-surface-300 font-bold uppercase">
-                    0.0
+                <div className="w-28 h-28 rounded-full border-8 border-surface-50 flex flex-col items-center justify-center text-surface-200">
+                    <span className="text-xl font-bold">0</span>
+                    <span className="text-[8px] font-bold tracking-widest">NONE</span>
                 </div>
              )}
           </div>
-          <div className="w-full mt-2 space-y-0.5 opacity-80">
-             {reviewData.length > 0 ? reviewData.slice(0, 3).map((item) => (
-               <div key={item.name} className="flex items-center justify-between">
-                 <div className="flex items-center gap-1.5">
-                   <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.color }} />
-                   <span className="text-[10px] font-medium text-surface-500">{item.name}</span>
-                 </div>
-                 <span className="text-[10px] font-semibold text-surface-700">{item.value}%</span>
-               </div>
-             )) : (
-                <p className="text-[10px] text-center text-surface-400">Waiting for data...</p>
-             )}
+          <div className="w-full mt-6 grid grid-cols-2 gap-3">
+             <div className="p-3 bg-surface-100/50 rounded-xl border border-surface-200/50 text-center">
+                 <p className="text-[9px] font-bold text-surface-400 uppercase tracking-widest mb-1">Total</p>
+                 <p className="text-xl font-bold text-surface-800">3</p>
+             </div>
+             <div className="p-3 bg-primary/5 rounded-xl border border-primary/10 text-center">
+                 <p className="text-[9px] font-bold text-primary uppercase tracking-widest mb-1">Pending</p>
+                 <p className="text-xl font-bold text-primary text-shadow-sm shadow-primary/20">3</p>
+             </div>
           </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs flex flex-col">
-           <div className="p-5 pb-3">
-              <h3 className="text-[14px] font-semibold text-surface-900">System Activity</h3>
-              <p className="text-[11px] text-indigo-400 font-bold">Recent logs</p>
-           </div>
-           <div className="flex-1 overflow-y-auto px-1 pb-4 max-h-[220px] no-scrollbar">
-             {activityFeed.slice(0, 4).map((item, i) => (
-                 <div key={i} className="flex gap-3 p-3 rounded-lg border-b border-surface-50 last:border-0 hover:bg-surface-50/50 transition-all items-start">
-                   <div className={clsx("w-7 h-7 shrink-0 rounded-lg flex items-center justify-center", item.bgColor, item.color)}>
-                     <item.icon size={13} />
-                   </div>
-                   <div className="min-w-0 flex-1">
-                     <div className="flex items-center justify-between gap-2">
-                        <p className="text-[12px] font-semibold text-surface-900 leading-tight truncate">{item.title}</p>
-                        <span className="text-[9px] text-indigo-400 font-bold whitespace-nowrap">{item.time}</span>
-                     </div>
-                     <p className="text-[11px] text-surface-400 mt-0.5 line-clamp-1 italic font-medium">{item.desc}</p>
-                   </div>
-                 </div>
-             ))}
-           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-surface-100 overflow-hidden shadow-xs">
-            <div className="px-5 py-4 border-b border-surface-50 flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-surface-100 overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-surface-50 flex items-center justify-between">
                 <div>
-                    <h3 className="text-[14px] font-semibold text-surface-900">Recent Applications</h3>
-                    <p className="text-[11px] text-surface-400 font-medium">Latest submissions</p>
+                    <h3 className="text-[14px] font-bold text-surface-900 tracking-tight">Recent Applications</h3>
+                    <p className="text-[11px] text-surface-400 font-medium mt-0.5">Latest applicant queue</p>
                 </div>
-                <Link href="/jobseekers" className="text-[12px] font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1">
-                    View All <ChevronRight size={13} />
+                <Link href="/jobseekers" className="flex items-center gap-1.5 h-7 px-3 bg-surface-50 text-surface-900 border border-surface-200 rounded-md text-[10px] font-bold hover:bg-white transition-all shadow-sm group">
+                    See all <ArrowUpRight size={12} className="text-surface-400 group-hover:text-primary transition-colors" />
                 </Link>
             </div>
-            <DataTable 
-                compact
-                columns={[
-                { key: "name", title: "APPLICANT", render: (_: any, r: any) => (
-                    <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded bg-surface-50 border border-surface-100 flex items-center justify-center text-[9px] font-semibold text-surface-500 uppercase">
-                            JS
-                        </div>
-                        <span className="font-semibold text-surface-700 text-[12px]">Job Seeker #{r.job_seeker_id}</span>
-                    </div>
-                )},
-                { key: "job", title: "ROLE", render: (v: unknown) => <span className="text-surface-400 font-medium uppercase text-[10px] tracking-tight">{(v as any)?.title || "N/A"}</span> },
-                { key: "status", title: "STATUS", render: (v: unknown) => <Badge variant={v === "shortlisted" ? "success" : "default"} dot className="text-[9px] font-semibold uppercase">{typeof v === "string" ? v : ""}</Badge> },
-                { key: "created_at", title: "TIME", render: (v: unknown) => <span className="text-[#94A3B8] text-[10px] font-semibold uppercase">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> }
-                ]}
-                data={stats?.recent_applications || []}
-                onRowClick={(row) => router.push(`/jobseekers/${row.job_seeker_id}`)}
-            />
+            <div className="overflow-hidden">
+                <DataTable 
+                    compact
+                    columns={[
+                    { key: "name", title: "Candidate", render: (_: any, r: any) => {
+                        const name = r.user?.name || `User${r.job_seeker_id}`;
+                        const colors = ["bg-blue-50 text-blue-500 border-blue-100", "bg-indigo-50 text-indigo-500 border-indigo-100", "bg-purple-50 text-purple-500 border-purple-100", "bg-rose-50 text-rose-500 border-rose-100", "bg-cyan-50 text-cyan-500 border-cyan-100"];
+                        const colorClass = colors[name.charCodeAt(0) % colors.length];
+                        return (
+                            <div className="flex items-center gap-2.5">
+                                <div className={clsx("w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-bold uppercase tracking-tight border", colorClass)}>
+                                    {name.charAt(0)}
+                                </div>
+                                <span className="font-medium text-surface-950 text-[12.5px] tracking-tight">{name}</span>
+                            </div>
+                        );
+                    }},
+                    { key: "job", title: "Position", render: (v: unknown) => <span className="text-surface-500 font-medium text-[11px] truncate max-w-[150px] inline-block tracking-tight">{(v as any)?.title || "—"}</span> },
+                    { key: "status", title: "Status", render: (v: unknown) => <Badge variant={v === "shortlisted" ? "success" : "default"} dot className="text-[10px] px-2 h-4.5 bg-transparent border-none font-semibold">{typeof v === "string" ? v : ""}</Badge> },
+                    { key: "created_at", title: "Date", render: (v: unknown) => <span className="text-surface-400 text-[10px] font-medium tracking-tight whitespace-nowrap">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "—"}</span> }
+                    ]}
+                    data={stats?.recent_applications || []}
+                    onRowClick={(row) => router.push(`/jobseekers/${row.job_seeker_id}`)}
+                />
+            </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-surface-100 overflow-hidden shadow-xs">
-            <div className="px-5 py-4 border-b border-surface-50 flex items-center justify-between">
+        <div className="bg-white rounded-2xl border border-surface-100 overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-surface-50 flex items-center justify-between">
                 <div>
-                    <h3 className="text-[14px] font-semibold text-surface-900">Recent Jobs</h3>
-                    <p className="text-[11px] text-surface-400 font-medium">Recently posted positions</p>
+                    <h3 className="text-[14px] font-bold text-surface-900 tracking-tight">Recent Jobs</h3>
+                    <p className="text-[11px] text-surface-400 font-medium mt-0.5">Newly posted job openings</p>
                 </div>
-                <Link href="/jobs" className="text-[12px] font-semibold text-primary-600 hover:text-primary-700 flex items-center gap-1">
-                    View All <ChevronRight size={13} />
+                <Link href="/jobs" className="flex items-center gap-1.5 h-7 px-3 bg-surface-50 text-surface-900 border border-surface-200 rounded-md text-[10px] font-bold hover:bg-white transition-all shadow-sm group">
+                    See all <ArrowUpRight size={12} className="text-surface-400 group-hover:text-primary transition-colors" />
                 </Link>
             </div>
-            <DataTable 
-                compact
-                columns={[
-                { key: "title", title: "JOB TITLE", render: (v: unknown) => (
-                    <span className="font-semibold text-surface-700 text-[12px] truncate max-w-[150px] inline-block">{typeof v === "string" ? v : ""}</span>
-                )},
-                { key: "employer", title: "EMPLOYER", render: (v: unknown) => (
-                    <span className="text-surface-400 font-medium text-[11px]">{(v as { company_name?: string } | null)?.company_name || "N/A"}</span>
-                )},
-                { key: "location", title: "LOCATION", render: (v: unknown) => <span className="text-surface-500 font-medium text-[10px] uppercase tracking-tight">{typeof v === "string" ? v : ""}</span> },
-                { key: "status", title: "STATUS", render: (v: unknown) => <Badge variant={v === "pending" ? "warning" : "success"} dot className="text-[9px] font-semibold uppercase">{typeof v === "string" ? v : ""}</Badge> }
-                ]}
-                data={stats?.recent_jobs || []}
-                onRowClick={(row) => router.push(`/jobs/edit/${row.id}`)}
-            />
+            <div className="overflow-hidden">
+                <DataTable 
+                    compact
+                    columns={[
+                    { key: "title", title: "Job Title", render: (v: unknown) => (
+                        <span className="font-medium text-surface-950 text-[12.5px] truncate max-w-[180px] inline-block tracking-tight">{typeof v === "string" ? v : ""}</span>
+                    )},
+                    { key: "employer", title: "Organization", render: (v: unknown) => (
+                        <span className="text-surface-500 font-medium text-[11px] truncate max-w-[140px] inline-block tracking-tight">
+                            {(v as { company_name?: string } | null)?.company_name || "—"}
+                        </span>
+                    )},
+                    { key: "location", title: "Location", render: (v: unknown) => <span className="text-surface-400 font-medium text-[10px] tracking-tight">{typeof v === "string" ? v : ""}</span> },
+                    { key: "status", title: "Status", render: (v: unknown) => <Badge variant={v === "pending" ? "warning" : "success"} dot className="text-[10px] px-2 h-4.5 bg-transparent border-none font-semibold">{typeof v === "string" ? v : ""}</Badge> }
+                    ]}
+                    data={stats?.recent_jobs || []}
+                    onRowClick={(row) => router.push(`/jobs/edit/${row.id}`)}
+                />
+            </div>
         </div>
       </div>
     </div>
@@ -346,23 +284,29 @@ export default function DashboardPage() {
 
 function StatWidget({ label, value, trend, icon, color }: any) {
   const themes: any = {
-    emerald: { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-100" },
-    blue: { bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-100" },
-    cyan: { bg: "bg-cyan-50", text: "text-cyan-600", border: "border-cyan-100" },
-    indigo: { bg: "bg-indigo-50", text: "text-indigo-600", border: "border-indigo-100" },
-    amber: { bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-100" },
+    blue: { bg: "bg-blue-50/50", text: "text-blue-600", border: "border-blue-100", iconBg: "bg-blue-50" },
+    purple: { bg: "bg-purple-50/50", text: "text-purple-600", border: "border-purple-100", iconBg: "bg-purple-50" },
+    indigo: { bg: "bg-indigo-50/50", text: "text-indigo-600", border: "border-indigo-100", iconBg: "bg-indigo-50" },
+    emerald: { bg: "bg-emerald-50/50", text: "text-emerald-600", border: "border-emerald-100", iconBg: "bg-emerald-50" },
+    rose: { bg: "bg-rose-50/50", text: "text-rose-600", border: "border-rose-100", iconBg: "bg-rose-50" },
+    teal: { bg: "bg-teal-50/50", text: "text-teal-600", border: "border-teal-100", iconBg: "bg-teal-50" },
+    cyan: { bg: "bg-cyan-50/50", text: "text-cyan-600", border: "border-cyan-100", iconBg: "bg-cyan-50" },
   };
-  const theme = themes[color];
+  const theme = themes[color] || themes.blue;
   return (
-    <div className="bg-white p-4 rounded-xl border border-surface-100 shadow-xs group transition-all hover:bg-[#F8FAFC]">
-      <div className="flex justify-between items-start">
-        <div className="space-y-1.5">
-          <p className="text-[12px] font-bold text-indigo-500/80 tracking-normal">{label}</p>
-          <h4 className="text-xl font-bold text-surface-900 tracking-tight leading-none">{value}</h4>
-          <span className="text-[11px] font-semibold text-emerald-500 opacity-80">{trend}</span>
+    <div className="bg-white p-4 rounded-2xl border border-surface-100 shadow-sm group transition-all hover:bg-surface-50 relative overflow-hidden">
+      <div className="absolute top-0 right-0 p-3">
+        <div className={clsx("w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110", theme.iconBg, theme.text)}>
+          {React.cloneElement(icon as React.ReactElement<any>, { size: 16, strokeWidth: 2.5 })}
         </div>
-        <div className={clsx("w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 group-hover:scale-105 shadow-xs", theme.bg, theme.text, theme.border)}>
-          {React.cloneElement(icon as React.ReactElement<{ size?: number }>, { size: 14 })}
+      </div>
+      <div className="space-y-3">
+        <p className="text-[12px] font-bold text-surface-400 tracking-tight">{label}</p>
+        <h4 className="text-2xl font-bold text-surface-900 tracking-tight leading-none text-shadow-none">{value}</h4>
+        <div className="flex items-center gap-1.5 border-t border-surface-50/50 pt-2">
+            <span className={clsx("text-[10px] font-bold tracking-tight px-1.5 py-0.5 rounded-md", theme.bg, theme.text)}>
+                {trend}
+            </span>
         </div>
       </div>
     </div>

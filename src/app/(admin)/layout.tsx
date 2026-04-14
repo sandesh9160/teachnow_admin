@@ -14,7 +14,7 @@ export default function AdminLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-surface-50">
+    <div className="min-h-screen bg-gradient-mesh">
       <Sidebar
         collapsed={collapsed}
         onToggle={() => setCollapsed(!collapsed)}
@@ -28,7 +28,7 @@ export default function AdminLayout({
       <main
         className={clsx(
           "transition-all duration-300 pt-16 min-h-screen",
-          collapsed ? "lg:pl-[72px]" : "lg:pl-[260px]"
+          collapsed ? "lg:pl-[70px]" : "lg:pl-[240px]"
         )}
       >
         <div className="p-6">{children}</div>

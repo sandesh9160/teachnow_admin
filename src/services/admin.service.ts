@@ -212,6 +212,9 @@ export const updateReview = (id: number, data: Partial<Review>) =>
 export const getCMSSections = () => 
   dashboardServerFetch<CMSSection[]>("/admin/cms");
 
+export const createCMSSection = (data: Partial<CMSSection>) =>
+  dashboardServerFetch(`/admin/cms`, { method: "POST", data });
+
 export const updateCMSSection = (id: number, data: Partial<CMSSection>) =>
   dashboardServerFetch(`/admin/cms/${id}`, { method: "PUT", data });
 
@@ -233,6 +236,21 @@ export const toggleCMSNavigationActive = (id: number) =>
 
 export const toggleCMSNavigationNav = (id: number) => 
   dashboardServerFetch(`/admin/cms/navigation/${id}/toggle-nav`, { method: "PATCH" });
+// Footer Sections
+export const getCMSFooterSections = () => 
+  dashboardServerFetch<any[]>("/admin/cms/footer-sections");
+
+export const createCMSFooterSection = (data: any) => 
+  dashboardServerFetch("/admin/cms/footer-sections", { method: "POST", data });
+
+export const updateCMSFooterSection = (id: number, data: any) => 
+  dashboardServerFetch(`/admin/cms/footer-sections/${id}`, { method: "PUT", data });
+
+export const deleteCMSFooterSection = (id: number) => 
+  dashboardServerFetch(`/admin/cms/footer-sections/${id}`, { method: "DELETE" });
+
+export const toggleCMSFooterSection = (id: number) => 
+  dashboardServerFetch(`/admin/cms/footer-sections/${id}/toggle`, { method: "PATCH" });
 
 // Footer Links
 export const getCMSFooterLinks = () => 
@@ -258,13 +276,41 @@ export const createCMSCompanyLogo = (data: any) =>
   dashboardServerFetch("/admin/cms/company-logos", { method: "POST", data });
 
 export const updateCMSCompanyLogo = (id: number, data: any) => 
-  dashboardServerFetch(`/admin/cms/company-logos/${id}`, { method: "PUT", data });
+  dashboardServerFetch(`/admin/cms/company-logos/${id}`, { method: "POST", data });
 
 export const deleteCMSCompanyLogo = (id: number) => 
   dashboardServerFetch(`/admin/cms/company-logos/${id}`, { method: "DELETE" });
 
-// ─── SEO ─────────────────────────────────────────────────────────────────────
+// Hero Banner
+export const getCMSHero = () => 
+  dashboardServerFetch<any>("/admin/cms/hero");
 
+export const updateCMSHero = (data: FormData) => 
+  dashboardServerFetch<any>("/admin/cms/hero", { method: "POST", data });
+
+// Hero Stats
+export const getCMSStats = () => 
+  dashboardServerFetch<any>("/admin/cms/stats");
+
+export const updateCMSStats = (data: any) => 
+  dashboardServerFetch<any>("/admin/cms/stats", { method: "POST", data });
+// CTA Blocks
+export const getCMSCTAs = () => 
+  dashboardServerFetch<any>("/admin/cms/cta");
+
+export const createCMSCTA = (data: FormData) => 
+  dashboardServerFetch("/admin/cms/cta", { method: "POST", data });
+
+export const updateCMSCTA = (id: number, data: FormData) => 
+  dashboardServerFetch(`/admin/cms/cta/${id}`, { method: "POST", data }); // POST correctly handles FormData with _method='PUT' on Laravel backend
+
+export const deleteCMSCTA = (id: number) => 
+  dashboardServerFetch(`/admin/cms/cta/${id}`, { method: "DELETE" });
+
+export const toggleCMSCTA = (id: number) => 
+  dashboardServerFetch(`/admin/cms/cta/${id}/toggle`, { method: "PATCH" });
+
+// ─── SEO ─────────────────────────────────────────────────────────────────────
 export const getSEOSettings = () => 
   dashboardServerFetch<SEOSetting[]>("/admin/seo");
 
@@ -318,7 +364,7 @@ export const permanentDelete = (type: string, id: number) =>
 // ─── Document Verification ──────────────────────────────────────────────────
 
 export const getVerificationRequests = (params?: Record<string, unknown>) =>
-  dashboardServerFetch("/admin/verifications", { params });
+  dashboardServerFetch("/admin/documents/pending", { params });
 
 export const approveVerification = (id: number) =>
   dashboardServerFetch(`/admin/verifications/${id}/approve`, { method: "POST" });
@@ -400,5 +446,3 @@ export const deleteTestimonial = (id: number) =>
 
 export const toggleTestimonialStatus = (id: number) =>
   dashboardServerFetch(`/admin/cms/testimonials/${id}/toggle`, { method: "PATCH" });
-
-

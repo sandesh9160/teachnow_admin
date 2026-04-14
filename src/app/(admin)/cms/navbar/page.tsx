@@ -27,14 +27,13 @@ import {
 import Link from "next/link";
 import { 
   getCMSNavigations, 
-  createCMSNavigation, 
-  updateCMSNavigation, 
   deleteCMSNavigation, 
   toggleCMSNavigationActive, 
   toggleCMSNavigationNav 
 } from "@/services/admin.service";
 import DataTable from "@/components/tables/DataTable";
 import Badge from "@/components/ui/Badge";
+import CMSNavigationModal from "@/components/modals/CMSNavigationModal";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 
@@ -42,6 +41,8 @@ export default function CMSNavbarPage() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any>(null);
 
   useEffect(() => {
     fetchNavigations();
@@ -52,7 +53,22 @@ export default function CMSNavbarPage() {
       setLoading(true);
       const payload = await getCMSNavigations();
       const data = Array.isArray(payload) ? payload : (payload as any)?.data ?? payload;
-      setItems(Array.isArray(data) ? data : []);
+      const arr = Array.isArray(data) ? data : [];
+      
+      // Filter strictly to root nodes to avoid duplicates from raw flat APIs
+      const roots = arr.filter(item => !item.parent_id);
+      
+      const flatten = (nodes: any[], level = 0): any[] => {
+        return nodes.reduce((acc, node) => {
+          acc.push({ ...node, level });
+          if (node.children && Array.isArray(node.children) && node.children.length > 0) {
+            acc.push(...flatten(node.children, level + 1));
+          }
+          return acc;
+        }, []);
+      };
+
+      setItems(flatten(roots));
     } catch (error) {
       console.error("Failed to fetch navigations:", error);
       toast.error("Failed to load navigation items");
@@ -100,7 +116,7 @@ export default function CMSNavbarPage() {
   const columns = [
     { 
       key: "order", 
-      title: "PRIORITY", 
+      title: "Order", 
       render: (v: unknown) => (
         <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 shadow-inner">
             {(typeof v === "number" ? v : 0).toString().padStart(2, "0")}
@@ -109,12 +125,19 @@ export default function CMSNavbarPage() {
     },
     { 
       key: "title", 
-      title: "MENU IDENTITY", 
-      render: (v: unknown) => <span className="font-black text-slate-900 text-[13px] uppercase tracking-tight">{typeof v === "string" && v ? v : "Untitled Node"}</span> 
+      title: "Link Name", 
+      render: (v: unknown, item: any) => (
+        <div style={{ paddingLeft: `${(item.level || 0) * 1.5}rem` }} className="flex items-center gap-2">
+           {item.level > 0 && <span className="text-slate-300 font-normal">↳</span>}
+           <span className={clsx("font-semibold tracking-tight", (item.level || 0) === 0 ? "text-slate-900 text-[13px]" : "text-slate-600 text-[12px]")}>
+              {typeof v === "string" && v ? v : "Untitled Node"}
+           </span> 
+        </div>
+      )
     },
     { 
       key: "url", 
-      title: "SYSTEM POINTER", 
+      title: "URL Path", 
       render: (v: unknown) => (
         <div className="flex items-center gap-2">
             <code className="bg-indigo-50 px-2.5 py-1 rounded-xl text-[10px] font-bold text-indigo-600 border border-indigo-100 shadow-sm">
@@ -125,7 +148,7 @@ export default function CMSNavbarPage() {
     },
     { 
       key: "in_nav", 
-      title: "TOPOGRAPHY", 
+      title: "Menu Type", 
       render: (v: unknown, item: any) => (
         <button 
           onClick={() => handleToggleNav(item.id)}
@@ -141,7 +164,7 @@ export default function CMSNavbarPage() {
     },
     { 
       key: "is_active", 
-      title: "RUNTIME STATUS", 
+      title: "Status", 
       render: (v: unknown, item: any) => (
         <button 
           onClick={() => handleToggleActive(item.id)}
@@ -157,21 +180,25 @@ export default function CMSNavbarPage() {
     },
     { 
         key: "actions", 
-        title: "REVIEW", 
+        title: "Actions", 
         render: (_: any, item: any) => (
             <div className="flex items-center justify-end gap-1.5">
                 <button 
-                    title="Optimize Link"
-                    className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
+                    title="Edit Link"
+                    onClick={() => {
+                       setEditingItem(item);
+                       setIsModalOpen(true);
+                    }}
+                    className="p-1.5 text-indigo-500 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all"
                 >
-                    <Pencil size={16} />
+                    <Pencil size={14} />
                 </button>
                 <button 
                     onClick={() => handleDelete(item.id)}
-                    title="Decommission Node"
-                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                    title="Delete Link"
+                    className="p-1.5 text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all"
                 >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} />
                 </button>
             </div>
         ) 
@@ -183,23 +210,29 @@ export default function CMSNavbarPage() {
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="flex items-start gap-4">
-          <Link href="/cms" className="mt-1 w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shadow-sm hover:shadow-xl hover:-translate-x-1 active:scale-90">
+          <Link href="/dashboard" className="mt-1 w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shadow-sm hover:shadow-xl hover:-translate-x-1 active:scale-90">
             <ArrowLeft size={18} />
           </Link>
           <div>
             <div className="flex items-center gap-2 mb-2">
-               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100/50">Core Structure</span>
+               <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100/50">Navigation Setup</span>
             </div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase leading-none">Main Navigation</h1>
-            <p className="text-[12px] text-slate-400 font-bold uppercase tracking-widest mt-2.5 flex items-center gap-2">
-               <Compass size={12} className="text-indigo-600" /> Manage header topography & site hierarchy
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-none">Main Navigation Menu</h1>
+            <p className="text-[13px] text-slate-500 font-medium mt-2 flex items-center gap-2">
+               <Compass size={14} className="text-indigo-500" /> Manage your website's header links and dropdown menus.
             </p>
           </div>
         </div>
         
-        <button className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95 group">
+        <button 
+          onClick={() => {
+            setEditingItem(null);
+            setIsModalOpen(true);
+          }}
+          className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95 group"
+        >
           <Plus size={18} className="group-hover:rotate-90 transition-transform" />
-          Inject Menu Node
+          Add Navigation Link
         </button>
       </div>
 
@@ -209,7 +242,7 @@ export default function CMSNavbarPage() {
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
           <input 
             type="text" 
-            placeholder="Search hierarchy sectors or identities..." 
+            placeholder="Search links or paths..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
             className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-[13px] text-slate-700 outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-medium placeholder:text-slate-300 shadow-inner" 
@@ -229,23 +262,16 @@ export default function CMSNavbarPage() {
 
       {/* Data Landscape */}
       <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-2xl hover:shadow-slate-100/50">
-        <DataTable columns={columns} data={filtered} loading={loading} emptyMessage="No navigation nodes detected in the current structural registry." />
+        <DataTable compact columns={columns} data={filtered} loading={loading} emptyMessage="No navigation nodes detected in the current structural registry." />
       </div>
 
-      {/* Structural Insight */}
-      <div className="p-6 bg-slate-900 border border-slate-800 rounded-[2.5rem] flex items-start gap-5 transition-all hover:shadow-2xl hover:shadow-slate-200/50 group max-w-2xl">
-          <div className="w-14 h-14 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-              <Zap size={28} className="fill-current" />
-          </div>
-          <div>
-              <h5 className="text-[13px] font-black text-white uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                  Structural Optimization <Clock size={12} className="text-slate-500" />
-              </h5>
-              <p className="text-[12px] text-slate-400 font-medium leading-relaxed">
-                  Keep main navigation to 5-7 items for optimal UX density. Nodes marked as "Internal" won't appear in the header topography but remain accessible via direct pointers.
-              </p>
-          </div>
-      </div>
+      <CMSNavigationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchNavigations}
+        item={editingItem}
+        parentOptions={items}
+      />
     </div>
   );
 }

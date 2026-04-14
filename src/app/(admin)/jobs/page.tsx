@@ -4,8 +4,9 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import DataTable from "@/components/tables/DataTable";
 import Badge from "@/components/ui/Badge";
-import { Briefcase, Filter, Download as DownloadIcon, Search, Eye, 
-    ChevronLeft, ChevronRight, Star
+import { 
+    Briefcase, Filter, Download as DownloadIcon, Search, Eye, 
+    ChevronLeft, ChevronRight, Star, MapPin, ArrowUpRight, RotateCcw
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { getJobs } from "@/services/admin.service";
@@ -53,14 +54,14 @@ export default function JobsPage() {
   const columns = [
     {
       key: "title",
-      title: "Position",
+      title: "Title",
       render: (_: unknown, row: Job) => (
-        <div className="max-w-[240px]">
-          <p className="font-medium text-slate-950 truncate">{row.title}</p>
+        <div className="max-w-[220px]">
+          <p className="font-medium text-surface-900 text-[13px] tracking-tight">{row.title}</p>
           <div className="flex items-center gap-2 mt-0.5">
-             <span className="text-[10px] text-slate-900 font-medium">ID: {row.id}</span>
-             <span className="text-[10px] font-medium text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded leading-none">
-                {row.category?.name || "Other"}
+             <span className="text-[10px] text-surface-400 font-medium">#{row.id}</span>
+             <span className="text-[9px] font-semibold text-primary/[0.7] bg-primary/[0.03] px-1.5 py-0.5 rounded-md tracking-tight border border-primary/5">
+                {row.category?.name || "Misc"}
              </span>
           </div>
         </div>
@@ -68,12 +69,12 @@ export default function JobsPage() {
     },
     {
         key: "employer",
-        title: "Employer",
+        title: "Institution",
         render: (_: unknown, row: Job) => (
-            <div className="max-w-[180px]">
-                <p className="text-[12px] font-medium text-slate-900 truncate">{row.employer?.company_name || 'N/A'}</p>
-                <div className="flex items-center gap-1 text-[10px] text-slate-950 font-medium">
-                    <Briefcase size={10} className="text-indigo-600"/>
+            <div className="max-w-[160px]">
+                <p className="text-[12px] font-medium text-surface-900 truncate tracking-tight">{row.employer?.company_name || '—'}</p>
+                <div className="flex items-center gap-1 mt-0.5 text-[10px] text-surface-400 font-medium lowercase">
+                    <MapPin size={10} />
                     <span className="truncate">{row.location}</span>
                 </div>
             </div>
@@ -81,69 +82,54 @@ export default function JobsPage() {
     },
     {
       key: "featured",
-      title: "Priority",
+      title: "Promotion",
       render: (_: unknown, row: Job) => (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center">
             {row.admin_featured ? (
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-50 border border-amber-200 text-amber-600 rounded-lg shadow-sm">
-                    <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-sm animate-pulse" />
-                    <span className="text-[10px] font-bold uppercase tracking-tight">Featured</span>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-warning/5 border border-warning/10 text-warning rounded-md">
+                    <div className="w-1 h-1 rounded-full bg-warning" />
+                    <span className="text-[10px] font-semibold ">Featured</span>
                 </div>
             ) : (
-                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-tight">Standard</span>
+                <span className="text-[10px] font-medium text-surface-400 px-2">Regular</span>
             )}
         </div>
       )
     },
     {
       key: "job_type",
-      title: "Employment details",
+      title: "Details",
       render: (_: unknown, row: Job) => (
-        <div className="space-y-1">
-            <Badge variant="info" className="text-[9px] py-0 px-1.5 capitalize font-medium">{row.job_type.replace('_', ' ')}</Badge>
-            <p className="text-[10px] text-slate-950 font-medium whitespace-nowrap">₹{Number(row.salary_min).toLocaleString()} - ₹{Number(row.salary_max).toLocaleString()}</p>
+        <div className="space-y-0.5">
+            <Badge variant="default" className="text-[10px] py-0 px-2 bg-surface-100 text-surface-500 border-none capitalize font-medium">{row.job_type.replace('_', ' ')}</Badge>
+            <p className="text-[10px] text-surface-400 font-medium whitespace-nowrap opacity-70 tracking-tight">₹{Number(row.salary_min).toLocaleString()}+</p>
         </div>
       ),
     },
     {
       key: "status",
-      title: "Approval status",
+      title: "Status",
       render: (_: unknown, row: Job) => (
-        <span className={clsx(
-            "text-[10px] font-medium px-2 py-0.5 rounded border leading-none capitalize",
-            row.status === "approved" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : 
-            row.status === "pending" ? "bg-amber-50 text-amber-700 border-amber-200" : 
-            "bg-rose-50 text-rose-700 border-rose-200"
-        )}>
+        <Badge 
+            variant={row.status === "approved" ? "success" : row.status === "pending" ? "warning" : "danger"} 
+            dot 
+            className="text-[10px] px-2 h-5 tracking-tight"
+        >
           {row.status}
-        </span>
-      ),
-    },
-    {
-      key: "job_status",
-      title: "Hiring status",
-      render: (_: unknown, row: Job) => (
-        <div className="flex flex-col">
-            <span className={clsx(
-                "text-[10px] font-medium leading-none capitalize",
-                row.job_status === 'open' ? "text-emerald-600" : "text-slate-900"
-            )}>
-                {row.job_status}
-            </span>
-            <span className="text-[9px] text-slate-900 font-medium mt-1 whitespace-nowrap" suppressHydrationWarning>Exp: {new Date(row.expires_at).toLocaleDateString()}</span>
-        </div>
+        </Badge>
       ),
     },
     {
       key: "actions",
-      title: "Manage",
+      title: "",
       render: (_: unknown, row: Job) => (
         <div className="flex items-center justify-end">
           <Link
             href={`/jobs/${row.id}`}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[11px] font-medium rounded-lg hover:bg-indigo-600 hover:text-white transition-all border border-indigo-200 shadow-sm active:scale-95 whitespace-nowrap"
+            className="flex items-center gap-1.5 h-7 px-2.5 bg-white text-surface-900 border border-surface-200 rounded-md text-[10px] font-bold hover:bg-surface-50 transition-all shadow-sm active:scale-95 group"
           >
-            <Eye size={14} /> Review listing
+            View
+            <ArrowUpRight size={12} className="text-surface-300 group-hover:text-primary transition-colors" />
           </Link>
         </div>
       ),
@@ -151,70 +137,84 @@ export default function JobsPage() {
   ];
 
   return (
-    <div className="space-y-4 pb-12 antialiased">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-700 border border-indigo-200 shadow-sm">
-            <Briefcase size={20} strokeWidth={1.5} />
+    <div className="space-y-4 pb-12 antialiased animate-fade-in-up">
+      <div className="relative bg-emerald-600 rounded-xl p-6 overflow-hidden shadow-lg shadow-emerald-500/20">
+        <div className="absolute inset-0 opacity-10" style={{backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "30px 30px"}} />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0 shadow-lg">
+              <Briefcase size={22} strokeWidth={2.5} className="text-white" />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold text-emerald-200 tracking-widest uppercase">Job Management</span>
+              <h1 className="text-[20px] font-bold text-white tracking-tight leading-none mt-0.5">Jobs</h1>
+              <p className="text-[12px] text-emerald-200 font-medium mt-0.5">Manage all active job openings and postings</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-medium text-slate-900 tracking-tight">Job postings</h1>
-            <p className="text-[10px] text-slate-900 font-medium">Manage and moderate active listings</p>
+          <div className="flex items-center gap-2 shrink-0">
+            <button suppressHydrationWarning onClick={() => fetchJobs()}
+              className="p-2.5 bg-white/20 border border-white/30 rounded-lg text-white hover:bg-white/30 transition-all active:scale-95">
+              <RotateCcw size={16} className={clsx(loading && "animate-spin")} />
+            </button>
+            <button suppressHydrationWarning
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white text-emerald-700 text-[11px] font-bold hover:bg-emerald-50 transition-all active:scale-95 shadow-md">
+              <DownloadIcon size={15} /> Export list
+            </button>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-900 text-[11px] font-medium hover:bg-slate-50 transition-all shadow-sm">
-            <DownloadIcon size={14} /> Download data
-          </button>
         </div>
       </div>
 
-      <div className="relative max-w-sm">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-900" />
-        <input 
-            type="text" 
-            placeholder="Search positions or employers..." 
-            value={search} 
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-[13px] font-medium text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 transition-all"
-        />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 group">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-300 group-focus-within:text-primary transition-colors" />
+          <input 
+              type="text" 
+              placeholder="Search by role, company name or serial ID..." 
+              value={search} 
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-surface-200 rounded-xl text-[13px] font-medium text-surface-700 placeholder:text-surface-300 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/50 transition-all"
+          />
+        </div>
+        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-surface-200 text-surface-500 text-[11px] font-bold hover:bg-surface-50 hover:text-primary transition-all shadow-sm active:scale-95 group shrink-0">
+            <Filter size={14} className="group-hover:rotate-180 transition-transform duration-500" />
+            Registry Filters
+        </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="overflow-hidden">
         <DataTable 
+            compact
             columns={columns} 
             data={filtered} 
             loading={loading}
             onRowClick={(row) => router.push(`/jobs/${row.id}`)}
-            emptyMessage="No active listings found."
+            emptyMessage="No matching job identifiers found."
         />
 
         {/* Improved Pagination Console */}
         {pagination && pagination.lastPage > 1 && (
-            <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between bg-slate-50/20">
-            <p className="text-[11px] font-medium text-slate-900">
-                Displaying <span className="text-indigo-700 font-medium">{jobs.length}</span> of <span className="text-slate-900 font-medium">{pagination.total}</span> active postings
+            <div className="px-6 py-4 border-t border-surface-50 flex items-center justify-between">
+            <p className="text-[11px] font-bold text-surface-400 uppercase tracking-widest">
+                Active Nodes: <span className="text-primary">{pagination.total}</span>
             </p>
             
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
                 <button
                 disabled={pagination.currentPage === 1 || loading}
                 onClick={() => fetchJobs(pagination.currentPage - 1)}
-                className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-900 disabled:opacity-30 hover:border-indigo-500 hover:text-indigo-600 transition-all shadow-sm"
+                className="h-9 w-9 flex items-center justify-center rounded-xl border border-surface-200 bg-white text-surface-400 disabled:opacity-30 hover:border-primary/50 hover:text-primary transition-all shadow-sm active:scale-90"
                 >
                 <ChevronLeft size={16} />
                 </button>
                 
-                <div className="flex items-center gap-1 px-2.5 py-1 bg-white rounded-lg border border-slate-200 shadow-sm">
-                <span className="text-[11px] font-medium text-slate-900">{pagination.currentPage}</span>
-                <span className="text-[10px] text-slate-400">/</span>
-                <span className="text-[11px] font-medium text-slate-900">{pagination.lastPage}</span>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-50 rounded-xl border border-surface-100 font-bold text-[12px] text-surface-600 shadow-inner">
+                   {pagination.currentPage} <span className="text-surface-200">/</span> {pagination.lastPage}
                 </div>
 
                 <button
                 disabled={pagination.currentPage === pagination.lastPage || loading}
                 onClick={() => fetchJobs(pagination.currentPage + 1)}
-                className="h-8 w-8 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-900 disabled:opacity-30 hover:border-indigo-500 hover:text-indigo-600 transition-all shadow-sm"
+                className="h-9 w-9 flex items-center justify-center rounded-xl border border-surface-200 bg-white text-surface-400 disabled:opacity-30 hover:border-primary/50 hover:text-primary transition-all shadow-sm active:scale-90"
                 >
                 <ChevronRight size={16} />
                 </button>

@@ -306,22 +306,22 @@ export default function TestimonialsPage() {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" onClick={() => setShowModal(false)} />
            
-           <div className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300 border border-slate-100">
-              <div className="bg-slate-50/50 px-8 py-6 border-b border-slate-100 flex items-center justify-between">
+           <div className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300 border border-slate-100">
+              <div className="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
                  <div>
-                    <h2 className="text-xl font-bold text-slate-900 tracking-tight">{editingItem ? "Edit Testimonial" : "New Testimonial"}</h2>
-                    <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-1">Provide author details and message</p>
+                    <h2 className="text-lg font-bold text-slate-900 tracking-tight">{editingItem ? "Edit story" : "New story"}</h2>
+                    <p className="text-[10px] text-indigo-400 font-bold mt-0.5">Provide author details and message</p>
                  </div>
-                 <XCircle className="text-slate-300 hover:text-rose-500 cursor-pointer transition-colors" onClick={() => setShowModal(false)} />
+                 <XCircle className="text-slate-300 hover:text-rose-500 cursor-pointer transition-colors" size={20} onClick={() => setShowModal(false)} />
               </div>
 
-              <form onSubmit={handleSubmit} className="p-8 space-y-5">
+              <form onSubmit={handleSubmit} className="p-6 space-y-4">
                  {/* Photo Upload */}
-                 <div className="flex items-center gap-6">
-                    <div className="relative w-20 h-20 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden shrink-0 group">
+                 <div className="flex items-center gap-4">
+                    <div className="relative w-16 h-16 rounded-2xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden shrink-0 group">
                         {preview ? (
                             <img src={preview} className="w-full h-full object-cover" alt="Preview" />
-                        ) : <Camera size={24} className="text-slate-300 group-hover:text-indigo-400 transition-colors" />}
+                        ) : <Camera size={20} className="text-slate-300 group-hover:text-indigo-400 transition-colors" />}
                         <input 
                             type="file" 
                             accept="image/*"
@@ -336,85 +336,85 @@ export default function TestimonialsPage() {
                         />
                     </div>
                     <div className="flex-1">
-                        <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Author Photo</label>
-                        <p className="text-[10px] text-slate-400 leading-relaxed font-medium">Recommended size 200x200px. JPG, PNG formats supported.</p>
+                        <label className="block text-[10px] font-bold text-indigo-400 mb-1">Author photo</label>
+                        <p className="text-[9px] text-slate-400 leading-tight font-medium">Recommended size 200x200px. JPG, PNG formats supported.</p>
                     </div>
                  </div>
 
-                 <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
-                        <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                 <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-indigo-400 ml-0.5">Full name</label>
                         <input 
                             required
                             type="text"
                             value={formData.name}
                             onChange={e => setFormData({...formData, name: e.target.value})}
-                            className="w-full px-4 py-2.5 bg-slate-50 border-2 border-transparent rounded-2xl text-[13px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all"
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all shadow-sm"
                             placeholder="e.g. John Doe"
                         />
                     </div>
-                    <div className="space-y-1.5">
-                        <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Designation</label>
+                    <div className="space-y-1">
+                        <label className="block text-[10px] font-bold text-indigo-400 ml-0.5">Designation</label>
                         <input 
                             required
                             type="text"
                             value={formData.designation}
                             onChange={e => setFormData({...formData, designation: e.target.value})}
-                            className="w-full px-4 py-2.5 bg-slate-50 border-2 border-transparent rounded-2xl text-[13px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all"
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all shadow-sm"
                             placeholder="e.g. Principal"
                         />
                     </div>
                  </div>
 
-                 <div className="space-y-1.5">
-                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Company (Optional)</label>
+                 <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-indigo-400 ml-0.5">Company (Optional)</label>
                     <input 
                         type="text"
                         value={formData.company}
                         onChange={e => setFormData({...formData, company: e.target.value})}
-                        className="w-full px-4 py-2.5 bg-slate-50 border-2 border-transparent rounded-2xl text-[13px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all shadow-sm"
                         placeholder="e.g. Narayana Junior College"
                     />
                  </div>
 
-                 <div className="space-y-1.5">
-                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Success Message</label>
+                 <div className="space-y-1">
+                    <label className="block text-[10px] font-bold text-indigo-400 ml-0.5">Success message</label>
                     <textarea 
                         required
-                        rows={3}
+                        rows={2}
                         value={formData.message}
                         onChange={e => setFormData({...formData, message: e.target.value})}
-                        className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent rounded-3xl text-[13px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all resize-none"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all resize-none shadow-sm"
                         placeholder="Share the success story..."
                     />
                  </div>
 
-                 <div className="flex items-center justify-between bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+                 <div className="flex items-center justify-between bg-slate-50/50 p-3 rounded-2xl border border-slate-100">
                     <div>
-                        <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Star Rating</label>
-                        <div className="flex items-center gap-1.5">
+                        <label className="block text-[9px] font-bold text-indigo-400 mb-1">Star rating</label>
+                        <div className="flex items-center gap-1">
                             {[1, 2, 3, 4, 5].map(i => (
                                 <Star 
                                     key={i} 
-                                    size={18} 
+                                    size={16} 
                                     className={clsx("cursor-pointer transition-all active:scale-90", i <= formData.rating ? "text-amber-400 fill-amber-400" : "text-slate-200 fill-transparent")} 
                                     onClick={() => setFormData({...formData, rating: i})}
                                 />
                             ))}
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active</span>
+                    <div className="flex items-center gap-2">
+                         <span className="text-[10px] font-bold text-indigo-400">Active</span>
                          <button 
                             type="button"
                             onClick={() => setFormData({...formData, is_active: formData.is_active === 1 ? 0 : 1})}
                             className={clsx(
-                                "w-10 h-5 rounded-full relative transition-all duration-300",
+                                "w-9 h-4.5 rounded-full relative transition-all duration-300",
                                 formData.is_active === 1 ? "bg-indigo-600" : "bg-slate-200"
                             )}>
                             <div className={clsx(
-                                "absolute w-3.5 h-3.5 bg-white rounded-full top-[3px] transition-all duration-300",
-                                formData.is_active === 1 ? "left-[22px]" : "left-[4px]"
+                                "absolute w-3 h-3 bg-white rounded-full top-[3px] transition-all duration-300",
+                                formData.is_active === 1 ? "left-[20px]" : "left-[4px]"
                             )} />
                          </button>
                     </div>
@@ -424,17 +424,17 @@ export default function TestimonialsPage() {
                     <button 
                         type="button"
                         onClick={() => setShowModal(false)}
-                        className="flex-1 py-3 bg-slate-100 text-slate-500 text-[11px] font-black rounded-2xl hover:bg-slate-200 hover:text-slate-900 transition-all uppercase tracking-widest"
+                        className="flex-1 py-3 bg-slate-100 text-slate-500 text-[11px] font-bold rounded-2xl hover:bg-slate-200 hover:text-slate-900 transition-all font-bold"
                     >
                         Discard
                     </button>
                     <button 
                         type="submit"
                         disabled={submitting}
-                        className="flex-[2] py-3 bg-indigo-600 text-white text-[11px] font-black rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 uppercase tracking-widest flex items-center justify-center gap-2"
+                        className="flex-[2] py-3 bg-indigo-600 text-white text-[11px] font-bold rounded-2xl hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-100 flex items-center justify-center gap-2"
                     >
                         {submitting ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
-                        {editingItem ? "Update Story" : "Publish Story"}
+                        {editingItem ? "Update story" : "Publish story"}
                     </button>
                  </div>
               </form>

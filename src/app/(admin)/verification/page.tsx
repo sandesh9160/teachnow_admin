@@ -38,7 +38,8 @@ export default function VerificationPage() {
     try {
       setLoading(true);
       const res = await getVerificationRequests();
-      const list = (res as any).data || (res as any) || [];
+      // The API returns nested pagination: { data: { data: [...] } }
+      const list = (res as any).data?.data || (res as any).data || (res as any) || [];
       setRequests(Array.isArray(list) ? list : []);
     } catch (err) {
       toast.error("Failed to fetch verification queue");
@@ -93,7 +94,7 @@ export default function VerificationPage() {
         )
     },
     { 
-        key: "document_url", 
+        key: "document_file", 
         title: "FILE", 
         render: (v: any) => (
             <a 

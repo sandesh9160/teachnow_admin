@@ -4,22 +4,18 @@ import React, { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Briefcase,
-  Building2,
-  Calendar,
-  ChevronLeft,
-  Loader2,
-  Mail,
-  Pencil,
-  Phone,
-  ShieldCheck,
+  Briefcase, Building2, Calendar, ChevronLeft, Loader2, Mail,
+  Pencil, Phone, ShieldCheck, UserCheck, Activity, MapPin, Hash, Trash2, Power
 } from "lucide-react";
-import { getRecruiter } from "@/services/admin.service";
+import { getRecruiter, deleteRecruiter, disableRecruiter } from "@/services/admin.service";
 import { Recruiter } from "@/types";
 import { toast } from "sonner";
 import DataTable from "@/components/tables/DataTable";
 import Badge from "@/components/ui/Badge";
 import RecruiterEditModal from "@/components/modals/RecruiterEditModal";
+import { clsx } from "clsx";
+
+const API_URL = "https://teachnowbackend.jobsvedika.in";
 
 export default function RecruiterDetailPage({
   params,
@@ -30,7 +26,8 @@ export default function RecruiterDetailPage({
   const router = useRouter();
   const [recruiter, setRecruiter] = useState<Recruiter | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"Profile" | "Jobs Posted">("Profile");
+  const [processing, setProcessing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"Overview" | "Jobs">("Overview");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
@@ -43,222 +40,179 @@ export default function RecruiterDetailPage({
       const res = await getRecruiter(Number(resolvedParams.id));
       setRecruiter(res);
     } catch {
-      toast.error("Failed to load recruiter repository");
+      toast.error("Failed to load recruiter details");
     } finally {
       setLoading(false);
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-        <Loader2 size={32} className="text-indigo-600 animate-spin" />
-        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-          Loading recruiter details...
-        </p>
-      </div>
-    );
-  }
+  const handleDelete = async () => {
+    if (!recruiter) return;
+    if (!confirm("Permanently delete this recruiter? This cannot be undone.")) return;
+    try {
+      setProcessing(true);
+      await deleteRecruiter(recruiter.id);
+      toast.success("Recruiter deleted successfully");
+      router.push("/recruiters");
+    } catch {
+      toast.error("Failed to delete recruiter");
+    } finally {
+      setProcessing(false);
+    }
+  };
 
-  if (!recruiter) {
-    return (
-      <div className="p-20 text-center">
-        <div className="w-20 h-20 bg-slate-50 rounded-xl flex items-center justify-center mx-auto mb-6 text-slate-200">
-          <ShieldCheck size={40} />
-        </div>
-        <h4 className="text-[14px] font-bold text-slate-900 uppercase tracking-widest">
-          Recruiter Not Found
-        </h4>
-        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tight mt-2">
-          The recruiter you requested does not exist.
-        </p>
-        <Link
-          href="/recruiters"
-          className="inline-block mt-8 text-[11px] font-bold text-indigo-600 uppercase tracking-widest border-b-2 border-indigo-100 hover:border-indigo-600 transition-all"
-        >
-          Return to directory
-        </Link>
-      </div>
-    );
-  }
+  const handleToggleStatus = async () => {
+    if (!recruiter) return;
+    try {
+      setProcessing(true);
+      await disableRecruiter(recruiter.id);
+      toast.success("Recruiter status updated");
+      fetchDetails();
+    } catch {
+      toast.error("Failed to update status");
+    } finally {
+      setProcessing(false);
+    }
+  };
 
+  if (loading) return (
+    <div className="h-[50vh] flex flex-col items-center justify-center gap-3">
+      <Loader2 className="w-5 h-5 animate-spin text-primary" />
+      <p className="text-[11px] font-bold text-surface-400 tracking-widest uppercase">Loading...</p>
+    </div>
+  );
+
+  if (!recruiter) return <div className="p-20 text-center text-surface-400 font-bold uppercase tracking-widest">Recruiter not found</div>;
+
+  const fmt = (d?: string | null) => d ? new Date(d).toLocaleDateString() : "—";
+  const initials = recruiter.name?.split(" ").filter(Boolean).map(part => part[0]).join("").slice(0, 2).toUpperCase() || "RC";
   const jobs = recruiter.jobs ?? [];
-  const initials =
-    recruiter.name
-      ?.split(" ")
-      .filter(Boolean)
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "RC";
-
-  const jobColumns = [
-    {
-      key: "title",
-      title: "Job",
-      render: (value: unknown) => (
-        <span className="font-bold text-slate-900">{String(value ?? "-")}</span>
-      ),
-    },
-    {
-      key: "location",
-      title: "Location",
-      render: (value: unknown) => (
-        <span className="text-slate-600">{String(value ?? "-")}</span>
-      ),
-    },
-    {
-      key: "status",
-      title: "Status",
-      render: (value: unknown) => {
-        const status = String(value ?? "pending");
-        const variant =
-          status === "approved"
-            ? "success"
-            : status === "rejected"
-              ? "danger"
-              : "warning";
-
-        return (
-          <Badge variant={variant} dot className="text-[10px] font-bold uppercase tracking-wider">
-            {status}
-          </Badge>
-        );
-      },
-    },
-    {
-      key: "created_at",
-      title: "Posted",
-      render: (value: unknown) => (
-        <span className="text-[11px] text-slate-500 font-semibold">
-          {formatDate(value)}
-        </span>
-      ),
-    },
-  ];
 
   return (
-    <div className="space-y-6 pb-10">
+    <div className="space-y-4 pb-12 antialiased animate-fade-in-up">
+      {/* ─── Top Action Bar ─────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4">
-        <Link
-          href="/recruiters"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-[11px] font-bold text-slate-600 uppercase tracking-widest shadow-sm hover:border-indigo-200 hover:text-indigo-600 hover:shadow-md transition-all"
-        >
-          <ChevronLeft size={14} />
-          Back to Registry
+        <Link href="/recruiters" className="flex items-center gap-1.5 h-8 px-3 bg-white border border-surface-200 rounded-lg text-[11px] font-bold text-surface-600 hover:text-primary hover:bg-surface-50 transition-all shadow-sm active:scale-95">
+          <ChevronLeft size={14} /> Back
         </Link>
-
-        <button
-          type="button"
-          onClick={() => setIsEditModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-slate-200 hover:bg-slate-800 transition-all"
-        >
-          <Pencil size={14} />
-          Edit Recruiter
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setIsEditModalOpen(true)} disabled={processing}
+            className="flex items-center gap-1.5 h-8 px-3 bg-white border border-surface-200 text-surface-600 text-[11px] font-bold rounded-lg hover:text-primary hover:bg-surface-50 transition-all shadow-sm active:scale-95">
+            <Pencil size={13} /> Edit
+          </button>
+          <button onClick={handleToggleStatus} disabled={processing}
+            className={clsx("flex items-center gap-1.5 h-8 px-3 text-[11px] font-bold rounded-lg border transition-all shadow-sm active:scale-95",
+              !recruiter.is_active ? "bg-emerald-50 border-emerald-200 text-emerald-600" : "bg-amber-50 border-amber-200 text-amber-600"
+            )}>
+            <Power size={13} />
+            {!recruiter.is_active ? "Enable Account" : "Disable Account"}
+          </button>
+          <button onClick={handleDelete} disabled={processing}
+            className="flex items-center justify-center w-8 h-8 bg-white border border-surface-200 text-surface-300 hover:text-danger hover:border-danger/30 rounded-lg transition-all shadow-sm active:scale-95">
+            <Trash2 size={14} />
+          </button>
+        </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-between bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div className="flex items-center gap-6">
-          <div className="w-16 h-16 rounded-2xl bg-blue-100 flex items-center justify-center text-2xl font-bold text-blue-700">
-            {initials}
+      {/* ─── Profile Card ────────────────────────────────────────────── */}
+      <div className="bg-white border border-surface-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="relative p-6 flex items-center gap-4 border-b border-purple-700 bg-purple-600 overflow-hidden">
+          {/* Subtle pattern overlay */}
+          <div className="absolute inset-0 opacity-10" style={{backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "30px 30px"}} />
+          
+          <div className="relative z-10 w-14 h-14 rounded-lg bg-white/20 border-2 border-white/30 shadow-lg flex items-center justify-center shrink-0 overflow-hidden">
+             <div className="flex items-center justify-center text-xl font-bold text-white tracking-widest">{initials}</div>
           </div>
-          <div>
-            <div className="text-xl font-bold text-slate-900">{recruiter.name}</div>
-            <div className="flex flex-wrap items-center gap-2 text-slate-500 mt-1">
-              <span className="flex items-center gap-1 text-[13px] font-medium">
-                <Building2 size={15} /> {recruiter.employer?.company_name || "Independent recruiter"}
-              </span>
-              <Badge
-                variant={recruiter.is_active ? "success" : "default"}
-                className="text-[10px] font-bold uppercase tracking-wider"
-              >
+          
+          <div className="relative z-10 flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-[17px] font-bold text-white tracking-tight">{recruiter.name}</h1>
+              <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border",
+                recruiter.is_active ? "bg-emerald-500/80 text-white border-emerald-400" : "bg-white/20 text-white border-white/30"
+              )}>
                 {recruiter.is_active ? "Active" : "Inactive"}
-              </Badge>
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
+              <span className="text-[11px] text-purple-200 font-medium flex items-center gap-1"><Building2 size={11} /> {recruiter.employer?.company_name || "Independent Recruiter"}</span>
+              <span className="text-[11px] text-purple-200 font-medium flex items-center gap-1"><Mail size={11} /> {recruiter.email}</span>
+              <span className="text-[11px] text-purple-200 font-medium flex items-center gap-1"><Calendar size={11} /> Joined {fmt(recruiter.created_at)}</span>
+              <span className="text-[11px] text-purple-200 font-medium flex items-center gap-1"><Hash size={11} /> #{recruiter.id}</span>
             </div>
           </div>
-        </div>
-        <div className="mt-4 md:mt-0 text-right">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            Recruiter ID
-          </p>
-          <p className="text-sm font-bold text-slate-900">#{recruiter.id}</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <SummaryCard label="Jobs Posted" value={jobs.length} />
-        <SummaryCard label="Institute" value={recruiter.employer?.company_name || "-"} />
-        <SummaryCard
-          label="Status"
-          value={
-            <span className={recruiter.is_active ? "text-emerald-600" : "text-slate-500"}>
-              {recruiter.is_active ? "Active" : "Inactive"}
-            </span>
-          }
-        />
-        <SummaryCard label="Joined" value={formatDate(recruiter.created_at)} />
-      </div>
-
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="flex border-b border-slate-200">
-          {(["Profile", "Jobs Posted"] as const).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              className={`px-4 py-3 text-[12px] font-bold uppercase tracking-wider transition-all ${
-                activeTab === tab
-                  ? "border-b-2 border-blue-600 text-blue-600"
-                  : "text-slate-500 hover:text-slate-800"
-              }`}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </button>
-          ))}
+          <div className="hidden md:flex items-center gap-3 shrink-0 relative z-10">
+            <Pill label="Total Jobs" value={jobs.length} color="text-white bg-white/20 border-white/20" />
+          </div>
         </div>
 
-        <div className="p-6">
-          {activeTab === "Profile" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-slate-50 rounded-xl p-6 border border-slate-100">
-                <div className="font-semibold mb-4 text-slate-900">Profile</div>
-                <div className="space-y-4">
-                  <InfoBlock label="Recruiter Name" value={recruiter.name} icon={ShieldCheck} />
-                  <InfoBlock
-                    label="Company"
-                    value={recruiter.employer?.company_name || "Independent recruiter"}
-                    icon={Building2}
-                  />
-                  <InfoBlock
-                    label="Total Jobs"
-                    value={jobs.length}
-                    icon={Briefcase}
-                  />
-                </div>
+        {/* ─── Tabs ───────────────────────────────────────────────────── */}
+        <div className="flex items-center gap-0 px-4 bg-surface-50/50 border-b border-surface-100 overflow-x-auto no-scrollbar">
+          {(["Overview", "Jobs"] as const).map((t, i) => {
+            const tabColors = ["border-purple-500 text-purple-600", "border-emerald-500 text-emerald-600"];
+            return (
+              <button key={t} suppressHydrationWarning onClick={() => setActiveTab(t)}
+                className={clsx("px-4 py-3 text-[11px] font-bold border-b-2 transition-all whitespace-nowrap",
+                  activeTab === t ? tabColors[i] : "border-transparent text-surface-400 hover:text-surface-700"
+                )}>
+                {t}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="p-5">
+          {/* ─── Overview Tab ────────────────────────────────────── */}
+          {activeTab === "Overview" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <Section title="Recruiter Details" icon={UserCheck} color="purple">
+                  <div className="space-y-3">
+                    <Field label="Full Name" value={recruiter.name} />
+                    <Field label="Designation" value={(recruiter as any).designation || "Recruiter"} />
+                    <Field label="Employer / Institution" value={recruiter.employer?.company_name || "Self / Independent"} />
+                    <Field label="Joined" value={fmt(recruiter.created_at)} />
+                  </div>
+                </Section>
               </div>
 
-              <div className="bg-slate-50 rounded-xl p-6 border border-slate-100">
-                <div className="font-semibold mb-4 text-slate-900">Contact</div>
-                <div className="space-y-4">
-                  <ContactRow icon={Mail} label="Email" value={recruiter.email} />
-                  <ContactRow icon={Phone} label="Phone" value={(recruiter as any).phone} />
-                  <ContactRow
-                    icon={Calendar}
-                    label="Joined"
-                    value={formatDate(recruiter.created_at)}
-                  />
-                </div>
+              <div className="space-y-4">
+                <Section title="Contact Information" icon={Mail} color="emerald">
+                  <div className="space-y-3">
+                    <Field label="Email" value={recruiter.email} icon={Mail} />
+                    <Field label="Phone" value={(recruiter as any).phone} icon={Phone} />
+                  </div>
+                </Section>
+                <Section title="System Status" icon={Activity} color="indigo">
+                  <div className="space-y-2">
+                    <StatusRow label="Account Active" value={!!recruiter.is_active} />
+                  </div>
+                </Section>
               </div>
             </div>
           )}
 
-          {activeTab === "Jobs Posted" && (
-            <DataTable
-              compact
-              columns={jobColumns}
+          {/* ─── Jobs Tab ────────────────────────────────────────── */}
+          {activeTab === "Jobs" && (
+            <DataTable 
+              columns={[
+                { key: "title", title: "Job Title", render: (v: any, r: any) => (
+                  <div>
+                    <p className="font-semibold text-surface-900 text-[12px]">{v}</p>
+                    <p className="text-[10px] text-surface-400">#{r.id} · {r.job_type?.replace("_", " ")}</p>
+                  </div>
+                )},
+                { key: "location", title: "Location", render: (v: any) => <span className="text-[11px] text-surface-500 flex items-center gap-1"><MapPin size={10} />{v}</span> },
+                { key: "salary_min", title: "Salary Range", render: (_: any, r: any) => (
+                  <span className="text-[11px] text-surface-600 font-medium">
+                    {r.salary_min && r.salary_max ? `₹${Number(r.salary_min).toLocaleString()} – ₹${Number(r.salary_max).toLocaleString()}` : "Not Disclosed"}
+                  </span>
+                )},
+                { key: "status", title: "Moderation", render: (v: any) => <Badge variant={v === "approved" ? "success" : v === "pending" ? "warning" : "danger"} dot>{v}</Badge> },
+                { key: "job_status", title: "Hiring Status", render: (v: any) => <Badge variant={v === "open" ? "info" : "default"} dot>{v}</Badge> },
+                { key: "created_at", title: "Posted", render: (v: any) => <span className="text-[10px] text-surface-400">{fmt(v)}</span> },
+              ]}
               data={jobs.map((job) => ({ ...job }))}
-              emptyMessage="No jobs assigned to this recruiter."
+              emptyMessage="No jobs posted by this recruiter."
               onRowClick={(row) => router.push(`/jobs/${row.id}`)}
             />
           )}
@@ -275,73 +229,56 @@ export default function RecruiterDetailPage({
   );
 }
 
-function formatDate(value?: unknown) {
-  if (!value) return "-";
-
-  const date = new Date(String(value));
-  if (Number.isNaN(date.getTime())) return "-";
-
-  return date.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-function SummaryCard({ label, value }: { label: string; value: React.ReactNode }) {
+function Pill({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col items-start">
-      <div className="text-xs text-slate-500 font-medium mb-1">{label}</div>
-      <div className="text-lg font-bold text-slate-900">{value}</div>
+    <div className={clsx("flex flex-col items-center px-3 py-1.5 rounded-lg border border-current/10 text-center", color)}>
+      <span className="text-[16px] font-bold leading-none">{value}</span>
+      <span className="text-[9px] font-bold opacity-70 mt-0.5">{label}</span>
     </div>
   );
 }
 
-function InfoBlock({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: React.ReactNode;
-  icon: React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
-}) {
+const sectionColors: Record<string, { icon: string; header: string; border: string }> = {
+  indigo:  { icon: "text-indigo-500",  header: "bg-indigo-50/60 border-indigo-100",  border: "border-indigo-200/60" },
+  purple:  { icon: "text-purple-500",  header: "bg-purple-50/60 border-purple-100",  border: "border-purple-200/60" },
+  emerald: { icon: "text-emerald-500", header: "bg-emerald-50/60 border-emerald-100", border: "border-emerald-200/60" },
+  cyan:    { icon: "text-cyan-500",    header: "bg-cyan-50/60 border-cyan-100",       border: "border-cyan-200/60" },
+  rose:    { icon: "text-rose-500",    header: "bg-rose-50/60 border-rose-100",       border: "border-rose-200/60" },
+  default: { icon: "text-surface-400", header: "bg-surface-50 border-surface-100",   border: "border-surface-200" },
+};
+
+function Section({ title, icon: Icon, children, color = "default" }: { title: string; icon: any; children: React.ReactNode; color?: string }) {
+  const c = sectionColors[color] || sectionColors.default;
   return (
-    <div className="flex items-start gap-3 group">
-      <div className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-300 shadow-sm transition-all group-hover:text-indigo-600 shrink-0 group-hover:border-indigo-100">
-        <Icon size={16} strokeWidth={2} />
+    <div className={clsx("border rounded-lg overflow-hidden", c.border)}>
+      <div className={clsx("px-4 py-2.5 border-b flex items-center gap-2", c.header)}>
+        <Icon size={12} className={c.icon} />
+        <h3 className={clsx("text-[11px] font-bold tracking-tight", c.icon)}>{title}</h3>
       </div>
-      <div className="pt-0.5">
-        <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">
-          {label}
-        </p>
-        <p className="text-[13px] font-bold text-slate-900 tracking-tight leading-none">
-          {value}
+      <div className="p-4">{children}</div>
+    </div>
+  );
+}
+
+function Field({ label, value, mono, icon: Icon }: { label: string; value?: string | number | null; mono?: boolean; icon?: any }) {
+  return (
+    <div>
+      <p className="text-[9px] font-bold text-surface-400 uppercase tracking-wider mb-0.5">{label}</p>
+      <div className="flex items-center gap-1.5">
+        {Icon && <Icon size={12} className="text-surface-300 shrink-0" />}
+        <p className={clsx("text-[12px] text-surface-800", mono ? "font-mono" : "font-medium")}>
+          {value || <span className="text-surface-300">—</span>}
         </p>
       </div>
     </div>
   );
 }
 
-function ContactRow({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  label: string;
-  value?: React.ReactNode;
-}) {
+function StatusRow({ label, value }: { label: string; value: boolean }) {
   return (
-    <div className="group space-y-2">
-      <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-indigo-600 transition-colors flex items-center gap-1.5">
-        <Icon size={10} /> {label}
-      </p>
-      <div className="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl group-hover:shadow-md group-hover:border-indigo-100 transition-all">
-        <span className="text-[12px] font-bold text-slate-900 truncate leading-none">
-          {value || "Not provided"}
-        </span>
-      </div>
+    <div className="flex items-center justify-between py-1">
+      <span className="text-[11px] text-surface-600 font-medium">{label}</span>
+      <Badge variant={value ? "success" : "default"} dot>{value ? "Yes" : "No"}</Badge>
     </div>
   );
 }

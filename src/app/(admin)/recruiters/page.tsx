@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import DataTable from "@/components/tables/DataTable";
 import Badge from "@/components/ui/Badge";
+import Link from "next/link";
 import { 
     UserCheck, Search, Download, Filter, 
     Calendar, Mail, Eye, Trash2, StopCircle, 
@@ -69,32 +70,26 @@ export default function RecruitersPage() {
     {
       key: "name", title: "Full Name",
       render: (_: any, row: Recruiter) => (
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-indigo-600 font-bold text-xs shadow-sm shadow-indigo-100 group-hover:scale-105 transition-transform shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-md bg-surface-100 flex items-center justify-center text-surface-400 font-bold text-[9px] shrink-0 border border-surface-200/50">
             {row.name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="font-bold text-slate-900 leading-tight tracking-tight">{row.name}</p>
-            <div className="flex items-center gap-1.5 mt-1">
-                <Mail size={12} className="text-slate-300" />
-                <p className="text-[11px] text-indigo-500 font-semibold truncate max-w-[140px]">{row.email}</p>
-            </div>
+            <p className="font-medium text-surface-900 leading-tight tracking-tight text-[13px]">{row.name}</p>
+            <p className="text-[10.5px] text-surface-400 font-medium truncate max-w-[140px] lowercase tracking-tight">{row.email}</p>
           </div>
         </div>
       ),
     },
     { 
         key: "employer", 
-        title: "Company Name", 
+        title: "Organization", 
         render: (_: any, row: Recruiter) => (
-            <div className="max-w-[180px]">
-                <div className="flex items-center gap-2 mb-1">
-                    <Building2 size={12} className={clsx(row.employer?.company_name ? "text-slate-400" : "text-slate-200")} />
-                    <p className="font-semibold text-slate-700 text-[12px] truncate tracking-tight">
-                        {row.employer?.company_name || <span className="text-slate-300 italic">Independent Agent</span>}
-                    </p>
-                </div>
-                {row.employer_id && <p className="text-[10px] text-slate-400 font-medium ml-5">ID: {row.employer_id}</p>}
+            <div className="max-w-[160px]">
+                <p className="font-medium text-surface-500 text-[12px] truncate tracking-tight">
+                    {row.employer?.company_name || <span className="text-surface-300 italic">No organization</span>}
+                </p>
+                {row.employer_id && <p className="text-[10px] text-surface-300 font-medium tracking-tighter opacity-70">ID: {row.employer_id}</p>}
             </div>
         )
     },
@@ -102,8 +97,8 @@ export default function RecruitersPage() {
         key: "is_active", 
         title: "Status", 
         render: (v: any) => (
-            <Badge variant={v ? "success" : "default"} dot className="text-[10px] font-bold px-3 py-1 ring-1 ring-inset uppercase tracking-wider">
-                {v ? "Active" : "Disabled"}
+            <Badge variant={v ? "success" : "default"} dot className="text-[10px] px-2 h-4.5 bg-transparent border-none tracking-tight">
+                {v ? "Active" : "Inactive"}
             </Badge>
         ) 
     },
@@ -111,49 +106,39 @@ export default function RecruitersPage() {
         key: "created_at", 
         title: "Joined On", 
         render: (v: any) => (
-            <div className="flex flex-col gap-0.5" suppressHydrationWarning>
-                <div className="flex items-center gap-2 text-slate-700 font-semibold text-[11px] whitespace-nowrap">
-                    <Calendar size={12} className="text-slate-300" /> 
-                    {new Date(v).toLocaleDateString()}
-                </div>
+            <div className="text-surface-400 font-medium text-[11px] whitespace-nowrap tracking-tight" suppressHydrationWarning>
+                {new Date(v).toLocaleDateString()}
             </div>
         ) 
     },
     { 
         key: "actions", 
-        title: "Manage", 
+        title: "", 
         render: (_: any, row: Recruiter) => (
-            <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
-                <button 
-                    onClick={() => router.push(`/recruiters/${row.id}`)}
-                    suppressHydrationWarning
-                    className="p-1 px-2.5 bg-indigo-50 text-indigo-600 border border-indigo-100/50 rounded-lg transition-all active:scale-95 flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest shadow-sm"
-                    title="View Profile"
+            <div className="flex items-center justify-end gap-0.5" onClick={(e) => e.stopPropagation()}>
+                <Link
+                    href={`/recruiters/${row.id}`}
+                    className="flex items-center gap-1.5 h-7 px-2.5 bg-white text-surface-900 border border-surface-200 rounded-md text-[10px] font-bold hover:bg-surface-50 transition-all shadow-sm active:scale-95 group"
                 >
-                    <Eye size={12} /> View
-                </button>
+                    View
+                    <ArrowUpRight size={12} className="text-surface-300 group-hover:text-primary transition-colors" />
+                </Link>
                     <button 
                         onClick={() => handleAction(row.id, "disable")}
                         disabled={processingId === row.id}
-                        suppressHydrationWarning
                         className={clsx(
-                            "p-1.5 rounded-lg transition-all active:scale-95 shadow-sm border",
-                            row.is_active 
-                                ? "bg-amber-50 text-amber-600 border-amber-100/50" 
-                                : "bg-emerald-50 text-emerald-600 border-emerald-100/50"
+                            "w-8 h-8 rounded-md flex items-center justify-center transition-all",
+                            row.is_active ? "text-warning hover:bg-warning/5" : "text-success hover:bg-success/5"
                         )}
-                        title={row.is_active ? "Disable" : "Enable"}
                     >
-                        {row.is_active ? <XCircle size={13} /> : <CheckCircle2 size={13} />}
+                        {row.is_active ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
                     </button>
                     <button 
                         onClick={() => handleAction(row.id, "delete")}
                         disabled={processingId === row.id}
-                        suppressHydrationWarning
-                        className="p-1.5 bg-rose-50 text-rose-600 border border-rose-100/50 rounded-lg transition-all active:scale-95 shadow-sm"
-                        title="Delete"
+                        className="w-8 h-8 rounded-md flex items-center justify-center text-surface-300 hover:text-danger hover:bg-danger/5 transition-all"
                     >
-                        <Trash2 size={13} />
+                        <Trash2 size={14} />
                     </button>
             </div>
         ) 
@@ -161,96 +146,56 @@ export default function RecruitersPage() {
   ];
 
   return (
-    <div className="space-y-5 pb-10 antialiased">
-      {/* ─── Header Section ────────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-100 shrink-0">
-            <UserCheck size={22} strokeWidth={2} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-               <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100/50">Human Network</span>
+    <div className="space-y-4 pb-10 antialiased animate-fade-in-up">
+      {/* ─── Header Banner ────────────────────────────────────── */}
+      <div className="relative bg-purple-600 rounded-xl p-6 overflow-hidden shadow-lg shadow-purple-500/20">
+        <div className="absolute inset-0 opacity-10" style={{backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "30px 30px"}} />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0 shadow-lg">
+              <UserCheck size={22} strokeWidth={2.5} className="text-white" />
             </div>
-            <h1 className="text-xl font-bold text-slate-900  leading-none">Hiring Agents</h1>
-            <p className="text-[11px] text-indigo-400 font-semibold mt-1">Manage and view all hiring agents across the network</p>
+            <div>
+              <span className="text-[10px] font-bold text-purple-200 tracking-widest uppercase">Recruitment Team</span>
+              <h1 className="text-[20px] font-bold text-white tracking-tight leading-none mt-0.5">Recruiters</h1>
+              <p className="text-[12px] text-purple-200 font-medium mt-0.5">Manage all recruitment agents and independent members</p>
+            </div>
           </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={fetchRecruiters}
-            suppressHydrationWarning
-            className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 transition-all shadow-sm active:scale-95"
-          >
-            <RotateCcw size={16} className={clsx(loading && "animate-spin")} />
-          </button>
-          <button 
-              suppressHydrationWarning
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white text-[11px] font-bold hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-indigo-100 group"
-          >
-              <Download size={16} /> 
-              Export list
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button suppressHydrationWarning onClick={fetchRecruiters}
+              className="p-2.5 bg-white/20 border border-white/30 rounded-lg text-white hover:bg-white/30 transition-all active:scale-95">
+              <RotateCcw size={16} className={clsx(loading && "animate-spin")} />
+            </button>
+            <button suppressHydrationWarning
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white text-purple-700 text-[11px] font-bold hover:bg-purple-50 transition-all active:scale-95 shadow-md">
+              <Download size={15} /> Export list
+            </button>
+          </div>
         </div>
       </div>
 
       {/* ─── Stats Overview ─────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-3 hover:shadow-md transition-all">
-              <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                  <UserCheck size={18} />
-              </div>
-              <div>
-                  <p className="text-[10px] font-bold text-indigo-400 mb-1">Active agents</p>
-                  <h3 className="text-lg font-bold text-slate-900 leading-none">{recruiters.filter(r => r.is_active).length}</h3>
-              </div>
-          </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-3 hover:shadow-md transition-all">
-              <div className="w-10 h-10 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center">
-                  <StopCircle size={18} />
-              </div>
-              <div>
-                  <p className="text-[10px] font-bold text-indigo-400 mb-1">Suspended</p>
-                  <h3 className="text-lg font-bold text-slate-900 leading-none">{recruiters.filter(r => !r.is_active).length}</h3>
-              </div>
-          </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-3 hover:shadow-md transition-all">
-              <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <Building2 size={18} />
-              </div>
-              <div>
-                  <p className="text-[10px] font-bold text-indigo-400 mb-1">Institutional</p>
-                  <h3 className="text-lg font-bold text-slate-900 leading-none">{recruiters.filter(r => r.employer_id).length}</h3>
-              </div>
-          </div>
-          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-3 hover:shadow-md transition-all">
-              <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
-                  <Users size={18} />
-              </div>
-              <div>
-                  <p className="text-[10px] font-bold text-indigo-400 mb-1">Independent</p>
-                  <h3 className="text-lg font-bold text-slate-900 leading-none">{recruiters.filter(r => !r.employer_id).length}</h3>
-              </div>
-          </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatMini label="Active" value={recruiters.filter(r => r.is_active).length} color="purple" icon={<UserCheck size={16} />} />
+          <StatMini label="Inactive" value={recruiters.filter(r => !r.is_active).length} color="rose" icon={<StopCircle size={16} />} />
+          <StatMini label="With organization" value={recruiters.filter(r => r.employer_id).length} color="blue" icon={<Building2 size={16} />} />
+          <StatMini label="Independent" value={recruiters.filter(r => !r.employer_id).length} color="amber" icon={<Users size={16} />} />
       </div>
 
       {/* ─── Search & Filter Landscape ──────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 group">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors" />
           <input 
             type="text" 
-            suppressHydrationWarning
-            placeholder="Search by name, email or company..." 
+            placeholder="Search agents by name, email or company..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-900 placeholder:text-slate-300 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all tracking-tight" 
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-surface-200 rounded-xl text-[13px] font-medium text-surface-700 placeholder:text-surface-300 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/50 transition-all tracking-tight" 
           />
         </div>
         <button 
-          suppressHydrationWarning
-          className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 text-[11px] font-bold hover:bg-slate-50 hover:text-indigo-600 transition-all shadow-sm active:scale-95 group shrink-0"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-surface-200 text-surface-700 text-[11px] font-bold hover:bg-surface-50 transition-all shadow-sm active:scale-95 group shrink-0"
         >
           <Filter size={14} className="group-hover:rotate-180 transition-transform duration-500" /> 
           Filters
@@ -258,16 +203,37 @@ export default function RecruitersPage() {
       </div>
 
       {/* ─── Data Registry Table ────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="overflow-hidden">
         <DataTable 
+            compact
             columns={columns} 
             data={filtered} 
             loading={loading}
             onRowClick={(row) => router.push(`/recruiters/${row.id}`)}
-            emptyMessage="No hiring agents found."
+            emptyMessage="No agents found in your list."
         />
       </div>
 
     </div>
   );
+}
+
+function StatMini({ label, value, color, icon }: any) {
+    const colors: any = {
+        primary: "text-primary bg-primary/5 border-primary/10",
+        slate: "text-surface-400 bg-surface-50 border-surface-100",
+        blue: "text-blue-500 bg-blue-50/50 border-blue-100",
+        orange: "text-orange-500 bg-orange-50/50 border-orange-100",
+    };
+    return (
+        <div className="bg-white p-3 px-4 rounded-xl border border-surface-200 shadow-sm flex items-center justify-between group hover:bg-surface-50 transition-all">
+            <div className="space-y-0.5">
+                <p className="text-[10px] font-bold text-surface-500 tracking-tight">{label}</p>
+                <h3 className="text-xl font-bold text-surface-900 leading-tight">{value}</h3>
+            </div>
+            <div className={clsx("w-8 h-8 rounded-lg flex items-center justify-center border transition-all group-hover:scale-110", colors[color])}>
+                {icon}
+            </div>
+        </div>
+    );
 }
