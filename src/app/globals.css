@@ -83,6 +83,27 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* ─── Global Cursor Pointer ─────────────────────────────────────────────── */
+  button,
+  a,
+  label[for],
+  select,
+  [role="button"],
+  [role="link"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="option"],
+  [tabindex]:not([tabindex="-1"]) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    cursor: not-allowed;
+  }
   
   html[data-scroll-behavior="smooth"] {
     scroll-behavior: smooth;

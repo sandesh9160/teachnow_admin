@@ -22,7 +22,7 @@ export default function DeletedCVTemplatesPage() {
     try {
       setLoading(true);
       const response = await getDeletedItems("cvs");
-      const data = "data" in response.data ? (response.data as any).data : response.data;
+      const data = response && typeof response === "object" && "data" in response ? (response as any).data : response;
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch deleted CVs:", error);
@@ -61,27 +61,30 @@ export default function DeletedCVTemplatesPage() {
     { 
       key: "name", 
       title: "Template Name", 
-      render: (v: string) => <span className="font-semibold text-surface-900 text-[13px]">{v || "N/A"}</span> 
+      render: (v: unknown) => <span className="font-semibold text-surface-900 text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
     },
     { 
       key: "type", 
       title: "Category", 
-      render: (v: string) => <Badge variant="default" className="text-[10px] uppercase font-semibold">{v || "Template"}</Badge> 
+      render: (v: unknown) => <Badge variant="default" className="text-[10px] uppercase font-semibold">{typeof v === "string" && v ? v : "Template"}</Badge> 
     },
     { 
       key: "deleted_at", 
       title: "Deleted On", 
-      render: (v: string) => <span className="text-surface-400 font-medium text-[12px] uppercase">{v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
+      render: (v: unknown) => <span className="text-surface-400 font-medium text-[12px] uppercase">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
     },
     { 
       key: "deleted_by", 
       title: "Deleted By", 
-      render: (v: string) => <span className="text-[11px] font-semibold text-surface-500 uppercase">{v || "Admin"}</span> 
+      render: (v: unknown) => <span className="text-[11px] font-semibold text-surface-500 uppercase">{typeof v === "string" && v ? v : "Admin"}</span> 
     },
     { 
       key: "actions", 
       title: "Actions", 
-      render: (_: any, item: DeletedItem) => (
+      render: (_: unknown, row: Record<string, unknown>) => {
+        const item = row as unknown as DeletedItem;
+
+        return (
         <div className="flex items-center gap-3">
           <button 
             onClick={() => handleRestore(item.id)}
@@ -99,7 +102,8 @@ export default function DeletedCVTemplatesPage() {
             <Trash2 size={13} /> Purge
           </button>
         </div>
-      )
+        );
+      }
     }
   ];
 
@@ -132,7 +136,7 @@ export default function DeletedCVTemplatesPage() {
         
         <DataTable 
           columns={columns} 
-          data={filtered} 
+          data={filtered as unknown as Record<string, unknown>[]} 
           compact={true} 
           loading={loading}
           emptyMessage="No deleted CV templates found"

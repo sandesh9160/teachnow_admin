@@ -1,254 +1,316 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { 
-  Home, 
-  ChevronRight, 
-  Edit2, 
+  ChevronLeft, 
   MapPin, 
   Building2,
   Globe,
   Mail,
   Phone,
   ShieldCheck,
-  ShieldX,
+  ShieldAlert,
   Star,
   Calendar,
   Clock,
   Save,
-  X
+  Trash2,
+  Users,
+  Briefcase,
+  Layout,
+  ExternalLink,
+  Loader2,
+  CheckCircle2,
+  Activity
 } from "lucide-react";
 import { clsx } from "clsx";
 import DataTable from "@/components/tables/DataTable";
 import Badge from "@/components/ui/Badge";
+import { getEmployer, updateEmployer, verifyEmployer, featureEmployer, deleteEmployer } from "@/services/admin.service";
+import { Employer } from "@/types";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-// ─── Data ──────────────────────────────────────────────────────────────────
-const initialData = {
-  name: "EduSmart School",
-  email: "contact@edusmart.com",
-  industry: "K-12 Education",
-  location: "India",
-  status: "Active",
-  verified: true,
-  joinedDate: "Jan 15, 2025",
-  website: "www.edusmart.com",
-  phone: "+91 98765 43210",
-  description: "Leading K-12 education provider with branches across India.",
-  recruiters: [
-    { id: 1, name: "Sneha Kapur", role: "HR Manager", email: "sneha@edusmart.com", status: "Active" },
-    { id: 2, name: "Amit Verma", role: "Principal", email: "amit@edusmart.com", status: "Active" },
-  ]
-};
+const API_URL = "https://teachnowbackend.jobsvedika.in";
 
-// ─── Component ─────────────────────────────────────────────────────────────
 export default function InstituteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState(initialData);
-  const [activeTab, setActiveTab] = useState("Company Info");
+  const router = useRouter();
+  const [employer, setEmployer] = useState<Employer | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [activeTab, setActiveTab] = useState("Overview");
   
-  const tabs = ["Company Info", "Recruiters", "Jobs Posted", "Applications", "Reviews", "SEO Settings"];
+  const tabs = ["Overview", "Recruiters", "Jobs", "Applications", "SEO Settings"];
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // In a real app, you'd call an API here
+  useEffect(() => {
+    fetchDetails();
+  }, [resolvedParams.id]);
+
+  const fetchDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await getEmployer(Number(resolvedParams.id));
+      if (res && res.data) {
+        setEmployer(res.data);
+      }
+    } catch (err) {
+      toast.error("Failed to load institute details");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleAction = async (action: "verify" | "feature" | "delete") => {
+    if (!employer) return;
+    try {
+      setProcessing(true);
+      if (action === "verify") await verifyEmployer(employer.id);
+      else if (action === "feature") await featureEmployer(employer.id);
+      else if (action === "delete") {
+        if (!confirm("Permanently delete this institute? This cannot be undone.")) return;
+        await deleteEmployer(employer.id);
+        router.push("/employers");
+        return;
+      }
+      toast.success(`Institute ${action}d successfully`);
+      fetchDetails();
+    } catch (err) {
+      toast.error("Action failed");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="h-[50vh] flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-6 h-6 animate-spin text-indigo-600" />
+        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Loading Institute Repository...</p>
+      </div>
+    );
+  }
+
+  if (!employer) return <div className="p-20 text-center text-slate-400 font-bold uppercase tracking-widest">Institute Not Found</div>;
+
   return (
-    <div className="space-y-6 max-w-full pb-10">
-      {/* ─── Breadcrumb ─────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 text-[13px] text-surface-500 font-medium">
-        <Link href="/dashboard" className="hover:text-primary-600 transition-colors">
-          <Home size={14} />
+    <div className="max-w-5xl mx-auto space-y-6 pb-12 antialiased">
+      {/* ─── Compact Command Bar ────────────────────────────────────── */}
+      <div className="flex items-center justify-between gap-4">
+        <Link 
+          href="/employers" 
+          className="flex items-center gap-2 text-[11px] font-bold text-slate-500 hover:text-indigo-600 transition-all bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm hover:shadow-md active:scale-95 uppercase tracking-wider"
+        >
+          <ChevronLeft size={14} strokeWidth={2.5} /> Back to Registry
         </Link>
-        <ChevronRight size={14} strokeWidth={1.5} />
-        <Link href="/employers" className="hover:text-primary-600 transition-colors">
-          Employers
-        </Link>
-        <ChevronRight size={14} strokeWidth={1.5} />
-        <span className="text-surface-900">{formData.name}</span>
-      </div>
-
-      {/* ─── Header Card ────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0 shadow-sm">
-              <Building2 size={24} />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2.5">
-                {isEditing ? (
-                  <input 
-                    type="text" 
-                    value={formData.name} 
-                    onChange={e => setFormData({...formData, name: e.target.value})}
-                    className="text-xl font-bold text-surface-900 border-b border-primary-500 focus:outline-none"
-                  />
-                ) : (
-                  <h1 className="text-xl font-bold text-surface-900 leading-none">{formData.name}</h1>
-                )}
-                <Star size={18} className="text-amber-400" fill="currentColor" />
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-bold border border-emerald-100">
-                  <ShieldCheck size={12} />
-                  Verified
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[13px] text-surface-500 mt-2 font-medium">
-                {isEditing ? (
-                  <select 
-                    value={formData.industry} 
-                    onChange={e => setFormData({...formData, industry: e.target.value})}
-                    className="bg-surface-100 px-2 py-0.5 rounded text-[11px] text-surface-600 outline-none"
-                  >
-                    <option>K-12 Education</option>
-                    <option>Higher Education</option>
-                    <option>Ed-Tech</option>
-                  </select>
-                ) : (
-                  <span className="bg-surface-100 px-2 py-0.5 rounded text-[11px] text-surface-600">
-                    {formData.industry}
-                  </span>
-                )}
-                
-                <span className="flex items-center gap-1.5">
-                  <Globe size={14} /> 
-                  {isEditing ? (
-                    <input 
-                      type="text" 
-                      value={formData.location} 
-                      onChange={e => setFormData({...formData, location: e.target.value})}
-                      className="border-b border-surface-200 focus:outline-none"
-                    />
-                  ) : formData.location}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Calendar size={14} /> Joined {formData.joinedDate}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {isEditing ? (
-              <>
-                <button onClick={handleSave} className="flex items-center gap-2 px-3.5 py-1.5 bg-emerald-600 text-white text-[13px] font-semibold rounded-lg hover:bg-emerald-700 transition-all shadow-md shadow-emerald-200 cursor-pointer">
-                  <Save size={14} />
-                  Save Changes
-                </button>
-                <button onClick={() => { setFormData(initialData); setIsEditing(false); }} className="flex items-center gap-2 px-3.5 py-1.5 bg-white border border-surface-200 text-surface-700 text-[13px] font-semibold rounded-lg hover:bg-surface-50 transition-all shadow-sm cursor-pointer">
-                  <X size={14} />
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <>
-                <button onClick={() => setIsEditing(true)} className="flex items-center gap-2 px-3.5 py-1.5 bg-white border border-surface-200 text-surface-700 text-[13px] font-semibold rounded-lg hover:bg-surface-50 transition-all shadow-sm cursor-pointer">
-                  <Edit2 size={14} />
-                  Edit
-                </button>
-                <button className="flex items-center gap-2 px-3.5 py-1.5 bg-white border border-surface-200 text-surface-700 text-[13px] font-semibold rounded-lg hover:bg-surface-50 transition-all shadow-sm cursor-pointer">
-                  <ShieldX size={14} />
-                  Unverify
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ─── Navigation Tabs ────────────────────────────────────────────── */}
-      <div className="flex items-center gap-6 border-b border-surface-200 px-1 pt-1">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+        <div className="flex items-center gap-2">
+           {!employer.is_verified && (
+             <button
+              onClick={() => handleAction("verify")}
+              disabled={processing}
+              className="px-5 py-2 bg-indigo-600 hover:bg-slate-900 text-white text-[11px] font-bold rounded-xl transition-all shadow-lg shadow-indigo-600/10 flex items-center gap-2 active:scale-95 uppercase tracking-wider"
+             >
+               <CheckCircle2 size={14} strokeWidth={2} /> Authorize Partner
+             </button>
+           )}
+           <button
+            onClick={() => handleAction("feature")}
+            disabled={processing}
             className={clsx(
-              "pb-3 text-[14px] font-semibold transition-all whitespace-nowrap relative px-1 cursor-pointer",
-              activeTab === tab
-                ? "text-primary-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary-600"
-                : "text-surface-400 hover:text-surface-600"
+                "px-5 py-2 text-[11px] font-bold rounded-xl transition-all border flex items-center gap-2 active:scale-95 shadow-sm hover:shadow-md uppercase tracking-wider",
+                employer.company_featured 
+                  ? "bg-amber-50 border-amber-200 text-amber-600" 
+                  : "bg-white border-slate-100 text-slate-600 hover:bg-slate-50"
             )}
-          >
-            {tab}
-          </button>
-        ))}
+           >
+             <Star size={14} className={employer.company_featured ? "fill-amber-500" : ""} />
+             {employer.company_featured ? "Featured" : "Set Featured"}
+           </button>
+           <button
+            onClick={() => handleAction("delete")}
+            disabled={processing}
+            className="p-2 bg-white border border-slate-100 text-slate-300 hover:text-rose-600 hover:border-rose-100 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-90"
+            title="Purge Permanent"
+           >
+             <Trash2 size={18} strokeWidth={2} />
+           </button>
+        </div>
       </div>
 
-      {/* ─── Tab Content ────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-span-2">
-          {activeTab === "Company Info" && (
-            <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm min-h-[220px]">
-              <h3 className="text-[15px] font-bold text-surface-900 mb-4">About</h3>
-              {isEditing ? (
-                <textarea 
-                  value={formData.description}
-                  onChange={e => setFormData({...formData, description: e.target.value})}
-                  rows={4}
-                  className="w-full text-surface-500 text-[14px] font-medium leading-relaxed border border-surface-200 rounded-lg p-3 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                />
-              ) : (
-                <p className="text-surface-500 text-[14px] font-medium leading-relaxed">{formData.description}</p>
-              )}
-            </div>
-          )}
-          
-          {activeTab === "Recruiters" && (
-            <div className="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
-              <DataTable 
-                compact
-                columns={[
-                  { key: "name", title: "Name", render: (_: any, r: any) => <span className="font-bold">{r.name}</span> },
-                  { key: "role", title: "Role", render: (v: string) => <span className="text-[13px] text-surface-500">{v}</span> },
-                  { key: "email", title: "Email", render: (v: string) => <span className="text-[13px] text-surface-500">{v}</span> },
-                  { key: "status", title: "Status", render: (v: string) => <Badge variant={v === "Active" ? "success" : "default"} dot>{v}</Badge> }
-                ]}
-                data={formData.recruiters}
-              />
-            </div>
-          )}
+      <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden transition-all duration-500 hover:shadow-xl hover:shadow-slate-200/50">
+        {/* ─── Header Section ────────────────────────────────────────── */}
+        <div className="p-8 pb-6 bg-white border-b border-slate-100 relative">
+           <div className="absolute top-0 right-0 p-8">
+              <span className={clsx(
+                  "text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border shadow-sm flex items-center gap-2",
+                  employer.is_verified ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"
+              )}>
+                {employer.is_verified ? <ShieldCheck size={12} strokeWidth={2} /> : <ShieldAlert size={12} strokeWidth={2} />}
+                {employer.is_verified ? "Verified Identity" : "Pending Verification"}
+              </span>
+           </div>
+
+           <div className="flex flex-col md:flex-row md:items-center gap-8">
+              <div className="w-20 h-20 rounded-2xl bg-white p-2 shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center justify-center shrink-0 group transition-transform duration-500 hover:rotate-3">
+                 {employer.company_logo ? (
+                     <img src={`${API_URL}/${employer.company_logo}`} alt="" className="w-full h-full object-contain rounded-xl" />
+                 ) : (
+                     <Building2 size={32} strokeWidth={1.5} className="text-indigo-600" />
+                 )}
+              </div>
+              <div className="space-y-1.5">
+                 <div className="flex items-center gap-3">
+                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{employer.company_name}</h1>
+                 </div>
+                 <div className="flex flex-wrap items-center gap-x-6 gap-y-1.5 text-[12px] text-slate-500 font-semibold">
+                    <span className="flex items-center gap-2 text-indigo-600"><Layout size={14} strokeWidth={2} /> {employer.institution_type || "Institution"}</span>
+                    <span className="flex items-center gap-2"><MapPin size={14} strokeWidth={2} /> {[employer.city, employer.country].filter(Boolean).join(", ") || "Location unavailable"}</span>
+                    <span className="flex items-center gap-2 text-slate-400 font-medium"><Calendar size={14} strokeWidth={2} /> {new Date(employer.created_at).toLocaleDateString()}</span>
+                 </div>
+              </div>
+           </div>
         </div>
 
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
-            <h3 className="text-[15px] font-bold text-surface-900 mb-4">Contact Info</h3>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-surface-500">
-                <Mail size={16} className="text-surface-400" />
-                {isEditing ? (
-                  <input 
-                    type="email" 
-                    value={formData.email} 
-                    onChange={e => setFormData({...formData, email: e.target.value})}
-                    className="text-[14px] font-medium border-b border-surface-200 focus:outline-none flex-1"
-                  />
-                ) : (
-                  <span className="text-[14px] font-medium transition-colors hover:text-primary-600 cursor-pointer">{formData.email}</span>
+        {/* ─── Compact Tabs ─────────────────────────────────────────── */}
+        <div className="flex items-center gap-8 px-8 bg-white border-b border-slate-100 overflow-x-auto no-scrollbar">
+           {tabs.map(t => (
+               <button
+                key={t}
+                onClick={() => setActiveTab(t)}
+                className={clsx(
+                    "py-4 text-[11px] font-bold uppercase tracking-wider border-b-2 transition-all relative block",
+                    activeTab === t ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-400 hover:text-slate-600"
                 )}
+               >
+                 {t}
+               </button>
+           ))}
+        </div>
+
+        <div className="p-8">
+           {activeTab === "Overview" && (
+               <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                  <div className="lg:col-span-3 space-y-6">
+                     <section className="bg-slate-50/50 p-6 rounded-[2rem] border border-slate-100 shadow-inner group transition-all hover:bg-white hover:shadow-lg hover:border-indigo-100">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider flex items-center gap-2">
+                                <Activity size={14} strokeWidth={2} />
+                                Institutional Profile
+                            </h3>
+                        </div>
+                        <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
+                            {employer.about_company || employer.company_description || "No institutional biography provided yet."}
+                        </p>
+                     </section>
+
+                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                        <MetricCard label="Staff Personnel" value={employer.recruiters?.length || 0} icon={Users} color="text-indigo-600" bg="bg-indigo-50" />
+                        <MetricCard label="Deployments" value={employer.jobs?.length || 0} icon={Briefcase} color="text-emerald-600" bg="bg-emerald-50" />
+                        <MetricCard label="Trust Level" value="High Trust" icon={ShieldCheck} color="text-indigo-600" bg="bg-indigo-50" />
+                     </div>
+                  </div>
+
+                  <div className="space-y-6">
+                     <div className="p-6 bg-white rounded-[2rem] border border-slate-200 shadow-lg shadow-black/5 space-y-5">
+                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-50 pb-3 flex items-center gap-2">
+                            <Mail size={12} className="text-indigo-500" /> Contact Intel
+                        </h3>
+                        <div className="space-y-4">
+                           <ContactItem icon={Mail} label="Corporate Email" value={employer.email} />
+                           <ContactItem icon={Phone} label="Primary Contact" value={employer.phone} />
+                           {employer.website && (
+                              <div className="pt-2">
+                                 <a 
+                                    href={employer.website} 
+                                    target="_blank" 
+                                    className="flex items-center justify-center gap-2 w-full py-3 bg-slate-900 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg active:scale-95 group"
+                                 >
+                                    Official Hub <Globe size={12} strokeWidth={2.5} className="group-hover:rotate-12 transition-transform" />
+                                 </a>
+                              </div>
+                           )}
+                        </div>
+                     </div>
+
+                     <div className="p-6 bg-slate-50 border border-slate-200 rounded-[2rem] space-y-4">
+                        <h3 className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Protocol</h3>
+                        <p className="text-[12px] font-medium text-slate-500 leading-relaxed italic">
+                           Always corroborate <span className="font-bold text-slate-900">Partner Identity</span> before executing structural upgrades.
+                        </p>
+                     </div>
+                  </div>
+               </div>
+           )}
+
+           {activeTab === "Recruiters" && (
+             <div className="rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+                <DataTable 
+                    columns={[
+                        { key: "name", title: "PERSONNEL", render: (_: any, r: any) => (
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs uppercase border border-indigo-100">
+                                    {r.user?.name?.charAt(0) || "U"}
+                                </div>
+                                <div>
+                                    <p className="font-bold text-slate-900">{r.user?.name}</p>
+                                    <p className="text-[10px] text-slate-400 font-medium">{r.designation || "Staff Member"}</p>
+                                </div>
+                            </div>
+                        )},
+                        { key: "email", title: "EMAIL", render: (_: any, r: any) => <span className="text-[12px] font-medium text-slate-600">{r.user?.email}</span> },
+                        { key: "status", title: "STATUS", render: (v: any, r: any) => <Badge variant={r.is_active ? "success" : "default"} dot className="text-[9px] font-bold uppercase tracking-wider">{r.is_active ? "Active" : "Disabled"}</Badge> },
+                        { key: "created_at", title: "JOINED", render: (v: any) => <span className="text-[11px] font-bold text-slate-400 uppercase tracking-tighter" suppressHydrationWarning>{new Date(v).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span> }
+                    ]}
+                    data={employer.recruiters || []}
+                    emptyMessage="No associated recruiters found."
+                />
+             </div>
+           )}
+
+           {activeTab === "Jobs" && (
+              <div className="rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+                <DataTable 
+                    columns={[
+                        { key: "title", title: "VACANCY", render: (v: any) => <span className="font-bold text-slate-900 text-[13px]">{v}</span> },
+                        { key: "location", title: "LOCATION", render: (v: any) => <span className="text-slate-500 font-medium text-[11px]">{v}</span> },
+                        { key: "status", title: "MODERATION", render: (v: any) => <Badge variant={v === 'approved' ? 'success' : v === 'pending' ? 'warning' : 'danger'} dot className="text-[9px] font-bold uppercase">{v}</Badge> },
+                        { key: "created_at", title: "POSTED", render: (v: any) => <span className="text-slate-400 font-bold text-[11px] uppercase" suppressHydrationWarning>{new Date(v as string).toLocaleDateString()}</span> }
+                    ]}
+                    data={employer.jobs || []}
+                    emptyMessage="No job postings recorded."
+                    onRowClick={(row) => router.push(`/jobs/${row.id}`)}
+                />
               </div>
-              <div className="flex items-center gap-3 text-surface-500">
-                <Phone size={16} className="text-surface-400" />
-                {isEditing ? (
-                  <input 
-                    type="text" 
-                    value={formData.phone} 
-                    onChange={e => setFormData({...formData, phone: e.target.value})}
-                    className="text-[14px] font-medium border-b border-surface-200 focus:outline-none flex-1"
-                  />
-                ) : (
-                  <span className="text-[14px] font-medium">{formData.phone}</span>
-                )}
-              </div>
-              <div className="flex items-center gap-3 text-surface-500">
-                <Globe size={16} className="text-surface-400" />
-                <span className="text-[14px] font-medium">{formData.location}</span>
-              </div>
-            </div>
-          </div>
+           )}
         </div>
       </div>
     </div>
   );
+}
+
+function MetricCard({ label, value, icon: Icon, color, bg }: any) {
+    return (
+        <div className="p-5 bg-white border border-slate-100 rounded-[1.5rem] flex items-center justify-between shadow-sm hover:shadow-md transition-all group">
+            <div className="space-y-1">
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{label}</p>
+                <p className="text-xl font-bold text-slate-900 tracking-tight">{value}</p>
+            </div>
+            <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm", bg, color)}>
+                <Icon size={18} strokeWidth={2} />
+            </div>
+        </div>
+    );
+}
+
+function ContactItem({ icon: Icon, label, value }: any) {
+    return (
+        <div className="group space-y-1.5">
+            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1 group-hover:text-indigo-600 transition-colors uppercase">{label}</p>
+            <div className="flex items-center gap-2.5">
+                <Icon size={14} className="text-slate-300 group-hover:text-indigo-400 transition-colors" strokeWidth={2} />
+                <span className="text-[13px] font-semibold text-slate-700 truncate group-hover:text-slate-900 transition-colors leading-none">{value || "Not provided"}</span>
+            </div>
+        </div>
+    );
 }

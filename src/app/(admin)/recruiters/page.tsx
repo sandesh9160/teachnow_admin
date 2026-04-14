@@ -7,7 +7,9 @@ import Badge from "@/components/ui/Badge";
 import { 
     UserCheck, Search, Download, Filter, 
     Calendar, Mail, Eye, Trash2, StopCircle, 
-    CheckCircle
+    CheckCircle, Shield, Briefcase, Users,
+    RotateCcw, ArrowUpRight, Activity, MapPin, 
+    ExternalLink, Building2, MoreHorizontal
 } from "lucide-react";
 import { getRecruiters, disableRecruiter, deleteRecruiter } from "@/services/admin.service";
 import { Recruiter } from "@/types";
@@ -29,10 +31,10 @@ export default function RecruitersPage() {
     try {
       setLoading(true);
       const res = await getRecruiters();
-      const list = (res.data as any).data?.data || [];
-      setRecruiters(list);
+      const list = (res as any).data?.data || (res as any).data || [];
+      setRecruiters(Array.isArray(list) ? list : []);
     } catch (err: any) {
-      toast.error("Failed to fetch recruiters");
+      toast.error("Failed to fetch recruiter registry");
     } finally {
       setLoading(false);
     }
@@ -43,14 +45,14 @@ export default function RecruitersPage() {
       setProcessingId(id);
       if (action === "disable") await disableRecruiter(id);
       else if (action === "delete") {
-          if (!confirm("Are you sure you want to delete this recruiter?")) return;
+          if (!confirm("Are you sure you want to decommission this recruiter node?")) return;
           await deleteRecruiter(id);
       }
       
-      toast.success(`Recruiter ${action === 'disable' ? 'status updated' : action + 'd'} successfully`);
+      toast.success(`Recruiter ${action === 'disable' ? 'status synchronized' : 'permanently purged'}`);
       fetchRecruiters();
     } catch (err: any) {
-      toast.error(err.response?.data?.message || `Failed to ${action} recruiter`);
+      toast.error(err.response?.data?.message || `Failed to execute ${action} protocol`);
     } finally {
       setProcessingId(null);
     }
@@ -64,17 +66,17 @@ export default function RecruitersPage() {
 
   const columns = [
     {
-      key: "name", title: "RECRUITER",
+      key: "name", title: "Human Capital Agent",
       render: (_: any, row: Recruiter) => (
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500/10 to-indigo-500/10 text-purple-600 flex items-center justify-center font-bold text-xs border border-purple-100 uppercase shadow-sm">
-            {row.name.charAt(0)}
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center text-indigo-600 font-bold text-xs shadow-sm shadow-indigo-100 group-hover:scale-105 transition-transform shrink-0">
+            {row.name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="font-bold text-surface-900 leading-tight">{row.name}</p>
-            <div className="flex items-center gap-1.5 mt-0.5">
-                <Mail size={10} className="text-surface-300" />
-                <p className="text-[10px] text-surface-400 font-medium truncate max-w-[120px]">{row.email}</p>
+            <p className="font-bold text-slate-900 leading-tight tracking-tight">{row.name}</p>
+            <div className="flex items-center gap-1.5 mt-1">
+                <Mail size={12} className="text-slate-300" />
+                <p className="text-[11px] text-indigo-500 font-semibold truncate max-w-[140px]">{row.email}</p>
             </div>
           </div>
         </div>
@@ -82,65 +84,73 @@ export default function RecruitersPage() {
     },
     { 
         key: "employer", 
-        title: "AFFILIATION", 
+        title: "Affiliation", 
         render: (_: any, row: Recruiter) => (
             <div className="max-w-[180px]">
-                <p className="font-bold text-surface-600 text-[12px] truncate uppercase tracking-tighter">
-                    {row.employer?.company_name || "Independent"}
-                </p>
-                <p className="text-[9px] text-surface-400 font-bold">ID: {row.employer_id}</p>
+                <div className="flex items-center gap-2 mb-1">
+                    <Building2 size={12} className={clsx(row.employer?.company_name ? "text-slate-400" : "text-slate-200")} />
+                    <p className="font-semibold text-slate-700 text-[12px] truncate tracking-tight">
+                        {row.employer?.company_name || <span className="text-slate-300 italic">Independent Agent</span>}
+                    </p>
+                </div>
+                {row.employer_id && <p className="text-[10px] text-slate-400 font-medium ml-5">ID: {row.employer_id}</p>}
             </div>
         )
     },
     { 
         key: "is_active", 
-        title: "STATUS", 
+        title: "Status", 
         render: (v: any) => (
-            <Badge variant={v ? "success" : "default"} dot className="text-[10px] font-black tracking-widest uppercase">
+            <Badge variant={v ? "success" : "default"} dot className="text-[10px] font-bold px-3 py-1 ring-1 ring-inset uppercase tracking-wider">
                 {v ? "Active" : "Disabled"}
             </Badge>
         ) 
     },
     { 
         key: "created_at", 
-        title: "JOINED", 
-        render: (v: string) => (
-            <div className="flex items-center gap-1.5 text-surface-400 font-bold text-[11px] uppercase whitespace-nowrap">
-                <Calendar size={12} className="text-surface-300" /> 
-                {new Date(v).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+        title: "Registry Date", 
+        render: (v: any) => (
+            <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2 text-slate-700 font-semibold text-[11px] whitespace-nowrap">
+                    <Calendar size={12} className="text-slate-300" /> 
+                    {new Date(v).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                </div>
+                <p className="text-[9px] text-slate-400 font-medium ml-5">{new Date(v).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
             </div>
         ) 
     },
     { 
       key: "actions", 
-      title: "ACTIONS", 
+      title: "Actions", 
       render: (_: any, row: Recruiter) => (
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-end gap-2">
             <button 
                 onClick={(e) => { e.stopPropagation(); handleAction(row.id, "disable"); }}
                 disabled={processingId === row.id}
                 className={clsx(
-                    "p-1.5 rounded-lg transition-all",
-                    row.is_active ? "text-amber-500 hover:bg-amber-50" : "text-emerald-500 hover:bg-emerald-50"
+                    "p-2 rounded-lg transition-all border shadow-sm",
+                    row.is_active 
+                      ? "text-amber-500 bg-amber-50 border-amber-100 hover:bg-amber-100" 
+                      : "text-emerald-500 bg-emerald-50 border-emerald-100 hover:bg-emerald-100"
                 )}
-                title={row.is_active ? "Disable Account" : "Enable Account"}
+                title={row.is_active ? "Suspend Account" : "Activate Agent"}
             >
-                {row.is_active ? <StopCircle size={16} /> : <CheckCircle size={16} />}
+                {row.is_active ? <StopCircle size={15} strokeWidth={2} /> : <CheckCircle size={15} strokeWidth={2} />}
             </button>
             <button 
                 onClick={(e) => { e.stopPropagation(); router.push(`/recruiters/${row.id}`); }} 
-                className="p-1.5 text-primary-600 hover:bg-primary-50 rounded-lg transition-all"
+                className="p-2 bg-slate-50 border border-slate-200 text-slate-600 hover:bg-white hover:shadow-lg rounded-lg transition-all"
                 title="View Details"
             >
-                <Eye size={16} />
+                <Eye size={15} strokeWidth={2} />
             </button>
             <button 
                 onClick={(e) => { e.stopPropagation(); handleAction(row.id, "delete"); }}
                 disabled={processingId === row.id}
-                className="p-1.5 text-surface-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                title="Delete User"
+                className="p-2 text-slate-300 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-lg transition-all"
+                title="Delete Account"
             >
-                <Trash2 size={16} />
+                <Trash2 size={15} strokeWidth={2} />
             </button>
         </div>
       ) 
@@ -148,47 +158,107 @@ export default function RecruitersPage() {
   ];
 
   return (
-    <div className="space-y-6 pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 border border-purple-100 shadow-sm">
-            <UserCheck size={22} />
+    <div className="space-y-5 pb-10 antialiased">
+      {/* ─── Header Section ────────────────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-100 shrink-0">
+            <UserCheck size={22} strokeWidth={2} />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-surface-900 tracking-tight uppercase">Agents</h1>
-            <p className="text-xs text-surface-500 font-medium">Moderate independent hiring consultants and institutional staff</p>
+            <div className="flex items-center gap-2 mb-1">
+               <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100/50">Human Network</span>
+            </div>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-none">Hiring Agents</h1>
+            <p className="text-[12px] text-slate-500 font-medium mt-1.5 flex items-center gap-2">
+               <Activity size={12} className="text-indigo-600" /> Manage independent hiring consultants and staff
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-surface-200 text-surface-700 text-xs font-bold hover:bg-surface-50 transition-all shadow-sm">
-            <Download size={16} /> EXPORT LIST
+        
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={fetchRecruiters}
+            className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-indigo-600 transition-all shadow-sm active:scale-95"
+          >
+            <RotateCcw size={16} className={clsx(loading && "animate-spin")} />
+          </button>
+          <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white text-[11px] font-semibold hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-indigo-100 group">
+            <Download size={16} /> 
+            Export List
           </button>
         </div>
       </div>
 
-      <div className="bg-white p-3 rounded-2xl border border-surface-200 shadow-sm flex flex-col sm:flex-row items-center gap-3">
-        <div className="relative flex-1 w-full">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" />
+      {/* ─── Stats Overview ─────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-3 hover:shadow-md transition-all">
+              <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <UserCheck size={18} />
+              </div>
+              <div>
+                  <p className="text-[10px] font-semibold text-slate-400 leading-none mb-1.5">Active Agents</p>
+                  <h3 className="text-lg font-bold text-slate-900 leading-none">{recruiters.filter(r => r.is_active).length}</h3>
+              </div>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-3 hover:shadow-md transition-all">
+              <div className="w-10 h-10 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center">
+                  <StopCircle size={18} />
+              </div>
+              <div>
+                  <p className="text-[10px] font-semibold text-slate-400 leading-none mb-1.5">Suspended</p>
+                  <h3 className="text-lg font-bold text-slate-900 leading-none">{recruiters.filter(r => !r.is_active).length}</h3>
+              </div>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-3 hover:shadow-md transition-all">
+              <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Building2 size={18} />
+              </div>
+              <div>
+                  <p className="text-[10px] font-semibold text-slate-400 leading-none mb-1.5">Institutional</p>
+                  <h3 className="text-lg font-bold text-slate-900 leading-none">{recruiters.filter(r => r.employer_id).length}</h3>
+              </div>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm flex items-center gap-3 hover:shadow-md transition-all">
+              <div className="w-10 h-10 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
+                  <Users size={18} />
+              </div>
+              <div>
+                  <p className="text-[10px] font-semibold text-slate-400 leading-none mb-1.5">Independent</p>
+                  <h3 className="text-lg font-bold text-slate-900 leading-none">{recruiters.filter(r => !r.employer_id).length}</h3>
+              </div>
+          </div>
+      </div>
+
+      {/* ─── Search & Filter Landscape ──────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 group">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
           <input 
             type="text" 
-            placeholder="Search agents by name, email or company..." 
+            placeholder="Search by name, email or company..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="w-full pl-10 pr-4 py-2 bg-surface-50 border border-surface-100 rounded-xl text-sm text-surface-700 placeholder:text-surface-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-primary-500/10 focus:border-primary-400 transition-all" 
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-900 placeholder:text-slate-300 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all tracking-tight" 
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-50 border border-surface-100 text-surface-600 text-xs font-bold hover:bg-surface-100 transition-all uppercase tracking-wider shrink-0">
-          <Filter size={14} /> Advanced Filters
+        <button className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 text-[11px] font-bold hover:bg-slate-50 hover:text-indigo-600 transition-all shadow-sm active:scale-95 group shrink-0">
+          <Filter size={14} className="group-hover:rotate-180 transition-transform duration-500" /> 
+          Filters
         </button>
       </div>
 
-      <DataTable 
-        columns={columns} 
-        data={filtered} 
-        loading={loading}
-        onRowClick={(row) => router.push(`/recruiters/${row.id}`)}
-        emptyMessage="No hiring agents found matching your search."
-      />
+      {/* ─── Data Registry Table ────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <DataTable 
+            columns={columns} 
+            data={filtered} 
+            loading={loading}
+            onRowClick={(row) => router.push(`/recruiters/${row.id}`)}
+            emptyMessage="No hiring agents found."
+        />
+      </div>
+
     </div>
   );
 }

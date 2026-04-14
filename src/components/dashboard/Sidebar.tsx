@@ -31,6 +31,7 @@ import {
 import { adminSignOut } from "@/lib/auth";
 import { clsx } from "clsx";
 
+import { SidebarItem } from "@/types";
 import { useNotifications } from "@/hooks/useNotifications";
 
 interface SidebarProps {
@@ -40,7 +41,7 @@ interface SidebarProps {
   onMobileClose: () => void;
 }
 
-const navGroups = [
+const navGroups: { label: string; items: SidebarItem[] }[] = [
   {
     label: "MAIN",
     items: [
@@ -174,7 +175,7 @@ export default function Sidebar({
     // Automatically open the dropdown containing the active route
     const currentActiveItem = navGroups
       .flatMap(g => g.items)
-      .find(item => {
+      .find((item: SidebarItem) => {
         const hasActiveChild = item.children?.some(child => pathname === child.href || pathname.startsWith(child.href + "/"));
         const parentMatch = item.href !== "#" && item.href !== "/" && (pathname === item.href || pathname.startsWith(item.href + "/"));
         return hasActiveChild || parentMatch;
@@ -314,7 +315,7 @@ export default function Sidebar({
                         <div className="mt-1 relative">
                            <div className="absolute left-[23px] top-0 bottom-2 w-[1.5px] bg-[#E2E8F0]" />
                            <div className="ml-[24px] space-y-1 pt-1 pb-1">
-                               {item.children.map((child) => {
+                               {item.children?.map((child) => {
                                    const childActive = isActive(child.href);
                                    return (
                                        <Link 

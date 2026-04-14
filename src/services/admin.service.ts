@@ -1,4 +1,4 @@
-import { api } from "./api";
+import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
 import type {
   DashboardStats,
   MasterDataItem,
@@ -12,233 +12,308 @@ import type {
   CMSSection,
   SEOSetting,
   DeletedItem,
+  ApiResponse,
   PaginatedResponse,
+  CVTemplate,
 } from "@/types";
 
 /**
- * Admin Service — Prepared API endpoints for Phase 2 integration.
- * All methods are typed and ready to use once backend is connected.
+ * Admin Service — Using dashboardServerFetch for secure server-side requests.
  */
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
 export const getDashboardStats = () =>
-  api.get<DashboardStats>("/admin/dashboard");
+  dashboardServerFetch<DashboardStats>("/admin/dashboard");
 
 // ─── Master Data (Categories, Locations, Skills, etc.) ──────────────────────
 
 export const getCategories = (params?: Record<string, unknown>) =>
-  api.get<PaginatedResponse<MasterDataItem>>("/admin/categories", { params });
+  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/categories", { params });
 
 export const createCategory = (data: Partial<MasterDataItem>) =>
-  api.post("/admin/categories", data);
+  dashboardServerFetch("/admin/categories", { method: "POST", data });
 
 export const updateCategory = (id: number, data: Partial<MasterDataItem>) =>
-  api.put(`/admin/categories/${id}`, data);
+  dashboardServerFetch(`/admin/categories/${id}`, { method: "PUT", data });
 
 export const deleteCategory = (id: number) =>
-  api.delete(`/admin/categories/${id}`);
+  dashboardServerFetch(`/admin/categories/${id}`, { method: "DELETE" });
 
 export const getLocations = (params?: Record<string, unknown>) =>
-  api.get<PaginatedResponse<MasterDataItem>>("/admin/locations", { params });
+  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/locations", { params });
 
 export const createLocation = (data: Partial<MasterDataItem>) =>
-  api.post("/admin/locations", data);
+  dashboardServerFetch("/admin/locations", { method: "POST", data });
 
 export const updateLocation = (id: number, data: Partial<MasterDataItem>) =>
-  api.put(`/admin/locations/${id}`, data);
+  dashboardServerFetch(`/admin/locations/${id}`, { method: "PUT", data });
 
 export const deleteLocation = (id: number) =>
-  api.delete(`/admin/locations/${id}`);
+  dashboardServerFetch(`/admin/locations/${id}`, { method: "DELETE" });
 
 export const getSkills = (params?: Record<string, unknown>) =>
-  api.get<PaginatedResponse<MasterDataItem>>("/admin/skills", { params });
+  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/skills", { params });
 
 export const createSkill = (data: Partial<MasterDataItem>) =>
-  api.post("/admin/skills", data);
+  dashboardServerFetch("/admin/skills", { method: "POST", data });
 
 export const updateSkill = (id: number, data: Partial<MasterDataItem>) =>
-  api.put(`/admin/skills/${id}`, data);
+  dashboardServerFetch(`/admin/skills/${id}`, { method: "PUT", data });
 
 export const deleteSkill = (id: number) =>
-  api.delete(`/admin/skills/${id}`);
+  dashboardServerFetch(`/admin/skills/${id}`, { method: "DELETE" });
 
 // ─── Jobs ────────────────────────────────────────────────────────────────────
 
 export const getJobs = (params?: Record<string, unknown>) =>
-  api.get<PaginatedResponse<Job>>("/admin/jobs", { params });
+  dashboardServerFetch<PaginatedResponse<Job>>("/admin/jobs", { params });
 
-export const getJob = (id: number) => api.get<Job>(`/admin/jobs/${id}`);
+export const getJob = (id: number) => 
+  dashboardServerFetch<ApiResponse<Job>>(`/admin/jobs/${id}`);
 
 export const updateJob = (id: number, data: Partial<Job>) =>
-  api.put(`/admin/jobs/${id}`, data);
+  dashboardServerFetch(`/admin/jobs/${id}`, { method: "PUT", data });
 
-export const deleteJob = (id: number) => api.delete(`/admin/jobs/${id}`);
+export const deleteJob = (id: number) => 
+  dashboardServerFetch(`/admin/jobs/${id}`, { method: "DELETE" });
 
-export const approveJob = (id: number) => api.patch(`/admin/jobs/${id}/approve`);
+export const approveJob = (id: number) => 
+  dashboardServerFetch(`/admin/jobs/${id}/approve`, { method: "PATCH" });
 
-export const rejectJob = (id: number) => api.patch(`/admin/jobs/${id}/reject`);
+export const rejectJob = (id: number) => 
+  dashboardServerFetch(`/admin/jobs/${id}/reject`, { method: "PATCH" });
 
-export const featureJob = (id: number) => api.patch(`/admin/jobs/${id}/feature`);
+export const featureJob = (id: number) => 
+  dashboardServerFetch(`/admin/jobs/${id}/feature`, { method: "PATCH" });
 
 // ─── Job Seekers ─────────────────────────────────────────────────────────────
 
 export const getJobSeekers = (params?: Record<string, unknown>) =>
-  api.get<PaginatedResponse<JobSeeker>>("/admin/jobseekers", { params });
+  dashboardServerFetch<PaginatedResponse<JobSeeker>>("/admin/jobseekers", { params });
+
+export const getJobSeeker = (id: number) =>
+  dashboardServerFetch<ApiResponse<JobSeeker>>(`/admin/jobseekers/${id}`);
 
 export const updateJobSeeker = (id: number, data: Partial<JobSeeker>) =>
-  api.put(`/admin/jobseekers/${id}`, data);
+  dashboardServerFetch(`/admin/jobseekers/${id}`, { method: "PUT", data });
 
 export const disableJobSeeker = (id: number) =>
-  api.patch(`/admin/jobseekers/${id}/disable`);
+  dashboardServerFetch(`/admin/jobseekers/${id}/disable`, { method: "PATCH" });
 
 export const deleteJobSeeker = (id: number) =>
-  api.delete(`/admin/jobseekers/${id}`);
+  dashboardServerFetch(`/admin/jobseekers/${id}`, { method: "DELETE" });
 
 // ─── Recruiters ──────────────────────────────────────────────────────────────
 
 export const getRecruiters = (params?: Record<string, unknown>) =>
-  api.get<PaginatedResponse<Recruiter>>("/admin/recruiters", { params });
+  dashboardServerFetch<PaginatedResponse<Recruiter>>("/admin/recruiters", { params });
+
+export const getRecruiter = async (id: number) => {
+  const res = await dashboardServerFetch<{ status: boolean; data: Recruiter }>(`/admin/recruiters/${id}`);
+  return res.data;
+};
 
 export const updateRecruiter = (id: number, data: Partial<Recruiter>) =>
-  api.put(`/admin/recruiters/${id}`, data);
+  dashboardServerFetch(`/admin/recruiters/${id}`, { method: "PUT", data });
 
 export const disableRecruiter = (id: number) =>
-  api.patch(`/admin/recruiters/${id}/disable`);
+  dashboardServerFetch(`/admin/recruiters/${id}/disable`, { method: "PATCH" });
 
 export const deleteRecruiter = (id: number) =>
-  api.delete(`/admin/recruiters/${id}`);
+  dashboardServerFetch(`/admin/recruiters/${id}`, { method: "DELETE" });
 
 // ─── Employers ───────────────────────────────────────────────────────────────
 
 export const getEmployers = (params?: Record<string, unknown>) =>
-  api.get<PaginatedResponse<Employer>>("/admin/employers", { params });
+  dashboardServerFetch<PaginatedResponse<Employer>>("/admin/employers", { params });
+
+export const getEmployer = (id: number) =>
+  dashboardServerFetch<ApiResponse<Employer>>(`/admin/employers/${id}`);
 
 export const updateEmployer = (id: number, data: Partial<Employer>) =>
-  api.put(`/admin/employers/${id}`, data);
+  dashboardServerFetch(`/admin/employers/${id}`, { method: "PUT", data });
 
 export const deleteEmployer = (id: number) =>
-  api.delete(`/admin/employers/${id}`);
+  dashboardServerFetch(`/admin/employers/${id}`, { method: "DELETE" });
 
 export const verifyEmployer = (id: number) =>
-  api.patch(`/admin/employers/${id}/verify`);
+  dashboardServerFetch(`/admin/employers/${id}/verify`, { method: "PATCH" });
 
 export const featureEmployer = (id: number) =>
-  api.patch(`/admin/employers/${id}/feature`);
+  dashboardServerFetch(`/admin/employers/${id}/feature`, { method: "PATCH" });
 
 // ─── Applications ────────────────────────────────────────────────────────────
 
 export const getApplications = (params?: Record<string, unknown>) =>
-  api.get<PaginatedResponse<Application>>("/admin/applications", { params });
+  dashboardServerFetch<PaginatedResponse<Application>>("/admin/applications", { params });
 
 export const updateApplication = (id: number, data: Partial<Application>) =>
-  api.put(`/admin/applications/${id}`, data);
+  dashboardServerFetch(`/admin/applications/${id}`, { method: "PUT", data });
 
 // ─── Plans ───────────────────────────────────────────────────────────────────
 
-export const getPlans = () => api.get<Plan[]>("/admin/plans");
+export const getPlans = () => 
+  dashboardServerFetch<ApiResponse<Plan[]>>("/admin/plans");
 
 export const createPlan = (data: Partial<Plan>) =>
-  api.post<Plan>("/admin/plans", data);
+  dashboardServerFetch<Plan>("/admin/plans", { method: "POST", data });
 
 export const updatePlan = (id: number, data: Partial<Plan>) =>
-  api.put(`/admin/plans/${id}`, data);
+  dashboardServerFetch(`/admin/plans/${id}`, { method: "PUT", data });
 
 export const patchPlan = (id: number, data: Partial<Plan>) =>
-  api.patch(`/admin/plans/${id}`, data);
+  dashboardServerFetch(`/admin/plans/${id}`, { method: "PATCH", data });
 
-export const deletePlan = (id: number) => api.delete(`/admin/plans/${id}`);
+export const deletePlan = (id: number) => 
+  dashboardServerFetch(`/admin/plans/${id}`, { method: "DELETE" });
+
+// ─── CV Templates ────────────────────────────────────────────────────────────
+
+export const getCVTemplates = (params?: Record<string, unknown>) =>
+  dashboardServerFetch<CVTemplate[]>("/admin/cms/cv-templates", { params });
+
+export const getCVTemplate = (id: number) =>
+  dashboardServerFetch<CVTemplate>(`/admin/cms/cv-templates/${id}`);
+
+export const createCVTemplate = (data: FormData | Partial<CVTemplate>) =>
+  dashboardServerFetch<CVTemplate>("/admin/cms/cv-templates", { 
+    method: "POST", 
+    data,
+    headers: data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : undefined
+  });
+
+export const updateCVTemplate = (id: number, data: FormData | Partial<CVTemplate>) =>
+  dashboardServerFetch<CVTemplate>(`/admin/cms/cv-templates/${id}`, { 
+    method: "POST", 
+    data,
+    params: { _method: "PUT" },
+    headers: data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : undefined
+  });
+
+export const deleteCVTemplate = (id: number) =>
+  dashboardServerFetch(`/admin/cms/cv-templates/${id}`, { method: "DELETE" });
 
 // ─── Reviews ─────────────────────────────────────────────────────────────────
 
 export const getReviews = (params?: Record<string, unknown>) =>
-  api.get<PaginatedResponse<Review>>("/admin/reviews", { params });
+  dashboardServerFetch<PaginatedResponse<Review>>("/admin/reviews", { params });
 
 export const updateReview = (id: number, data: Partial<Review>) =>
-  api.put(`/admin/reviews/${id}`, data);
+  dashboardServerFetch(`/admin/reviews/${id}`, { method: "PUT", data });
 
 // ─── CMS ─────────────────────────────────────────────────────────────────────
 
-export const getCMSSections = () => api.get<CMSSection[]>("/admin/cms");
+export const getCMSSections = () => 
+  dashboardServerFetch<CMSSection[]>("/admin/cms");
 
 export const updateCMSSection = (id: number, data: Partial<CMSSection>) =>
-  api.put(`/admin/cms/${id}`, data);
+  dashboardServerFetch(`/admin/cms/${id}`, { method: "PUT", data });
 
 // Navigation
-export const getCMSNavigations = () => api.get<any[]>("/admin/cms/navigation");
-export const createCMSNavigation = (data: any) => api.post("/admin/cms/navigation", data);
-export const updateCMSNavigation = (id: number, data: any) => api.put(`/admin/cms/navigation/${id}`, data);
-export const deleteCMSNavigation = (id: number) => api.delete(`/admin/cms/navigation/${id}`);
-export const toggleCMSNavigationActive = (id: number) => api.patch(`/admin/cms/navigation/${id}/toggle-active`);
-export const toggleCMSNavigationNav = (id: number) => api.patch(`/admin/cms/navigation/${id}/toggle-nav`);
+export const getCMSNavigations = () => 
+  dashboardServerFetch<any[]>("/admin/cms/navigation");
+
+export const createCMSNavigation = (data: any) => 
+  dashboardServerFetch("/admin/cms/navigation", { method: "POST", data });
+
+export const updateCMSNavigation = (id: number, data: any) => 
+  dashboardServerFetch(`/admin/cms/navigation/${id}`, { method: "PUT", data });
+
+export const deleteCMSNavigation = (id: number) => 
+  dashboardServerFetch(`/admin/cms/navigation/${id}`, { method: "DELETE" });
+
+export const toggleCMSNavigationActive = (id: number) => 
+  dashboardServerFetch(`/admin/cms/navigation/${id}/toggle-active`, { method: "PATCH" });
+
+export const toggleCMSNavigationNav = (id: number) => 
+  dashboardServerFetch(`/admin/cms/navigation/${id}/toggle-nav`, { method: "PATCH" });
 
 // Footer Links
-export const getCMSFooterLinks = () => api.get<any[]>("/admin/cms/footer-links");
-export const createCMSFooterLink = (data: any) => api.post("/admin/cms/footer-links", data);
-export const updateCMSFooterLink = (id: number, data: any) => api.put(`/admin/cms/footer-links/${id}`, data);
-export const deleteCMSFooterLink = (id: number) => api.delete(`/admin/cms/footer-links/${id}`);
-export const toggleCMSFooterLink = (id: number) => api.patch(`/admin/cms/footer-links/${id}/toggle`);
+export const getCMSFooterLinks = () => 
+  dashboardServerFetch<any[]>("/admin/cms/footer-links");
+
+export const createCMSFooterLink = (data: any) => 
+  dashboardServerFetch("/admin/cms/footer-links", { method: "POST", data });
+
+export const updateCMSFooterLink = (id: number, data: any) => 
+  dashboardServerFetch(`/admin/cms/footer-links/${id}`, { method: "PUT", data });
+
+export const deleteCMSFooterLink = (id: number) => 
+  dashboardServerFetch(`/admin/cms/footer-links/${id}`, { method: "DELETE" });
+
+export const toggleCMSFooterLink = (id: number) => 
+  dashboardServerFetch(`/admin/cms/footer-links/${id}/toggle`, { method: "PATCH" });
 
 // Company Logos / Branding
-export const getCMSCompanyLogos = () => api.get<any[]>("/admin/cms/company-logos");
-export const createCMSCompanyLogo = (data: any) => api.post("/admin/cms/company-logos", data);
-export const updateCMSCompanyLogo = (id: number, data: any) => api.put(`/admin/cms/company-logos/${id}`, data);
-export const deleteCMSCompanyLogo = (id: number) => api.delete(`/admin/cms/company-logos/${id}`);
+export const getCMSCompanyLogos = () => 
+  dashboardServerFetch<any[]>("/admin/cms/company-logos");
+
+export const createCMSCompanyLogo = (data: any) => 
+  dashboardServerFetch("/admin/cms/company-logos", { method: "POST", data });
+
+export const updateCMSCompanyLogo = (id: number, data: any) => 
+  dashboardServerFetch(`/admin/cms/company-logos/${id}`, { method: "PUT", data });
+
+export const deleteCMSCompanyLogo = (id: number) => 
+  dashboardServerFetch(`/admin/cms/company-logos/${id}`, { method: "DELETE" });
 
 // ─── SEO ─────────────────────────────────────────────────────────────────────
 
-export const getSEOSettings = () => api.get<SEOSetting[]>("/admin/seo");
+export const getSEOSettings = () => 
+  dashboardServerFetch<SEOSetting[]>("/admin/seo");
 
 export const updateSEOSetting = (id: number, data: Partial<SEOSetting>) =>
-  api.put(`/admin/seo/${id}`, data);
+  dashboardServerFetch(`/admin/seo/${id}`, { method: "PUT", data });
 
 export const updateJobSEO = (id: number, data: any) =>
-  api.put(`/admin/seo/job/${id}`, data);
+  dashboardServerFetch(`/admin/seo/job/${id}`, { method: "PUT", data });
 
 export const updateCategorySEO = (id: number, data: any) =>
-  api.put(`/admin/seo/category/${id}`, data);
+  dashboardServerFetch(`/admin/seo/category/${id}`, { method: "PUT", data });
 
 export const updateLocationSEO = (id: number, data: any) =>
-  api.put(`/admin/seo/location/${id}`, data);
+  dashboardServerFetch(`/admin/seo/location/${id}`, { method: "PUT", data });
 
 export const updateEmployerSEO = (id: number, data: any) =>
-  api.put(`/admin/seo/employer/${id}`, data);
+  dashboardServerFetch(`/admin/seo/employer/${id}`, { method: "PUT", data });
 
 // ─── Deleted Items ───────────────────────────────────────────────────────────
 
 export const getDeletedItems = (type: string, params?: Record<string, unknown>) =>
-  api.get<PaginatedResponse<DeletedItem>>(`/admin/deleted/${type}`, { params });
+  dashboardServerFetch<PaginatedResponse<DeletedItem>>(`/admin/deleted/${type}`, { params });
 
 export const restoreItem = (type: string, id: number) =>
-  api.post(`/admin/deleted/${type}/${id}/restore`);
+  dashboardServerFetch(`/admin/deleted/${type}/${id}/restore`, { method: "POST" });
 
 export const permanentDelete = (type: string, id: number) =>
-  api.delete(`/admin/deleted/${type}/${id}`);
+  dashboardServerFetch(`/admin/deleted/${type}/${id}`, { method: "DELETE" });
 
 // ─── Document Verification ──────────────────────────────────────────────────
 
 export const getVerificationRequests = (params?: Record<string, unknown>) =>
-  api.get("/admin/verifications", { params });
+  dashboardServerFetch("/admin/verifications", { params });
 
 export const approveVerification = (id: number) =>
-  api.post(`/admin/verifications/${id}/approve`);
+  dashboardServerFetch(`/admin/verifications/${id}/approve`, { method: "POST" });
 
 export const rejectVerification = (id: number, reason: string) =>
-  api.post(`/admin/verifications/${id}/reject`, { reason });
+  dashboardServerFetch(`/admin/verifications/${id}/reject`, { method: "POST", data: { reason } });
 
 // ─── Notifications ────────────────────────────────────────────────────────
 export const getNotifications = () => 
-  api.get("/admin/notifications");
+  dashboardServerFetch("/admin/notifications");
 
 export const readNotification = (id: number) => 
-  api.post(`/admin/notifications/${id}/read`);
+  dashboardServerFetch(`/admin/notifications/${id}/read`, { method: "POST" });
 
 export const readAllNotifications = () => 
-  api.post("/admin/notifications/read-all");
+  dashboardServerFetch("/admin/notifications/read-all", { method: "POST" });
 
 // ─── Settings ────────────────────────────────────────────────────────────────
 
-export const getSettings = () => api.get("/admin/settings");
+export const getSettings = () => 
+  dashboardServerFetch("/admin/settings");
 
 export const updateSettings = (data: Record<string, unknown>) =>
-  api.put("/admin/settings", data);
+  dashboardServerFetch("/admin/settings", { method: "PUT", data });

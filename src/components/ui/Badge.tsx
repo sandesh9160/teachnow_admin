@@ -8,6 +8,7 @@ interface BadgeProps {
   variant?: BadgeVariant;
   children: React.ReactNode;
   dot?: boolean;
+  className?: string;
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
@@ -30,12 +31,14 @@ export default function Badge({
   variant = "default",
   children,
   dot = false,
+  className,
 }: BadgeProps) {
   return (
     <span
       className={clsx(
         "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold",
-        variantStyles[variant]
+        variantStyles[variant],
+        className
       )}
     >
       {dot && (

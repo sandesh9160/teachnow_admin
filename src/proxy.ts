@@ -100,7 +100,7 @@ const AUTH_COOKIE_NAMES = [
   "authToken",
 ];
 
-const LOGIN_PATHS = ["/"];
+const LOGIN_PATHS = ["/", "/login"];
 
 const isLoginOrPublic = (pathname: string): boolean =>
   LOGIN_PATHS.includes(pathname);
@@ -113,7 +113,7 @@ function clearAuthCookiesAndRedirectToLogin(
   request: NextRequest,
   reason?: "session-expired"
 ): NextResponse {
-  const target = reason ? `/?reason=${reason}` : "/";
+  const target = reason ? `/login?reason=${reason}` : "/login";
   const url = new URL(target, request.url);
 
   const response = NextResponse.redirect(url);
@@ -240,7 +240,7 @@ export async function proxy(request: NextRequest) {
   // PROTECTED ROUTES
   // =========================
   if (!isAuthenticated) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   const sessionRedirect = await validateAdminSession(request);
@@ -255,7 +255,26 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/",
+    "/login",
     "/dashboard/:path*",
-    
+    "/cms/:path*",
+    "/content/:path*",
+    "/deleted-items/:path*",
+    "/employers/:path*",
+    "/jobs/:path*",
+    "/jobseekers/:path*",
+    "/master-data/:path*",
+    "/plans/:path*",
+    "/recruiters/:path*",
+    "/reviews/:path*",
+    "/seo/:path*",
+    "/settings/:path*",
+    "/verification/:path*",
+    "/email/:path*",
+    "/cron-jobs/:path*",
+    "/cv-templates/:path*",
+    "/resources/:path*",
+    "/applications/:path*",
+    "/notifications/:path*",
   ],
 };

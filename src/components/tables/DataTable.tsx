@@ -19,7 +19,7 @@ interface DataTableProps<T> {
   compact?: boolean;
 }
 
-export default function DataTable<T extends Record<string, unknown>>({
+export default function DataTable<T>({
   columns,
   data,
   loading = false,
@@ -80,8 +80,8 @@ export default function DataTable<T extends Record<string, unknown>>({
                       )}
                     >
                       {col.render
-                        ? col.render(row[col.key], row)
-                        : (row[col.key] as React.ReactNode)}
+                        ? col.render((row as any)[col.key], row)
+                        : ((row as any)[col.key] as React.ReactNode)}
                     </td>
                   ))}
                 </tr>

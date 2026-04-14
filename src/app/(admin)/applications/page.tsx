@@ -1,13 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import DataTable from "@/components/tables/DataTable";
-import Badge from "@/components/ui/Badge";
-import { ClipboardList, Search, Download, Filter, User, Briefcase, Calendar, Phone } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { getApplications } from "@/services/admin.service";
 import { Application } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
+import Badge from "@/components/ui/Badge";
+import DataTable from "@/components/tables/DataTable";
+import { 
+  ClipboardList, 
+  Search, 
+  Download, 
+  Filter, 
+  Briefcase, 
+  Calendar, 
+  Phone, 
+  Eye
+} from "lucide-react";
 
 const statusVariant: Record<string, "success" | "warning" | "danger" | "info" | "default"> = {
   applied: "info",
@@ -17,7 +27,10 @@ const statusVariant: Record<string, "success" | "warning" | "danger" | "info" | 
   rejected: "danger",
 };
 
+type ApplicationRow = Application & Record<string, unknown>;
+
 export default function ApplicationsPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,8 +43,8 @@ export default function ApplicationsPage() {
     try {
       setLoading(true);
       const res = await getApplications();
-      const list = (res.data as any).data?.data || [];
-      setApplications(list);
+      const list = (res as any).data?.data || (res as any).data || [];
+      setApplications(Array.isArray(list) ? list : []);
     } catch (err: any) {
       toast.error("Failed to fetch applications");
     } finally {
@@ -47,21 +60,23 @@ export default function ApplicationsPage() {
   const columns = [
     { 
       key: "candidate", 
-      title: "APPLICANT", 
-      render: (_: any, row: Application) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-surface-50 border border-surface-100 flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+      title: "Educational Personnel", 
+      render: (_: unknown, row: ApplicationRow) => (
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm group-hover:scale-110 transition-transform">
             {row.job_seeker?.profile_photo ? (
                 <img src={`https://teachnowbackend.jobsvedika.in/${row.job_seeker.profile_photo}`} alt="" className="w-full h-full object-cover" />
             ) : (
-                <User size={18} className="text-surface-300" />
+                <div className="w-full h-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                    {row.job_seeker?.user?.name?.charAt(0)}
+                </div>
             )}
           </div>
           <div className="min-w-0">
-            <p className="font-bold text-surface-900 leading-tight truncate max-w-[180px]">{row.job_seeker?.user?.name}</p>
-            <div className="flex items-center gap-1.5 mt-0.5">
-                <Phone size={10} className="text-surface-300" />
-                <p className="text-[10px] text-surface-400 font-medium">{row.job_seeker?.phone}</p>
+            <p className="font-bold text-slate-900 leading-tight truncate tracking-tight">{row.job_seeker?.user?.name}</p>
+            <div className="flex items-center gap-1.5 mt-1">
+                <Phone size={10} className="text-slate-400" />
+                <p className="text-[10px] text-slate-500 font-medium">{row.job_seeker?.phone}</p>
             </div>
           </div>
         </div>
@@ -69,13 +84,13 @@ export default function ApplicationsPage() {
     },
     { 
         key: "job", 
-        title: "TARGET POSITION", 
-        render: (_: any, row: Application) => (
+        title: "Target Deployment", 
+        render: (_: unknown, row: ApplicationRow) => (
             <div className="flex items-center gap-2 max-w-[220px]">
-                <div className="p-1.5 rounded-lg bg-primary-50 text-primary-600 shrink-0">
-                    <Briefcase size={12} />
+                <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 shrink-0 border border-indigo-100/50">
+                    <Briefcase size={12} strokeWidth={2.5} />
                 </div>
-                <p className="font-bold text-surface-700 text-[12px] truncate leading-tight uppercase tracking-tighter">
+                <p className="font-bold text-slate-700 text-[12px] truncate leading-tight tracking-tight">
                     {row.job?.title}
                 </p>
             </div>
@@ -83,38 +98,57 @@ export default function ApplicationsPage() {
     },
     { 
         key: "status", 
-        title: "STATUS", 
-        render: (v: string) => (
-            <Badge variant={statusVariant[v] || "default"} dot className="capitalize text-[10px] font-black tracking-widest">
-                {v}
-            </Badge>
-        ) 
+        title: "Moderation Status", 
+        render: (v: unknown) => {
+            const status = typeof v === "string" ? v : "";
+
+            return (
+                <Badge variant={statusVariant[status] || "default"} dot className="capitalize text-[10px] font-bold px-3 py-1 ring-1 ring-inset tracking-wider whitespace-nowrap">
+                    {status || "unknown"}
+                </Badge>
+            );
+        }
     },
     { 
         key: "contact", 
-        title: "STEP", 
-        render: (_: any, row: Application) => (
+        title: "Agent Intel", 
+        render: (_: unknown, row: ApplicationRow) => (
             <div className="flex flex-col">
                 <span className={clsx(
-                    "text-[10px] font-black uppercase tracking-widest",
-                    row.contact_status ? "text-indigo-600" : "text-surface-300"
+                    "text-[10px] font-bold uppercase tracking-wider",
+                    row.contact_status ? "text-indigo-600" : "text-slate-400"
                 )}>
-                    {row.contact_status?.replace('_', ' ') || "PENDING"}
+                    {row.contact_status?.replace('_', ' ') || "UNAWARE"}
                 </span>
-                <span className="text-[8px] text-surface-400 font-bold uppercase mt-0.5">Contact Status</span>
+                <span className="text-[8px] text-slate-400 font-bold uppercase mt-0.5 tracking-tighter">Current Engagement</span>
             </div>
         )
     },
     { 
         key: "created_at", 
-        title: "DATE", 
-        render: (v: string) => (
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-surface-400 uppercase">
-                <Calendar size={12} className="text-surface-300" /> 
-                {new Date(v).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+        title: "Registry Timestamp", 
+        render: (v: unknown) => (
+            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+                <Calendar size={12} className="text-slate-300" /> 
+                {new Date(String(v)).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
             </div>
         ) 
     },
+    {
+      key: "actions",
+      title: "Actions",
+      render: (_: unknown, row: ApplicationRow) => (
+        <div className="flex items-center justify-end">
+          <button 
+            onClick={(e) => { e.stopPropagation(); router.push(`/jobseekers/${row.job_seeker_id}`); }}
+            className="p-2 bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-100 rounded-lg transition-all shadow-sm hover:shadow-md active:scale-95"
+            title="Review Applicant"
+          >
+            <Eye size={16} />
+          </button>
+        </div>
+      )
+    }
   ];
 
   return (
@@ -154,7 +188,7 @@ export default function ApplicationsPage() {
 
       <DataTable 
         columns={columns} 
-        data={filtered} 
+        data={filtered as ApplicationRow[]} 
         loading={loading}
         emptyMessage="The application queue is currently empty."
       />

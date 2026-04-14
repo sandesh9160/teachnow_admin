@@ -106,9 +106,16 @@ export interface Plan {
   id: number;
   name: string;
   slug: string;
-  price: number;
-  original_price?: number;
-  sale_price?: number;
+  price: number | string;
+  actual_price?: number | string;
+  offer_price?: number | string;
+  job_posts_limit?: number;
+  validity_days?: number;
+  job_live_days?: number;
+  featured_jobs_limit?: number;
+  company_featured?: number | boolean;
+  original_price?: number | string;
+  sale_price?: number | string;
   duration: string;
   features: string[];
   is_highlighted: boolean;
@@ -120,6 +127,19 @@ export interface PlanCardProps {
   plan: Plan;
   onEdit?: (plan: Plan) => void;
   onToggle?: (plan: Plan) => void;
+}
+
+// ─── CV Template Types ───────────────────────────────────────────────────────
+
+export interface CVTemplate {
+  id: number;
+  name: string;
+  html_template: string;
+  preview_image?: string;
+  is_active: number | boolean;
+  key_values?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 // ─── Deleted Items Types ─────────────────────────────────────────────────────
@@ -205,6 +225,15 @@ export interface Job {
 
 // ─── User Types ──────────────────────────────────────────────────────────────
 
+export interface JobSeekerResume {
+  id: number;
+  job_seeker_id: number;
+  file_name: string;
+  file_url: string;
+  is_default: number | boolean;
+  created_at: string;
+}
+
 export interface JobSeeker {
   id: number;
   user_id: number;
@@ -215,6 +244,8 @@ export interface JobSeeker {
   availability: string;
   dob?: string;
   profile_photo?: string;
+  portfolio_website?: string | null;
+  bio?: string | null;
   is_active?: number | boolean;
   created_at: string;
   updated_at: string;
@@ -223,6 +254,8 @@ export interface JobSeeker {
     name: string;
     email: string;
   };
+  resumes?: JobSeekerResume[];
+  job_applications?: Application[];
 }
 
 export interface Recruiter {
@@ -238,12 +271,14 @@ export interface Recruiter {
     company_name: string;
   };
   jobs_count?: number;
+  jobs?: Job[];
 }
 
 export interface Employer {
   id: number;
   company_name: string;
   company_description?: string;
+  about_company?: string;
   industry: string;
   institution_type: string;
   website?: string;
@@ -264,6 +299,8 @@ export interface Employer {
   created_at: string;
   updated_at: string;
   jobs_count?: number;
+  recruiters?: Recruiter[];
+  jobs?: Job[];
 }
 
 // ─── Application Types ──────────────────────────────────────────────────────
@@ -304,6 +341,7 @@ export interface Notification {
   message: string;
   type: string;
   read_at: string | null;
+  is_read?: boolean;
   created_at: string;
   data?: any;
 }
@@ -313,9 +351,9 @@ export interface Notification {
 export interface SidebarItem {
   title: string;
   href: string;
-  icon: React.ReactNode;
-  badge?: number;
-  children?: SidebarItem[];
+  icon: any;
+  badge?: number | string;
+  children?: { title: string; href: string }[];
 }
 
 // ─── Common Types ────────────────────────────────────────────────────────────

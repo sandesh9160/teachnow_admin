@@ -6,17 +6,25 @@ import {
   RotateCcw, 
   Save, 
   Plus,
-  MessageSquare,
+  // MessageSquare,
   Trash2,
   Star,
   User,
   Quote,
-  Pencil
+  Pencil,
+  // Sparkles,
+  // Zap,
+  // Activity,
+  // ArrowUpRight,
+  // Target,
+  // Clock,
+  // Layers,
+  Heart
 } from "lucide-react";
 import Link from "next/link";
 import { getCMSSections, updateCMSSection } from "@/services/admin.service";
 import { toast } from "sonner";
-import { clsx } from "clsx";
+// import { clsx } from "clsx";
 import Badge from "@/components/ui/Badge";
 
 export default function CMSTestimonialsPage() {
@@ -31,8 +39,8 @@ export default function CMSTestimonialsPage() {
   const fetchTestimonials = async () => {
     try {
       setLoading(true);
-      const response = await getCMSSections();
-      const sections = (response.data as any).data || response.data;
+      const payload = await getCMSSections();
+      const sections = Array.isArray(payload) ? payload : (payload as any)?.data ?? payload;
       const section = sections.find((s: any) => s.slug === "testimonials");
       
       setData(section || {
@@ -57,9 +65,9 @@ export default function CMSTestimonialsPage() {
     try {
       setSaving(true);
       await updateCMSSection(data.id, data);
-      toast.success("Testimonials updated");
+      toast.success("Social proof architecture updated successfully");
     } catch (error) {
-      toast.error("Failed to save changes");
+      toast.error("Failed to save architecture changes");
     } finally {
       setSaving(false);
     }
@@ -71,69 +79,82 @@ export default function CMSTestimonialsPage() {
 
   const addItem = () => {
     const newId = Math.max(0, ...data.content.items.map((i: any) => i.id)) + 1;
-    const newItem = { id: newId, name: "New Reviewer", role: "Role", text: "Enter testimonial here...", rating: 5, avatar: "" };
+    const newItem = { id: newId, name: "New Advocate", role: "Contributor Role", text: "Specify the platform success narrative here...", rating: 5, avatar: "" };
     setData({ ...data, content: { ...data.content, items: [newItem, ...data.content.items] } });
   };
 
-  if (loading) return <div className="p-12 text-center text-surface-400">Loading feedback...</div>;
+  if (loading) return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+        <RotateCcw size={32} className="text-indigo-600 animate-spin" />
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hydrating Reputation Matrix...</p>
+    </div>
+  );
 
   return (
-    <div className="space-y-8 pb-12 antialiased">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Link href="/cms" className="w-10 h-10 rounded-xl bg-white border border-surface-200 flex items-center justify-center text-surface-400 hover:text-primary-600 transition-all shadow-sm">
-            <ArrowLeft size={20} />
+    <div className="space-y-8 pb-16 antialiased">
+      {/* ─── Header Section ────────────────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex items-start gap-4">
+          <Link href="/cms" className="mt-1 w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shadow-sm hover:shadow-xl hover:-translate-x-1 active:scale-90">
+            <ArrowLeft size={18} />
           </Link>
           <div>
-            <div className="flex items-center gap-2 mb-0.5">
-               <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded">Social Proof</span>
+            <div className="flex items-center gap-2 mb-2">
+               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100/50">Human Network</span>
             </div>
-            <h1 className="text-2xl font-bold text-surface-900 tracking-tight">Customer Testimonials</h1>
-            <p className="text-[13px] text-surface-400 font-medium font-sans">Showcase success stories from teachers and employers</p>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase leading-none">Social validation</h1>
+            <p className="text-[12px] text-slate-400 font-bold uppercase tracking-widest mt-2.5 flex items-center gap-2">
+               <Heart size={12} className="text-rose-500 fill-current" /> Manage institutional success stories & peer reviews
+            </p>
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shadow-2xl shadow-indigo-100/20 rounded-2xl p-1 bg-white border border-slate-50">
           <button 
              onClick={addItem}
-             className="flex items-center gap-2 px-4 py-2 bg-white border border-surface-200 text-surface-700 rounded-xl text-sm font-bold shadow-sm hover:bg-surface-50 transition-all"
+             className="flex items-center gap-2 px-5 py-2.5 bg-slate-50 text-slate-900 rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95"
           >
-            <Plus size={18} />
-            Add Testimonial
+            <Plus size={16} strokeWidth={3} />
+            Inject review
           </button>
           <button 
              onClick={handleSave}
              disabled={saving}
-             className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-primary-200 hover:bg-primary-700 transition-all disabled:opacity-50"
+             className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50 group"
           >
-            {saving ? <RotateCcw size={18} className="animate-spin" /> : <Save size={18} />}
-            {saving ? "Saving..." : "Save Testimonials"}
+            {saving ? <RotateCcw size={16} className="animate-spin" /> : <Save size={16} className="group-hover:scale-110 transition-transform" />}
+            {saving ? "Deploying..." : "Sync Proof"}
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {data?.content?.items?.map((item: any) => (
-              <div key={item.id} className="bg-white rounded-2xl border border-surface-100 shadow-sm p-6 flex flex-col sm:flex-row gap-6 hover:border-primary-100 transition-all group">
-                  <div className="flex-shrink-0 flex flex-col items-center gap-3">
-                      <div className="w-20 h-20 rounded-2xl bg-surface-50 border border-surface-100 flex items-center justify-center text-surface-300 relative overflow-hidden group/avatar">
+              <div key={item.id} className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-8 flex flex-col sm:flex-row gap-8 hover:shadow-2xl hover:shadow-indigo-100/30 hover:-translate-y-1 transition-all duration-500 group relative overflow-hidden">
+                  {/* Decorative Anchor */}
+                  <div className="absolute right-0 top-0 p-8 opacity-[0.03] group-hover:opacity-10 transition-opacity">
+                      <Quote size={80} className="fill-current text-indigo-600" />
+                  </div>
+
+                  <div className="flex-shrink-0 flex flex-col items-center gap-4 relative z-10">
+                      <div className="w-24 h-24 rounded-[2rem] bg-slate-50 border-2 border-slate-100 flex items-center justify-center text-slate-300 relative overflow-hidden group/avatar shadow-inner">
                           {item.avatar ? (
-                              <img src={item.avatar} alt="" className="w-full h-full object-cover" />
+                              <img src={item.avatar} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover/avatar:scale-110" />
                           ) : (
-                              <User size={32} />
+                              <User size={40} strokeWidth={1.5} />
                           )}
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer">
-                              <Pencil size={18} className="text-white" />
+                          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all cursor-pointer">
+                              <Pencil size={20} className="text-white transform -rotate-12 group-hover/avatar:rotate-0 transition-transform" />
                           </div>
                       </div>
-                      <div className="flex items-center gap-0.5 text-amber-400">
-                         {[1,2,3,4,5].map(i => <Star key={i} size={12} fill={i <= item.rating ? "currentColor" : "none"} />)}
+                      <div className="flex items-center gap-1 text-amber-500 bg-amber-50 px-3 py-1 rounded-full shadow-sm ring-1 ring-amber-100/50">
+                         {[1,2,3,4,5].map(i => <Star key={i} size={12} fill={i <= item.rating ? "currentColor" : "none"} strokeWidth={i <= item.rating ? 0 : 2} />)}
                       </div>
                   </div>
 
-                  <div className="flex-1 space-y-4">
+                  <div className="flex-1 space-y-6 relative z-10">
                       <div className="flex items-start justify-between">
-                         <div className="space-y-1">
+                         <div className="space-y-1.5 w-full">
                             <input 
                                type="text"
                                value={item.name}
@@ -141,8 +162,8 @@ export default function CMSTestimonialsPage() {
                                   const items = data.content.items.map((i: any) => i.id === item.id ? { ...i, name: e.target.value } : i);
                                   setData({ ...data, content: { ...data.content, items } });
                                }}
-                               className="text-lg font-bold text-surface-900 bg-transparent border-none p-0 outline-none focus:ring-0 w-full"
-                               placeholder="Name"
+                               className="text-xl font-black text-slate-900 bg-transparent border-none p-0 outline-none focus:ring-0 w-full placeholder:text-slate-200"
+                               placeholder="Identified Advocate"
                             />
                             <input 
                                type="text"
@@ -151,29 +172,28 @@ export default function CMSTestimonialsPage() {
                                   const items = data.content.items.map((i: any) => i.id === item.id ? { ...i, role: e.target.value } : i);
                                   setData({ ...data, content: { ...data.content, items } });
                                }}
-                               className="text-[12px] font-bold text-primary-500 bg-transparent border-none p-0 outline-none focus:ring-0 uppercase tracking-wider w-full"
-                               placeholder="Sub-title / Role"
+                               className="text-[11px] font-black text-indigo-500 bg-transparent border-none p-0 outline-none focus:ring-0 uppercase tracking-[0.2em] w-full placeholder:text-slate-300"
+                               placeholder="Institutional Title"
                             />
                          </div>
                          <button 
                             onClick={() => removeItem(item.id)}
-                            className="p-2 text-surface-200 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                            className="p-2.5 text-slate-200 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all translate-x-4 group-hover:translate-x-0"
                          >
-                            <Trash2 size={16} />
+                            <Trash2 size={18} />
                          </button>
                       </div>
 
                       <div className="relative">
-                         <Quote size={20} className="absolute -left-2 -top-2 text-surface-50 -z-0" />
                          <textarea 
-                            rows={3}
+                            rows={4}
                             value={item.text}
                             onChange={(e) => {
                                const items = data.content.items.map((i: any) => i.id === item.id ? { ...i, text: e.target.value } : i);
                                setData({ ...data, content: { ...data.content, items } });
                             }}
-                            className="relative z-10 w-full bg-surface-50/50 border border-surface-50 rounded-xl p-3 text-[13.5px] font-medium text-surface-500 leading-relaxed italic outline-none focus:ring-2 focus:ring-primary-50 transition-all"
-                            placeholder="Share their story..."
+                            className="w-full bg-slate-50 border border-slate-100 rounded-3xl p-5 text-[14px] font-medium text-slate-500 leading-relaxed italic outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all shadow-inner placeholder:text-slate-300"
+                            placeholder="Document the specific platform impact mission and results here..."
                          />
                       </div>
                   </div>
@@ -181,20 +201,24 @@ export default function CMSTestimonialsPage() {
           ))}
       </div>
 
-      {/* Guide Area */}
-      <div className="bg-indigo-900 rounded-2xl p-8 flex items-center justify-between text-white shadow-xl">
-          <div className="flex items-center gap-6">
-             <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center border border-white/20 shadow-inner">
-                 <MessageSquare size={32} className="text-white" />
+      {/* ─── Strategy Guide ─────────────────────────────────────────────── */}
+      <div className="bg-slate-900 rounded-[3rem] p-10 flex flex-col md:flex-row items-center justify-between text-white shadow-2xl shadow-indigo-200 transition-all hover:bg-slate-800 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600 rounded-full blur-[100px] opacity-10 group-hover:opacity-20 transition-opacity" />
+          
+          <div className="flex items-center gap-8 relative z-10">
+             <div className="w-20 h-20 rounded-[2rem] bg-indigo-600 text-white flex items-center justify-center shadow-2xl shadow-indigo-500/20 group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                 <Quote size={40} className="fill-current" />
              </div>
              <div>
-                <h3 className="text-xl font-bold mb-1">Impactful Testimonials</h3>
-                <p className="text-indigo-200 text-sm font-medium">Capture trust by featuring real users with their profiles and ratings.</p>
+                <h3 className="text-2xl font-black mb-1.5 uppercase tracking-tight">Proof strategy</h3>
+                <p className="text-slate-400 text-[13px] font-medium max-w-sm leading-relaxed">Capture platform trust by showcasing authentic success narratives from verified institutional educators.</p>
              </div>
           </div>
-          <div className="hidden md:flex flex-col items-end gap-2">
-             <Badge className="bg-emerald-500 text-white border-none">QUALITY TIP</Badge>
-             <p className="text-[11px] text-right text-indigo-300 font-medium max-w-xs">Use headshots with plain backgrounds for a cohesive look. 1:1 square ratio works best.</p>
+          <div className="hidden md:flex flex-col items-end gap-3 relative z-10 lg:pr-6">
+             <Badge className="bg-indigo-500 text-white border-none text-[9px] font-black tracking-widest px-4 py-1.5 rounded-full">OPTIMIZATION INTEL</Badge>
+             <p className="text-[12px] text-right text-slate-400 font-bold uppercase tracking-widest max-w-xs leading-loose">
+                Utilize high-contrast headshots with 1:1 aspect ratios. Profiles with <span className="text-emerald-400 font-black">5-star logic</span> generate 3.4x higher conversion density.
+             </p>
           </div>
       </div>
     </div>

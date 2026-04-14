@@ -6,7 +6,7 @@ import type { Plan } from "@/types";
 import { clsx } from "clsx";
 import { getPlans, updatePlan, createPlan } from "@/services/admin.service";
 import { toast } from "sonner";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus, Loader2, Sparkles, TrendingUp, ShieldCheck, CreditCard } from "lucide-react";
 
 export default function ManagePlansPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -20,8 +20,12 @@ export default function ManagePlansPage() {
   const fetchPlans = async () => {
     try {
       setLoading(true);
-      const { data } = await getPlans();
-      setPlans(data);
+      const res = await getPlans();
+      if (res && res.data) {
+        setPlans(res.data);
+      } else {
+        setPlans([]);
+      }
     } catch (error) {
       console.error("Failed to fetch plans:", error);
       toast.error("Failed to load plans. Please try again.");
@@ -69,21 +73,24 @@ export default function ManagePlansPage() {
 
   const handleCreatePlan = async () => {
     const newPlanData: Partial<Plan> = {
-      name: "New Plan",
-      slug: "new-plan",
-      price: 0,
+      name: "New Premium Plan",
+      slug: "new-premium-plan",
+      price: 1999,
+      offer_price: 1999,
+      actual_price: 2999,
+      job_posts_limit: 10,
+      validity_days: 60,
+      job_live_days: 30,
       duration: "month",
-      features: ["New Feature"],
-      is_active: false,
+      features: ["Mail Notifications", "Recommendations"],
+      is_active: true,
       is_highlighted: false
     };
 
     try {
-      const { data } = await createPlan(newPlanData);
-      // Depending on API response, data might be the new plan object
-      // If the API returns the updated list, we'd use that, but here we assume it returns the single item
+      await createPlan(newPlanData);
       toast.success("New plan created. You can now edit its details.");
-      fetchPlans(); // Refresh list to get the new plan with its ID
+      fetchPlans();
     } catch (error) {
       toast.error("Failed to create plan");
     }
@@ -91,46 +98,81 @@ export default function ManagePlansPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-surface-400">
-        <Loader2 className="w-8 h-8 animate-spin mb-2" />
-        <p className="text-sm font-medium">Loading plans...</p>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
+        <Loader2 className="w-8 h-8 animate-spin mb-3 text-indigo-500" />
+        <p className="text-[12px] font-bold uppercase tracking-widest">Synchronizing Plans...</p>
       </div>
     );
   }
 
+  const activeCount = (plans || []).filter(p => p.is_active).length;
+
   return (
-    <div className="space-y-6 pb-12">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-surface-900">Manage Plans</h1>
-          <p className="text-sm text-surface-500 mt-1">Configure subscription plans for institutes</p>
+    <div className="space-y-6 pb-12 antialiased max-w-7xl mx-auto">
+      {/* ─── Premium Header ────────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2.5">
+             <div className="w-9 h-9 rounded-[0.9rem] bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
+                <CreditCard size={18} />
+             </div>
+             <h4 className="text-[11px] font-semibold text-indigo-600 tracking-wide">Monetization Hub</h4>
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Manage Premium Offerings</h1>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-xs font-bold text-surface-400">
-             <span className="p-1 px-3 bg-surface-100 rounded-full">{plans.filter(p => p.is_active).length} active plans</span>
+
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex flex-col items-end mr-4">
+              <span className="text-[10px] font-medium text-slate-400">Current Inventory</span>
+              <span className="text-[14px] font-bold text-slate-900">{activeCount} / {(plans || []).length} Plans Active</span>
           </div>
           <button 
             onClick={handleCreatePlan}
-            className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-soft transition-all"
+            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-2xl text-[13px] font-semibold shadow-xl transition-all active:scale-95 group"
           >
-            <Plus size={18} /> Add Plan
+            <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" /> 
+            Create New Plan
           </button>
         </div>
       </div>
 
+      {/* ─── Flexible Statistics ──────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatItem label="Total Subscribers" value={plans.reduce((acc, p) => acc + (p.subscribers || 0), 0).toLocaleString()} />
-        <StatItem label="Monthly Revenue" value={`₹${plans.reduce((acc, p) => acc + (p.price * (p.subscribers || 0)), 0).toLocaleString()}`} color="text-emerald-600" />
-        <StatItem label="Active Plans" value={plans.filter(p => p.is_active).length.toString()} />
+        <StatWidget 
+            label="Ecosystem Reach" 
+            value={(plans || []).reduce((acc, p) => acc + (p.subscribers || 0), 0).toLocaleString()} 
+            icon={<Sparkles size={18} />}
+            desc="Global subscribers"
+            color="indigo"
+        />
+        <StatWidget 
+            label="Revenue Projection" 
+            value={`₹${(plans || []).reduce((acc, p) => acc + (Number(p.offer_price || p.price || 0) * (p.subscribers || 0)), 0).toLocaleString()}`} 
+            icon={<TrendingUp size={18} />}
+            desc="Monthly yield"
+            color="emerald"
+        />
+        <StatWidget 
+            label="Platform Health" 
+            value={(plans || []).filter(p => !p.is_active).length > 0 ? "Normal" : "Optimal"} 
+            icon={<ShieldCheck size={18} />}
+            desc="System status"
+            color="amber"
+        />
       </div>
 
-      {plans.length === 0 ? (
-        <div className="bg-white border border-dashed border-surface-300 rounded-2xl p-12 text-center">
-          <p className="text-surface-500 font-medium">No plans found. Create your first plan to get started.</p>
+      {/* ─── Plan Inventory ────────────────────────────────────────── */}
+      {(!plans || plans.length === 0) ? (
+        <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] p-20 flex flex-col items-center justify-center text-center">
+          <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
+             <CreditCard size={32} />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900">No active plans detected</h3>
+          <p className="text-sm text-slate-400 mt-1 max-w-xs">Your monetization vault is empty. Click "Propose New Plan" to initialize your offerings.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {plans.map((plan) => (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {(plans || []).map((plan) => (
             <PlanCard
               key={plan.id}
               plan={plan}
@@ -148,11 +190,27 @@ export default function ManagePlansPage() {
   );
 }
 
-function StatItem({ label, value, color = "text-surface-900" }: { label: string, value: string, color?: string }) {
+function StatWidget({ label, value, icon, desc, color }: { label: string, value: string, icon: React.ReactNode, desc: string, color: "indigo" | "emerald" | "amber" }) {
+  const themes = {
+    indigo: "from-indigo-500/10 to-blue-500/5 text-indigo-600 border-indigo-100",
+    emerald: "from-emerald-500/10 to-teal-500/5 text-emerald-600 border-emerald-100",
+    amber: "from-amber-500/10 to-orange-500/5 text-amber-600 border-amber-100"
+  };
+
   return (
-    <div className="bg-white p-5 rounded-2xl border border-surface-200 shadow-sm">
-      <p className="text-xs font-bold text-surface-400 uppercase tracking-widest mb-1">{label}</p>
-      <p className={clsx("text-2xl font-black", color)}>{value}</p>
+    <div className="bg-white p-5 rounded-[1.2rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
+      <div className="flex items-center gap-4 relative z-10">
+          <div className={clsx("w-10 h-10 rounded-2xl flex items-center justify-center border shadow-sm shrink-0", themes[color])}>
+            {React.cloneElement(icon as React.ReactElement<any>, { size: 18 })}
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium text-slate-400 mb-0.5">{label}</p>
+            <div className="flex items-baseline gap-2">
+                <p className="text-[20px] font-bold text-slate-900 leading-none">{value}</p>
+                <p className="text-[10px] font-medium text-slate-400 truncate">{desc}</p>
+            </div>
+          </div>
+      </div>
     </div>
   );
 }

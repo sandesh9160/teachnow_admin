@@ -63,8 +63,7 @@ export default function DashboardPage() {
   const fetchStats = async () => {
     try {
         setLoading(true);
-        const res = await getDashboardStats();
-        const body = res.data as any;
+        const body = await getDashboardStats() as any;
         
         // Handle nested { status: true, data: { ... } } OR direct { ... }
         let statsData = null;
@@ -305,9 +304,9 @@ export default function DashboardPage() {
                         <span className="font-semibold text-surface-700 text-[12px]">Job Seeker #{r.job_seeker_id}</span>
                     </div>
                 )},
-                { key: "job", title: "ROLE", render: (v: any) => <span className="text-surface-400 font-medium uppercase text-[10px] tracking-tight">{v?.title || "N/A"}</span> },
-                { key: "status", title: "STATUS", render: (v: string) => <Badge variant={v === "shortlisted" ? "success" : "default"} dot className="text-[9px] font-semibold uppercase">{v}</Badge> },
-                { key: "created_at", title: "TIME", render: (v: string) => <span className="text-[#94A3B8] text-[10px] font-semibold uppercase">{v ? new Date(v).toLocaleDateString() : "N/A"}</span> }
+                { key: "job", title: "ROLE", render: (v: unknown) => <span className="text-surface-400 font-medium uppercase text-[10px] tracking-tight">{(v as any)?.title || "N/A"}</span> },
+                { key: "status", title: "STATUS", render: (v: unknown) => <Badge variant={v === "shortlisted" ? "success" : "default"} dot className="text-[9px] font-semibold uppercase">{typeof v === "string" ? v : ""}</Badge> },
+                { key: "created_at", title: "TIME", render: (v: unknown) => <span className="text-[#94A3B8] text-[10px] font-semibold uppercase">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> }
                 ]}
                 data={stats?.recent_applications || []}
                 onRowClick={(row) => router.push(`/jobseekers/${row.job_seeker_id}`)}
@@ -327,14 +326,14 @@ export default function DashboardPage() {
             <DataTable 
                 compact
                 columns={[
-                { key: "title", title: "JOB TITLE", render: (v: string) => (
-                    <span className="font-semibold text-surface-700 text-[12px] truncate max-w-[150px] inline-block">{v}</span>
+                { key: "title", title: "JOB TITLE", render: (v: unknown) => (
+                    <span className="font-semibold text-surface-700 text-[12px] truncate max-w-[150px] inline-block">{typeof v === "string" ? v : ""}</span>
                 )},
-                { key: "employer", title: "EMPLOYER", render: (v: any) => (
-                    <span className="text-surface-400 font-medium text-[11px]">{v?.company_name || "N/A"}</span>
+                { key: "employer", title: "EMPLOYER", render: (v: unknown) => (
+                    <span className="text-surface-400 font-medium text-[11px]">{(v as { company_name?: string } | null)?.company_name || "N/A"}</span>
                 )},
-                { key: "location", title: "LOCATION", render: (v: string) => <span className="text-surface-500 font-medium text-[10px] uppercase tracking-tight">{v}</span> },
-                { key: "status", title: "STATUS", render: (v: string) => <Badge variant={v === "pending" ? "warning" : "success"} dot className="text-[9px] font-semibold uppercase">{v}</Badge> }
+                { key: "location", title: "LOCATION", render: (v: unknown) => <span className="text-surface-500 font-medium text-[10px] uppercase tracking-tight">{typeof v === "string" ? v : ""}</span> },
+                { key: "status", title: "STATUS", render: (v: unknown) => <Badge variant={v === "pending" ? "warning" : "success"} dot className="text-[9px] font-semibold uppercase">{typeof v === "string" ? v : ""}</Badge> }
                 ]}
                 data={stats?.recent_jobs || []}
                 onRowClick={(row) => router.push(`/jobs/edit/${row.id}`)}
@@ -363,7 +362,7 @@ function StatWidget({ label, value, trend, icon, color }: any) {
           <span className="text-[11px] font-semibold text-emerald-500 opacity-80">{trend}</span>
         </div>
         <div className={clsx("w-8 h-8 rounded-lg flex items-center justify-center border transition-all duration-300 group-hover:scale-105 shadow-xs", theme.bg, theme.text, theme.border)}>
-          {React.cloneElement(icon as React.ReactElement, { size: 14 })}
+          {React.cloneElement(icon as React.ReactElement<{ size?: number }>, { size: 14 })}
         </div>
       </div>
     </div>

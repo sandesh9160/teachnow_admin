@@ -225,7 +225,7 @@ api.interceptors.response.use(
                 // Redirect after toast
                 setTimeout(() => {
                     const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
-                    window.location.replace(`/auth/login?message=Session expired. Please log in again.&callbackUrl=${encodeURIComponent(currentPath)}`);
+                    window.location.replace(`/login?message=Session expired. Please log in again.&callbackUrl=${encodeURIComponent(currentPath)}`);
                 }, 1500);
             }
         }

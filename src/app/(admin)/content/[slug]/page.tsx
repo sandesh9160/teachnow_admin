@@ -188,11 +188,11 @@ export default function ContentEditPage({ params: paramsPromise }: { params: Pro
                         <div><p className="font-bold text-surface-900 text-[12px]">{r.name}</p><p className="text-[10px] text-surface-400 font-medium">{r.email}</p></div>
                     </div>
                   )},
-                  { key: "type", title: "USER TYPE", render: (v: string) => <Badge variant={v === "Employer" ? "info" : "default"} className="text-[9px] uppercase font-bold">{v}</Badge> },
-                  { key: "rating", title: "RATING", render: (v: number) => <div className="flex gap-0.5 mt-0.5">{[...Array(5)].map((_, i) => <Star key={i} size={11} fill={i < v ? "#f59e0b" : "none"} stroke={i < v ? "#f59e0b" : "#cbd5e1"} />)}</div> },
-                  { key: "comment", title: "COMMENT", render: (v: string) => <p className="text-[11px] text-surface-500 font-medium max-w-xs truncate">{v}</p> },
-                  { key: "status", title: "STATUS", render: (v: string) => <Badge variant={v === "Approved" ? "success" : "warning"} className="text-[9px] uppercase font-bold">{v}</Badge> },
-                  { key: "featured", title: "FEATURED", render: (v: boolean) => v ? <Star size={14} fill="#f59e0b" stroke="#f59e0b" className="mx-auto" /> : <Minus size={14} className="text-surface-200 mx-auto" /> },
+                  { key: "type", title: "USER TYPE", render: (v: unknown) => <Badge variant={v === "Employer" ? "info" : "default"} className="text-[9px] uppercase font-bold">{typeof v === "string" ? v : ""}</Badge> },
+                  { key: "rating", title: "RATING", render: (v: unknown) => <div className="flex gap-0.5 mt-0.5">{[...Array(5)].map((_, i) => <Star key={i} size={11} fill={i < (typeof v === "number" ? v : 0) ? "#f59e0b" : "none"} stroke={i < (typeof v === "number" ? v : 0) ? "#f59e0b" : "#cbd5e1"} />)}</div> },
+                  { key: "comment", title: "COMMENT", render: (v: unknown) => <p className="text-[11px] text-surface-500 font-medium max-w-xs truncate">{typeof v === "string" ? v : ""}</p> },
+                  { key: "status", title: "STATUS", render: (v: unknown) => <Badge variant={v === "Approved" ? "success" : "warning"} className="text-[9px] uppercase font-bold">{typeof v === "string" ? v : ""}</Badge> },
+                  { key: "featured", title: "FEATURED", render: (v: unknown) => Boolean(v) ? <Star size={14} fill="#f59e0b" stroke="#f59e0b" className="mx-auto" /> : <Minus size={14} className="text-surface-200 mx-auto" /> },
                   { key: "actions", title: "ACTIONS", render: (_: any, r: any) => (
                     <div className="flex items-center gap-2">
                         <button className="p-1.5 text-surface-300 hover:text-red-500 hover:bg-red-50 transition-colors cursor-pointer rounded"><XCircle size={15} /></button>
@@ -238,14 +238,14 @@ export default function ContentEditPage({ params: paramsPromise }: { params: Pro
                     </div>
                     <DataTable 
                         columns={[
-                            { key: "title", title: "DOCUMENT NAME", render: (v: string, r: any) => (
+                            { key: "title", title: "DOCUMENT NAME", render: (v: unknown, r: any) => (
                                 <div className="flex items-center gap-3">
                                     <div className="w-9 h-9 bg-primary-50 rounded-lg flex items-center justify-center text-primary-600"><FileText size={18} /></div>
-                                    <div><p className="font-bold text-surface-800 text-[13px]">{v}</p><p className="text-[10px] text-surface-400 font-medium uppercase tracking-tighter">{r.type} • {r.size}</p></div>
+                                    <div><p className="font-bold text-surface-800 text-[13px]">{typeof v === "string" ? v : ""}</p><p className="text-[10px] text-surface-400 font-medium uppercase tracking-tighter">{r.type} • {r.size}</p></div>
                                 </div>
                             )},
-                            { key: "date", title: "UPLOADED", render: (v: string) => <span className="text-[11px] font-bold text-surface-400 uppercase">{v}</span> },
-                            { key: "downloads", title: "D-LOADS", render: (v: number) => <span className="text-[11px] font-bold text-surface-600">{v}</span> },
+                            { key: "date", title: "UPLOADED", render: (v: unknown) => <span className="text-[11px] font-bold text-surface-400 uppercase">{typeof v === "string" ? v : ""}</span> },
+                            { key: "downloads", title: "D-LOADS", render: (v: unknown) => <span className="text-[11px] font-bold text-surface-600">{typeof v === "number" ? v : 0}</span> },
                             { key: "actions", title: "ACTIONS", render: () => (
                                 <div className="flex items-center gap-2">
                                      <button className="p-1.5 text-surface-300 hover:text-primary-600 hover:bg-surface-50 rounded transition-colors cursor-pointer"><Pencil size={14} /></button>

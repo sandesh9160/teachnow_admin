@@ -12,7 +12,11 @@ import {
   Pencil,
   Loader2,
   Columns,
-  Link2
+  Link2,
+  Zap,
+  Globe,
+  Layout,
+  Clock
 } from "lucide-react";
 import Link from "next/link";
 import { 
@@ -39,8 +43,8 @@ export default function CMSFooterLinksPage() {
   const fetchFooterLinks = async () => {
     try {
       setLoading(true);
-      const response = await getCMSFooterLinks();
-      const data = (response.data as any).data || response.data;
+      const payload = await getCMSFooterLinks();
+      const data = Array.isArray(payload) ? payload : (payload as any)?.data ?? payload;
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch footer links:", error);
@@ -81,143 +85,152 @@ export default function CMSFooterLinksPage() {
   const columns = [
     { 
       key: "section", 
-      title: "Column Group", 
-      render: (v: string) => (
-        <span className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary-400" />
-          <span className="font-bold text-surface-900 text-[12px] uppercase tracking-wider">{v || "General"}</span>
-        </span>
+      title: "COLUMN SEGMENT", 
+      render: (v: unknown) => (
+        <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
+                <Columns size={14} />
+            </div>
+            <span className="font-black text-slate-900 text-[11px] uppercase tracking-[0.1em]">{typeof v === "string" && v ? v : "General System"}</span>
+        </div>
       )
     },
     { 
       key: "title", 
-      title: "Link Label", 
-      render: (v: string) => <span className="font-medium text-surface-700 text-[13px]">{v || "Untitled"}</span> 
+      title: "IDENTITY", 
+      render: (v: unknown) => <span className="font-bold text-slate-700 text-[13px]">{typeof v === "string" && v ? v : "Untitled Node"}</span> 
     },
     { 
       key: "url", 
-      title: "Destination", 
-      render: (v: string) => (
-        <span className="flex items-center gap-1.5 text-surface-400 text-[11px] font-medium italic">
-          <ExternalLink size={10} />
-          {v || "/"}
-        </span>
+      title: "POINTER", 
+      render: (v: unknown) => (
+        <div className="flex items-center gap-2">
+            <code className="bg-slate-50 px-2 py-0.5 rounded-lg text-[10px] font-bold text-indigo-600 border border-slate-100 shadow-inner">
+                {typeof v === "string" && v ? v : "/"}
+            </code>
+            <ExternalLink size={10} className="text-slate-300" />
+        </div>
       ) 
     },
     { 
       key: "is_active", 
-      title: "Display Status", 
-      render: (v: boolean, item: any) => (
+      title: "VISIBILITY", 
+      render: (v: unknown, item: any) => (
         <button 
           onClick={() => handleToggle(item.id)}
           className={clsx(
-            "px-2.5 py-1 rounded-full text-[10px] font-bold uppercase transition-all flex items-center gap-1.5",
-            v ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-surface-50 text-surface-400 border border-surface-100"
+            "px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
+            Boolean(v) ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-slate-50 text-slate-400 border border-slate-100"
           )}
         >
-          {v ? <div className="w-1 h-1 rounded-full bg-emerald-500" /> : <div className="w-1 h-1 rounded-full bg-surface-300" />}
-          {v ? "Visible" : "Hidden"}
+          <div className={clsx("w-1.5 h-1.5 rounded-full", Boolean(v) ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.3)]" : "bg-slate-300")} />
+          {Boolean(v) ? "Live" : "Draft"}
         </button>
       ) 
     },
     { 
-      key: "actions", 
-      title: "Actions", 
-      render: (_: any, item: any) => (
-        <div className="flex items-center gap-2">
-          <button 
-            title="Edit"
-            className="p-1.5 text-surface-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-all"
-          >
-            <Pencil size={14} />
-          </button>
-          <button 
-            onClick={() => handleDelete(item.id)}
-            title="Delete"
-            className="p-1.5 text-surface-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-      )
-    }
+        key: "actions", 
+        title: "REVIEW", 
+        render: (_: any, item: any) => (
+            <div className="flex items-center justify-end gap-1.5">
+                <button 
+                    title="Adjust Parameters"
+                    className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
+                >
+                    <Pencil size={16} />
+                </button>
+                <button 
+                    onClick={() => handleDelete(item.id)}
+                    title="Decommission Link"
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                >
+                    <Trash2 size={16} />
+                </button>
+            </div>
+        ) 
+    },
   ];
 
   return (
-    <div className="space-y-6 pb-12 antialiased">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Link href="/cms" className="w-8 h-8 rounded-lg bg-white border border-surface-200 flex items-center justify-center text-surface-400 hover:text-primary-600 transition-all shadow-xs">
-            <ArrowLeft size={16} />
+    <div className="space-y-8 pb-16 antialiased">
+      {/* ─── Header Section ────────────────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex items-start gap-4">
+          <Link href="/cms" className="mt-1 w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shadow-sm hover:shadow-xl hover:-translate-x-1 active:scale-90">
+            <ArrowLeft size={18} />
           </Link>
           <div>
-            <div className="flex items-center gap-2 mb-0.5">
-               <span className="text-[10px] font-bold text-surface-300 uppercase tracking-widest">CMS Sections</span>
-               <span className="text-surface-200">/</span>
-               <span className="text-[10px] font-bold text-primary-500 uppercase tracking-widest">Footer Links</span>
+            <div className="flex items-center gap-2 mb-2">
+               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100/50">Content Architecture</span>
             </div>
-            <h1 className="text-2xl font-bold text-surface-900 tracking-tight">Footer Hierarchy</h1>
-            <p className="text-[13px] text-surface-400 font-medium font-sans">Organize links, policies, and company information groups</p>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase leading-none">Footer Hierarchy</h1>
+            <p className="text-[12px] text-slate-400 font-bold uppercase tracking-widest mt-2.5 flex items-center gap-2">
+               <Globe size={12} className="text-emerald-500" /> Manage global site persistence & legal anchors
+            </p>
           </div>
         </div>
         
-        <button className="flex items-center gap-2 px-4 py-2 bg-surface-900 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-black transition-all active:scale-95">
-          <Plus size={18} />
-          Create New Link
+        <button className="flex items-center gap-2 px-8 py-3 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-[0_10px_20px_rgba(0,0,0,0.1)] hover:bg-slate-800 hover:-translate-y-1 transition-all active:scale-95 group">
+          <Plus size={18} className="group-hover:rotate-90 transition-transform" />
+          Inject New Link
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-surface-100 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-surface-50 bg-[#F8FAFC]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="relative max-w-sm">
-            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400" />
-            <input 
-              type="text" 
-              placeholder="Filter by title or section..." 
-              value={search} 
-              onChange={(e) => setSearch(e.target.value)} 
-              className="w-full sm:w-80 pl-10 pr-4 py-2 bg-white border border-surface-200 rounded-xl text-[13px] text-surface-700 outline-none focus:ring-2 focus:ring-primary-100 transition-all font-medium" 
-            />
-          </div>
-          <button 
-             onClick={fetchFooterLinks}
-             disabled={loading}
-             className="flex items-center gap-2 px-3 py-1.5 text-[12px] font-bold text-surface-600 hover:text-primary-600 hover:bg-white rounded-lg transition-all"
-          >
-            <RotateCcw size={14} className={clsx(loading && "animate-spin")} />
-            Refresh
-          </button>
+      {/* ─── Control Bar ───────────────────────────────────────────────────── */}
+      <div className="bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="relative flex-1 w-full max-w-md">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+          <input 
+            type="text" 
+            placeholder="Search hierarchy sectors or identities..." 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)} 
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-[13px] text-slate-700 outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-medium placeholder:text-slate-300 shadow-inner" 
+          />
         </div>
+        <div className="flex items-center gap-3 pr-2">
+            <button 
+                onClick={fetchFooterLinks}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2.5 text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-all group"
+            >
+                <RotateCcw size={14} className={clsx("group-hover:-rotate-45 transition-transform", loading && "animate-spin")} />
+                Sync Database
+            </button>
+        </div>
+      </div>
 
+      {/* ─── Data Landscape ────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-2xl hover:shadow-slate-100/50">
         <DataTable 
           columns={columns} 
           data={filtered} 
           loading={loading}
-          emptyMessage="No footer links configured"
+          emptyMessage="No persistence nodes detected in the current footer registry."
         />
       </div>
 
-      {/* Helper Card */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-5 bg-white border border-surface-100 rounded-xl flex items-start gap-4 shadow-xs">
-              <div className="p-2.5 rounded-lg bg-amber-50 text-amber-600">
-                  <Columns size={20} />
+      {/* ─── Optimization Insights ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="p-6 bg-indigo-50/30 border border-indigo-100/50 rounded-[2rem] flex items-start gap-4 transition-all hover:bg-white hover:shadow-xl hover:shadow-indigo-100/20 group">
+              <div className="w-12 h-12 rounded-2xl bg-white border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">
+                  <Columns size={24} />
               </div>
               <div>
-                  <h5 className="text-[14px] font-bold text-surface-900 mb-1">Column Management</h5>
-                  <p className="text-[12px] text-surface-400 leading-relaxed">
-                      Links are automatically grouped by "Column Group". Ensure group names match your intended footer layout (e.g., "Product", "Support", "Legal").
+                  <h5 className="text-[12px] font-black text-slate-900 uppercase tracking-widest mb-1.5">Column Segmentation</h5>
+                  <p className="text-[12px] text-slate-500 font-medium leading-relaxed">
+                      Links are grouped by "Column Segment". Ensure consistent naming to maintain structural integrity in the footer layout (e.g., "Resources", "Institutional").
                   </p>
               </div>
           </div>
-          <div className="p-5 bg-white border border-surface-100 rounded-xl flex items-start gap-4 shadow-xs">
-              <div className="p-2.5 rounded-lg bg-blue-50 text-blue-600">
-                  <Link2 size={20} />
+          <div className="p-6 bg-slate-900 border border-slate-800 rounded-[2rem] flex items-start gap-4 transition-all hover:shadow-2xl hover:shadow-slate-200/50 group">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:rotate-12 transition-transform">
+                  <Zap size={24} className="fill-current" />
               </div>
               <div>
-                  <h5 className="text-[14px] font-bold text-surface-900 mb-1">SEO Best Practices</h5>
-                  <p className="text-[12px] text-surface-400 leading-relaxed">
-                      Use descriptive labels for links. For external links, consider adding a custom rel attribute in the advanced settings to protect your Domain Authority.
+                  <h5 className="text-[12px] font-black text-white uppercase tracking-widest mb-1.5">SEO Performance</h5>
+                  <p className="text-[12px] text-slate-400 font-medium leading-relaxed">
+                      Utilize descriptive anchors. Semantic link labeling improves platform indexing. All external pointers are automatically proxied for authority tracking.
                   </p>
               </div>
           </div>

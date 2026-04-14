@@ -7,15 +7,22 @@ import {
   Search, 
   RotateCcw, 
   Trash2, 
-  Eye, 
-  EyeOff, 
   Layout, 
   Menu,
+  Pencil,
+  Eye,
+  EyeOff,
   MoreVertical,
   GripVertical,
   Check,
   X,
-  Loader2
+  Loader2,
+  Zap,
+  Globe,
+  Settings,
+  ArrowUpRight,
+  Clock,
+  Compass
 } from "lucide-react";
 import Link from "next/link";
 import { 
@@ -35,8 +42,6 @@ export default function CMSNavbarPage() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any>(null);
 
   useEffect(() => {
     fetchNavigations();
@@ -45,9 +50,8 @@ export default function CMSNavbarPage() {
   const fetchNavigations = async () => {
     try {
       setLoading(true);
-      const response = await getCMSNavigations();
-      // Handle response structure if it's wrapped
-      const data = (response.data as any).data || response.data;
+      const payload = await getCMSNavigations();
+      const data = Array.isArray(payload) ? payload : (payload as any)?.data ?? payload;
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch navigations:", error);
@@ -61,9 +65,7 @@ export default function CMSNavbarPage() {
     try {
       await toggleCMSNavigationActive(id);
       toast.success("Visibility updated");
-      setItems(prev => prev.map(item => 
-        item.id === id ? { ...item, is_active: !item.is_active } : item
-      ));
+      fetchNavigations();
     } catch (error) {
       toast.error("Failed to update status");
     }
@@ -73,9 +75,7 @@ export default function CMSNavbarPage() {
     try {
       await toggleCMSNavigationNav(id);
       toast.success("Navigation placement updated");
-      setItems(prev => prev.map(item => 
-        item.id === id ? { ...item, in_nav: !item.in_nav } : item
-      ));
+      fetchNavigations();
     } catch (error) {
       toast.error("Failed to update navigation placement");
     }
@@ -86,7 +86,7 @@ export default function CMSNavbarPage() {
     try {
       await deleteCMSNavigation(id);
       toast.success("Item deleted");
-      setItems(prev => prev.filter(item => item.id !== id));
+      fetchNavigations();
     } catch (error) {
       toast.error("Failed to delete item");
     }
@@ -100,150 +100,151 @@ export default function CMSNavbarPage() {
   const columns = [
     { 
       key: "order", 
-      title: "#", 
-      render: (v: number) => <span className="text-[11px] font-bold text-surface-400">{(v || 0).toString().padStart(2, '0')}</span> 
+      title: "PRIORITY", 
+      render: (v: unknown) => (
+        <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 shadow-inner">
+            {(typeof v === "number" ? v : 0).toString().padStart(2, "0")}
+        </span>
+      )
     },
     { 
       key: "title", 
-      title: "Menu Title", 
-      render: (v: string) => <span className="font-bold text-surface-900 text-[13px]">{v || "Untitled"}</span> 
+      title: "MENU IDENTITY", 
+      render: (v: unknown) => <span className="font-black text-slate-900 text-[13px] uppercase tracking-tight">{typeof v === "string" && v ? v : "Untitled Node"}</span> 
     },
     { 
       key: "url", 
-      title: "Navigation Path", 
-      render: (v: string) => (
-        <code className="bg-surface-50 px-2 py-0.5 rounded text-[11px] font-medium text-primary-600 border border-surface-100">
-          {v || "/"}
-        </code>
+      title: "SYSTEM POINTER", 
+      render: (v: unknown) => (
+        <div className="flex items-center gap-2">
+            <code className="bg-indigo-50 px-2.5 py-1 rounded-xl text-[10px] font-bold text-indigo-600 border border-indigo-100 shadow-sm">
+                {typeof v === "string" && v ? v : "/"}
+            </code>
+        </div>
       ) 
     },
     { 
       key: "in_nav", 
-      title: "Placement", 
-      render: (v: boolean, item: any) => (
+      title: "TOPOGRAPHY", 
+      render: (v: unknown, item: any) => (
         <button 
           onClick={() => handleToggleNav(item.id)}
           className={clsx(
-            "flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all",
-            v ? "bg-indigo-50 text-indigo-600 border border-indigo-100" : "bg-surface-50 text-surface-400 border border-surface-100"
+            "flex items-center gap-2 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+            Boolean(v) ? "bg-slate-900 text-white shadow-lg shadow-slate-200" : "bg-slate-100 text-slate-400 border border-slate-200"
           )}
         >
-          {v ? <Layout size={12} /> : <Menu size={12} />}
-          {v ? "Header Nav" : "Hidden"}
+          {Boolean(v) ? <Layout size={12} /> : <Menu size={12} />}
+          {Boolean(v) ? "Header Nav" : "Internal"}
         </button>
       )
     },
     { 
       key: "is_active", 
-      title: "Status", 
-      render: (v: boolean, item: any) => (
+      title: "RUNTIME STATUS", 
+      render: (v: unknown, item: any) => (
         <button 
           onClick={() => handleToggleActive(item.id)}
           className={clsx(
-            "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase transition-all",
-            v ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-600"
+            "flex items-center gap-2 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
+            Boolean(v) ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
           )}
         >
-          <div className={clsx("w-1.5 h-1.5 rounded-full animate-pulse", v ? "bg-emerald-500" : "bg-red-500")} />
-          {v ? "Active" : "Disabled"}
+          <div className={clsx("w-1.5 h-1.5 rounded-full", Boolean(v) ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.3)]" : "bg-rose-500")} />
+          {Boolean(v) ? "Active" : "Disabled"}
         </button>
       ) 
     },
     { 
-      key: "actions", 
-      title: "Actions", 
-      render: (_: any, item: any) => (
-        <div className="flex items-center gap-2">
-          <button 
-            title="Edit"
-            className="p-1.5 text-surface-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-all"
-          >
-            <Pencil size={14} />
-          </button>
-          <button 
-            onClick={() => handleDelete(item.id)}
-            title="Delete"
-            className="p-1.5 text-surface-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-all"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-      )
-    }
+        key: "actions", 
+        title: "REVIEW", 
+        render: (_: any, item: any) => (
+            <div className="flex items-center justify-end gap-1.5">
+                <button 
+                    title="Optimize Link"
+                    className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
+                >
+                    <Pencil size={16} />
+                </button>
+                <button 
+                    onClick={() => handleDelete(item.id)}
+                    title="Decommission Node"
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                >
+                    <Trash2 size={16} />
+                </button>
+            </div>
+        ) 
+    },
   ];
 
   return (
-    <div className="space-y-6 pb-12 antialiased">
-      {/* Breadcrumbs & Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Link href="/cms" className="w-8 h-8 rounded-lg bg-white border border-surface-200 flex items-center justify-center text-surface-400 hover:text-primary-600 transition-all shadow-xs">
-            <ArrowLeft size={16} />
+    <div className="space-y-8 pb-16 antialiased">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex items-start gap-4">
+          <Link href="/cms" className="mt-1 w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shadow-sm hover:shadow-xl hover:-translate-x-1 active:scale-90">
+            <ArrowLeft size={18} />
           </Link>
           <div>
-            <div className="flex items-center gap-2 mb-0.5">
-               <span className="text-[10px] font-bold text-surface-300 uppercase tracking-widest">CMS Sections</span>
-               <span className="text-surface-200">/</span>
-               <span className="text-[10px] font-bold text-primary-500 uppercase tracking-widest">Navbar Full</span>
+            <div className="flex items-center gap-2 mb-2">
+               <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100/50">Core Structure</span>
             </div>
-            <h1 className="text-2xl font-bold text-surface-900 tracking-tight">Main Navigation</h1>
-            <p className="text-[13px] text-surface-400 font-medium">Manage top header menu items and site hierarchy</p>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase leading-none">Main Navigation</h1>
+            <p className="text-[12px] text-slate-400 font-bold uppercase tracking-widest mt-2.5 flex items-center gap-2">
+               <Compass size={12} className="text-indigo-600" /> Manage header topography & site hierarchy
+            </p>
           </div>
         </div>
         
-        <button 
-          onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-bold shadow-sm shadow-primary-200 hover:bg-primary-700 transition-all active:scale-95"
-        >
-          <Plus size={18} />
-          Add Menu Item
+        <button className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95 group">
+          <Plus size={18} className="group-hover:rotate-90 transition-transform" />
+          Inject Menu Node
         </button>
       </div>
 
-      {/* Main Content Card */}
-      <div className="bg-white rounded-xl border border-surface-100 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-surface-50 bg-[#F8FAFC]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="relative max-w-sm">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" />
-            <input 
-              type="text" 
-              placeholder="Search navigation..." 
-              value={search} 
-              onChange={(e) => setSearch(e.target.value)} 
-              className="w-full sm:w-80 pl-9 pr-4 py-2 bg-white border border-surface-200 rounded-lg text-[13px] text-surface-700 focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all placeholder:text-surface-300" 
-            />
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <button 
-               onClick={fetchNavigations}
-               disabled={loading}
-               className="p-2 text-surface-400 hover:text-primary-600 hover:bg-white rounded-lg border border-transparent hover:border-surface-100 transition-all disabled:opacity-50"
-            >
-              <RotateCcw size={16} className={clsx(loading && "animate-spin")} />
-            </button>
-          </div>
+      {/* Control Bar */}
+      <div className="bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="relative flex-1 w-full max-w-md">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+          <input 
+            type="text" 
+            placeholder="Search hierarchy sectors or identities..." 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)} 
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-[13px] text-slate-700 outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-medium placeholder:text-slate-300 shadow-inner" 
+          />
         </div>
-
-        <DataTable 
-          columns={columns} 
-          data={filtered} 
-          loading={loading}
-          emptyMessage="No navigation items found"
-        />
+        <div className="flex items-center gap-3 pr-2">
+            <button 
+                onClick={fetchNavigations}
+                disabled={loading}
+                className="flex items-center gap-2 px-4 py-2.5 text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-all group"
+            >
+                <RotateCcw size={14} className={clsx("group-hover:-rotate-45 transition-transform", loading && "animate-spin")} />
+                Sync Database
+            </button>
+        </div>
       </div>
 
-      {/* Tip Section */}
-      <div className="bg-primary-50/30 rounded-xl p-4 border border-primary-100/50 flex items-start gap-3">
-        <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600 flex-shrink-0">
-          <Layout size={16} />
-        </div>
-        <div>
-          <h4 className="text-[13px] font-bold text-primary-900 mb-0.5">Navigation Structure Advice</h4>
-          <p className="text-[12px] text-primary-700 leading-relaxed font-medium">
-            Keep your main navigation to 5-7 items for better UX. Items not in "Header Nav" will still be available for internal linking but won't appear in the site header bar. Use clear, action-oriented labels.
-          </p>
-        </div>
+      {/* Data Landscape */}
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-2xl hover:shadow-slate-100/50">
+        <DataTable columns={columns} data={filtered} loading={loading} emptyMessage="No navigation nodes detected in the current structural registry." />
+      </div>
+
+      {/* Structural Insight */}
+      <div className="p-6 bg-slate-900 border border-slate-800 rounded-[2.5rem] flex items-start gap-5 transition-all hover:shadow-2xl hover:shadow-slate-200/50 group max-w-2xl">
+          <div className="w-14 h-14 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+              <Zap size={28} className="fill-current" />
+          </div>
+          <div>
+              <h5 className="text-[13px] font-black text-white uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                  Structural Optimization <Clock size={12} className="text-slate-500" />
+              </h5>
+              <p className="text-[12px] text-slate-400 font-medium leading-relaxed">
+                  Keep main navigation to 5-7 items for optimal UX density. Nodes marked as "Internal" won't appear in the header topography but remain accessible via direct pointers.
+              </p>
+          </div>
       </div>
     </div>
   );

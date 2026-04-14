@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -12,213 +12,221 @@ import {
   FileText,
   Calendar,
   Building,
+  ShieldCheck,
+  ArrowRight,
+  Loader2,
+  Zap,
+  Clock
 } from "lucide-react";
+import { getVerificationRequests, approveVerification, rejectVerification } from "@/services/admin.service";
+import { toast } from "sonner";
 import { clsx } from "clsx";
-
-const mockVerifications = [
-  {
-    id: 1,
-    institute: "EduSmart School",
-    docType: "GST Certificate",
-    file: "edusmart_gst.pdf",
-    status: "Pending",
-    date: "Mar 10, 2025",
-  },
-  {
-    id: 2,
-    institute: "Bright Future Academy",
-    docType: "Registration Certificate",
-    file: "bfa_reg_cert.pdf",
-    status: "Verified",
-    date: "Mar 08, 2025",
-  },
-  {
-    id: 3,
-    institute: "Global Learning Institute",
-    docType: "PAN Card",
-    file: "gli_pan.pdf",
-    status: "Pending",
-    date: "Mar 07, 2025",
-  },
-  {
-    id: 4,
-    institute: "Sunshine International School",
-    docType: "GST Certificate",
-    file: "sunshine_gst.pdf",
-    status: "Rejected",
-    date: "Mar 05, 2025",
-  },
-  {
-    id: 5,
-    institute: "Knowledge Hub International",
-    docType: "Incorporation Certificate",
-    file: "khub_incorp.pdf",
-    status: "Verified",
-    date: "Mar 03, 2025",
-  },
-  {
-    id: 6,
-    institute: "Pioneer Education Group",
-    docType: "Registration Certificate",
-    file: "pioneer_reg.pdf",
-    status: "Pending",
-    date: "Mar 01, 2025",
-  },
-];
+import DataTable from "@/components/tables/DataTable";
+import Badge from "@/components/ui/Badge";
 
 export default function VerificationPage() {
+  const [requests, setRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
 
-  const filtered = search
-    ? mockVerifications.filter(
-        (v) =>
-          v.institute.toLowerCase().includes(search.toLowerCase()) ||
-          v.docType.toLowerCase().includes(search.toLowerCase())
-      )
-    : mockVerifications;
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      const res = await getVerificationRequests();
+      const list = (res as any).data || (res as any) || [];
+      setRequests(Array.isArray(list) ? list : []);
+    } catch (err) {
+      toast.error("Failed to fetch verification queue");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAction = async (id: number, action: "approve" | "reject") => {
+    try {
+      setProcessingId(id);
+      if (action === "approve") await approveVerification(id);
+      else await rejectVerification(id, "Verification requirements not met");
+      toast.success(`Request ${action}d successfully`);
+      fetchRequests();
+    } catch (err) {
+      toast.error("Operation failed");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const filtered = requests.filter((r) => 
+    r.employer?.company_name?.toLowerCase().includes(search.toLowerCase()) ||
+    r.document_type?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const columns = [
+    { 
+        key: "employer", 
+        title: "INSTITUTION", 
+        render: (_: any, r: any) => (
+            <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm">
+                    <Building size={16} />
+                </div>
+                <div>
+                    <span className="font-bold text-slate-900 block leading-none">{r.employer?.company_name || 'Legacy Institute'}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase mt-1 inline-block">ID: #{r.employer_id}</span>
+                </div>
+            </div>
+        ) 
+    },
+    { 
+        key: "document_type", 
+        title: "DOSSIER TYPE", 
+        render: (v: any) => (
+            <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                <span className="text-[12px] font-bold text-slate-700 uppercase tracking-tighter">{v || "General Credential"}</span>
+            </div>
+        )
+    },
+    { 
+        key: "document_url", 
+        title: "ASSET", 
+        render: (v: any) => (
+            <a 
+                href={`https://teachnowbackend.jobsvedika.in/${v}`} 
+                target="_blank" 
+                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors font-bold text-[11px] bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100 group shadow-sm active:scale-95"
+            >
+                <FileText size={14} className="group-hover:rotate-12 transition-transform" />
+                VIEW DOC
+            </a>
+        )
+    },
+    { 
+        key: "status", 
+        title: "STATUS", 
+        render: (v: any) => (
+            <Badge 
+                variant={v === "approved" || v === "verified" ? "success" : v === "pending" ? "warning" : "danger"} 
+                dot 
+                className="text-[9px] font-black tracking-widest uppercase"
+            >
+                {v}
+            </Badge>
+        ) 
+    },
+    { 
+        key: "created_at", 
+        title: "SUBMITTED",
+        render: (v: any) => (
+            <div className="flex items-center gap-1.5 text-slate-400 font-bold text-[10px] uppercase tracking-tighter" suppressHydrationWarning>
+                <Calendar size={12} /> {new Date(v).toLocaleDateString()}
+            </div>
+        )
+    },
+    { 
+        key: "actions", 
+        title: "REVIEW", 
+        render: (_: any, r: any) => (
+            <div className="flex items-center justify-end gap-1.5">
+                {r.status === "pending" && (
+                    <>
+                        <button 
+                            onClick={() => handleAction(r.id, "approve")}
+                            disabled={processingId === r.id}
+                            className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all active:scale-90"
+                            title="Verify Identity"
+                        >
+                            <CheckCircle2 size={16} />
+                        </button>
+                        <button 
+                            onClick={() => handleAction(r.id, "reject")}
+                            disabled={processingId === r.id}
+                            className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-all active:scale-90"
+                            title="Decline Credential"
+                        >
+                            <XCircle size={16} />
+                        </button>
+                    </>
+                )}
+                <Link 
+                    href={`/employers/${r.employer_id}`}
+                    className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
+                    title="Inspect Profile"
+                >
+                    <ArrowRight size={16} />
+                </Link>
+            </div>
+        ) 
+    },
+  ];
+
+  const stats = [
+    { label: "Pending Review", value: requests.filter(r => r.status === 'pending').length, icon: Clock, color: "text-amber-500", bg: "bg-amber-50" },
+    { label: "Authenticated", value: requests.filter(r => r.status === 'approved' || r.status === 'verified').length, icon: ShieldCheck, color: "text-emerald-500", bg: "bg-emerald-50" },
+    { label: "Declined", value: requests.filter(r => r.status === 'rejected').length, icon: XCircle, color: "text-rose-500", bg: "bg-rose-50" }
+  ];
 
   return (
-    <div className="space-y-6 max-w-full overflow-hidden pb-10">
-      {/* ─── Stat Cards ────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-          <p className="text-sm font-medium text-surface-500">Pending</p>
-          <h4 className="text-2xl font-bold text-amber-500 mt-2">4</h4>
+    <div className="space-y-6 pb-12 antialiased">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-2xl bg-indigo-600 shadow-xl shadow-indigo-200">
+            <ShieldCheck size={22} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase leading-none">Trust Center</h1>
+            <p className="text-[11px] text-slate-500 font-bold uppercase tracking-widest mt-1.5">Validate institutional authenticity & credentials</p>
+          </div>
         </div>
-        <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-          <p className="text-sm font-medium text-surface-500">Verified</p>
-          <h4 className="text-2xl font-bold text-emerald-500 mt-2">3</h4>
-        </div>
-        <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-          <p className="text-sm font-medium text-surface-500">Rejected</p>
-          <h4 className="text-2xl font-bold text-red-500 mt-2">1</h4>
+        <div className="flex items-center gap-3">
+            <div className="flex -space-x-2">
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-400">
+                        {i}
+                    </div>
+                ))}
+            </div>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Active Moderators</p>
         </div>
       </div>
 
-      {/* ─── Search & Filters ──────────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-surface-200 p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="relative flex-1 w-full max-w-2xl">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400"
-          />
-          <input
-            type="text"
-            placeholder="Search by institute or document type..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-white border border-surface-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all font-medium placeholder:font-normal placeholder:text-surface-400"
-          />
-        </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <select className="px-4 py-2.5 border border-surface-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 text-surface-600 font-medium">
-            <option>Status</option>
-            <option>Pending</option>
-            <option>Verified</option>
-            <option>Rejected</option>
-          </select>
-          <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-surface-200 rounded-lg text-sm font-medium text-surface-600 hover:bg-surface-50 transition-colors">
-            <Filter size={16} /> Filters
-          </button>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {stats.map((stat, i) => (
+            <div key={i} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 transition-all hover:shadow-lg hover:shadow-slate-100/50 group">
+                <div className={clsx("w-12 h-12 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-inner", stat.bg, stat.color)}>
+                    <stat.icon size={22} strokeWidth={2.5} />
+                </div>
+                <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{stat.label}</p>
+                    <p className={clsx("text-2xl font-black tracking-tight", stat.color)}>{stat.value}</p>
+                </div>
+            </div>
+        ))}
       </div>
 
-      {/* ─── Data Table ────────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left min-w-[900px]">
-            <thead>
-              <tr className="border-b border-surface-100 bg-white">
-                <th className="px-6 py-4 text-xs font-bold tracking-wider text-surface-500 uppercase">
-                  Institute Name
-                </th>
-                <th className="px-6 py-4 text-xs font-bold tracking-wider text-surface-500 uppercase">
-                  Document Type
-                </th>
-                <th className="px-6 py-4 text-xs font-bold tracking-wider text-surface-500 uppercase">
-                  Uploaded File
-                </th>
-                <th className="px-6 py-4 text-xs font-bold tracking-wider text-surface-500 uppercase">
-                  Status
-                </th>
-                <th className="px-6 py-4 text-xs font-bold tracking-wider text-surface-500 uppercase">
-                  Submitted Date
-                </th>
-                <th className="px-6 py-4 text-xs font-bold tracking-wider text-surface-500 uppercase text-right">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-surface-100">
-              {filtered.map((row) => (
-                <tr
-                  key={row.id}
-                  className="hover:bg-surface-50/50 transition-colors bg-white group"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center shrink-0">
-                        <Building size={16} className="text-primary-600" />
-                      </div>
-                      <span className="font-semibold text-surface-900">
-                        {row.institute}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-surface-500">
-                      {row.docType}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-primary-500 hover:text-primary-600 cursor-pointer font-medium text-sm">
-                      <FileText size={16} />
-                      {row.file}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={clsx(
-                        "inline-flex px-2.5 py-1 text-xs font-bold rounded-md",
-                        row.status === "Pending"
-                          ? "bg-amber-50 text-amber-600"
-                          : row.status === "Verified"
-                          ? "bg-emerald-50 text-emerald-600"
-                          : "bg-red-50 text-red-600"
-                      )}
-                    >
-                      {row.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-sm text-surface-400">
-                      <Calendar size={14} />
-                      {row.date}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-end gap-2 text-surface-400">
-                      <Link
-                        href={`/verification/${row.id}`}
-                        className="p-1.5 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                        title="View Details"
-                      >
-                        <Eye size={18} />
-                      </Link>
-                      <button
-                        className="p-1.5 hover:text-surface-900 hover:bg-surface-100 rounded-lg transition-colors"
-                        title="Download"
-                      >
-                        <Download size={18} />
-                      </button>
-
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col sm:flex-row items-center gap-3">
+        <div className="relative flex-1 w-full">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+          <input 
+            type="text" 
+            placeholder="Search credentials or institution identities..." 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)} 
+            className="w-full pl-11 pr-4 py-3 bg-slate-50/30 border border-slate-100 rounded-[1.5rem] text-[13px] text-slate-700 placeholder:text-slate-300 focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-medium" 
+          />
         </div>
+        <button className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white text-[11px] font-black rounded-[1.5rem] hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 uppercase tracking-[0.1em] shrink-0">
+          <Zap size={14} className="fill-current" /> Auto Audit
+        </button>
+      </div>
+
+      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-slate-100/50">
+        <DataTable columns={columns} data={filtered} loading={loading} emptyMessage="Clear queue. No verification requests currently require administrative intervention." />
       </div>
     </div>
   );

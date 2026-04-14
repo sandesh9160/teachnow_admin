@@ -67,11 +67,11 @@ export default function MasterDataPage() {
         setLoading(true);
         if (activeTab === "categories") {
             const res = await getCategories();
-            const list = (res.data as any).data || [];
+            const list = (res as any).data || [];
             setCategories(list);
         } else if (activeTab === "locations") {
             const res = await getLocations();
-            const list = (res.data as any).data || [];
+            const list = (res as any).data || [];
             setLocations(list);
         }
     } catch (err: any) {
@@ -182,7 +182,7 @@ export default function MasterDataPage() {
             </div>
         ) 
     },
-    { key: "slug", title: "Slug", render: (v: string) => <span className="text-surface-400 font-medium italic">{v}</span> },
+    { key: "slug", title: "Slug", render: (v: any) => <span className="text-surface-400 font-medium italic">{v}</span> },
     { 
       key: "is_visible", 
       title: "Visibility", 

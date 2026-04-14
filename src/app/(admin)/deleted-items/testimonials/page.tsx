@@ -22,7 +22,7 @@ export default function DeletedTestimonialsPage() {
     try {
       setLoading(true);
       const response = await getDeletedItems("testimonials");
-      const data = "data" in response.data ? (response.data as any).data : response.data;
+      const data = response && typeof response === "object" && "data" in response ? (response as any).data : response;
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch deleted testimonials:", error);
@@ -61,27 +61,30 @@ export default function DeletedTestimonialsPage() {
     { 
       key: "name", 
       title: "Content Snippet", 
-      render: (v: string) => <span className="font-semibold text-surface-900 text-[13px]">{v || "N/A"}</span> 
+      render: (v: unknown) => <span className="font-semibold text-surface-900 text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
     },
     { 
       key: "author", 
       title: "Author", 
-      render: (v: string) => <span className="text-surface-500 font-medium text-[13px]">{v || "Unknown"}</span> 
+      render: (v: unknown) => <span className="text-surface-500 font-medium text-[13px]">{typeof v === "string" && v ? v : "Unknown"}</span> 
     },
     { 
       key: "deleted_at", 
       title: "Deleted On", 
-      render: (v: string) => <span className="text-surface-400 font-medium text-[12px] uppercase">{v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
+      render: (v: unknown) => <span className="text-surface-400 font-medium text-[12px] uppercase">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
     },
     { 
       key: "deleted_by", 
       title: "By", 
-      render: (v: string) => <span className="text-[11px] font-semibold text-surface-500 uppercase">{v || "Admin"}</span> 
+      render: (v: unknown) => <span className="text-[11px] font-semibold text-surface-500 uppercase">{typeof v === "string" && v ? v : "Admin"}</span> 
     },
     { 
       key: "actions", 
       title: "Actions", 
-      render: (_: any, item: DeletedItem) => (
+      render: (_: unknown, row: Record<string, unknown>) => {
+        const item = row as unknown as DeletedItem;
+
+        return (
         <div className="flex items-center gap-3">
           <button 
             onClick={() => handleRestore(item.id)}
@@ -99,7 +102,8 @@ export default function DeletedTestimonialsPage() {
             <Trash2 size={13} /> Purge
           </button>
         </div>
-      )
+        );
+      }
     }
   ];
 
@@ -131,8 +135,8 @@ export default function DeletedTestimonialsPage() {
         </div>
         
         <DataTable 
-          columns={columns} 
-          data={filtered} 
+          columns={columns as any} 
+          data={filtered as unknown as Record<string, unknown>[]} 
           compact={true} 
           loading={loading}
           emptyMessage="No deleted testimonials found"

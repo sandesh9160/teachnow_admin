@@ -22,7 +22,7 @@ export default function DeletedEmployersPage() {
     try {
       setLoading(true);
       const response = await getDeletedItems("employers");
-      const data = "data" in response.data ? (response.data as any).data : response.data;
+      const data = response && typeof response === "object" && "data" in response ? (response as any).data : response;
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch deleted employers:", error);
@@ -62,27 +62,30 @@ export default function DeletedEmployersPage() {
     { 
       key: "name", 
       title: "Employer", 
-      render: (v: string) => <span className="font-semibold text-surface-900 text-[13px]">{v || "N/A"}</span> 
+      render: (v: unknown) => <span className="font-semibold text-surface-900 text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
     },
     { 
       key: "email", 
       title: "Email", 
-      render: (v: string) => <span className="text-surface-500 font-medium text-[13px]">{v || "N/A"}</span> 
+      render: (v: unknown) => <span className="text-surface-500 font-medium text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
     },
     { 
       key: "deleted_at", 
       title: "Deleted On", 
-      render: (v: string) => <span className="text-surface-400 font-medium text-[12px] uppercase">{v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
+      render: (v: unknown) => <span className="text-surface-400 font-medium text-[12px] uppercase">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
     },
     { 
       key: "deleted_by", 
       title: "Deleted By", 
-      render: (v: string) => <Badge variant="danger" className="text-[10px] uppercase font-semibold">{v || "Admin"}</Badge> 
+      render: (v: unknown) => <Badge variant="danger" className="text-[10px] uppercase font-semibold">{typeof v === "string" && v ? v : "Admin"}</Badge> 
     },
     { 
       key: "actions", 
       title: "Actions", 
-      render: (_: any, item: DeletedItem) => (
+      render: (_: unknown, row: Record<string, unknown>) => {
+        const item = row as unknown as DeletedItem;
+
+        return (
         <div className="flex items-center gap-3">
           <button 
             onClick={() => handleRestore(item.id)}
@@ -100,7 +103,8 @@ export default function DeletedEmployersPage() {
             <Trash2 size={13} /> Purge
           </button>
         </div>
-      )
+        );
+      }
     }
   ];
 
@@ -133,7 +137,7 @@ export default function DeletedEmployersPage() {
         
         <DataTable 
           columns={columns} 
-          data={filtered} 
+          data={filtered as unknown as Record<string, unknown>[]} 
           compact={true} 
           loading={loading}
           emptyMessage="No deleted employers found"

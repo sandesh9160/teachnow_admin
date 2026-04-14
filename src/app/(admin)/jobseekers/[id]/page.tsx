@@ -1,227 +1,292 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { 
-  Home, 
-  ChevronRight, 
+  ChevronLeft, 
   MapPin, 
   Calendar, 
   Mail, 
   Phone, 
   FileText,
   Download,
-  Edit2,
   Briefcase,
-  GraduationCap,
-  Award,
-  History,
-  CheckCircle2
+  History as HistoryIcon,
+  Trash2,
+  AlertCircle,
+  Loader2,
+  User as UserIcon,
+  Globe,
+  ExternalLink
 } from "lucide-react";
+import { getJobSeeker, deleteJobSeeker, disableJobSeeker } from "@/services/admin.service";
+import { JobSeeker } from "@/types";
+import { toast } from "sonner";
 import { clsx } from "clsx";
 
-const getJobSeekerData = (id: string) => {
-  return {
-    id,
-    name: "Rahul Sharma",
-    initials: "RS",
-    title: "M.Sc Mathematics • 5 Years Experience",
-    location: "Mumbai, Maharashtra",
-    status: "Active",
-    verified: true,
-    joinedDate: "Jan 12, 2025",
-    skills: ["Mathematics", "Algebra", "Calculus", "Trigonometry", "Statistics", "Pedagogy"],
-    contact: {
-      email: "rahul.sharma@email.com",
-      phone: "+91 98765 43210",
-      linkedin: "linkedin.com/in/rahulmaths"
-    },
-    resume: {
-      filename: "rahul_sharma_resume_v2.pdf",
-      size: "245 KB",
-      uploadedAt: "Mar 20, 2025"
-    },
-    experience: [
-      { role: "Senior Math Teacher", school: "EduSmart Academy", period: "2022 - Present", description: "Standard 10-12 mathematics instruction and curriculum development." },
-      { role: "Junior Teacher", school: "Sunshine International", period: "2020 - 2022", description: "Mathematics teacher for middle school students." }
-    ]
-  };
-};
+const API_URL = "https://teachnowbackend.jobsvedika.in";
 
 export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const data = getJobSeekerData(resolvedParams.id);
-  const [activeTab, setActiveTab] = useState("Profile Overview");
+  const [seeker, setSeeker] = useState<JobSeeker | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [activeTab, setActiveTab] = useState("Overview");
   
-  const tabs = ["Profile Overview", "Resume & Documents", "Applications", "Shortlist History", "Settings"];
+  const tabs = ["Overview", "Experience", "Settings"];
+
+  useEffect(() => {
+    fetchDetails();
+  }, [resolvedParams.id]);
+
+  const fetchDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await getJobSeeker(Number(resolvedParams.id));
+      setSeeker(res.data);
+    } catch (err) {
+      toast.error("Failed to load candidate details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAction = async (action: "disable" | "delete") => {
+    if (!seeker) return;
+    try {
+      setProcessing(true);
+      if (action === "disable") {
+        await disableJobSeeker(seeker.id);
+        toast.success("Profile status toggled");
+      } else if (action === "delete") {
+        if (!confirm("Permanently delete this candidate?")) return;
+        await deleteJobSeeker(seeker.id);
+        toast.success("Candidate removed");
+        window.history.back();
+        return;
+      }
+      fetchDetails();
+    } catch (err) {
+      toast.error("Action failed");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="h-[40vh] flex flex-col items-center justify-center gap-2">
+        <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
+        <p className="text-[11px] font-medium text-slate-400">Loading profile details...</p>
+      </div>
+    );
+  }
+
+  if (!seeker) return <div className="p-10 text-center text-slate-500">Candidate not found</div>;
 
   return (
-    <div className="space-y-6 max-w-full pb-10">
-      {/* ─── Breadcrumb ─────────────────────────────────────────────────── */}
-      <div className="flex items-center gap-2 text-[13px] text-surface-500 font-medium whitespace-nowrap overflow-hidden text-ellipsis">
-        <Link href="/dashboard" className="hover:text-primary-600 transition-colors shrink-0">
-          <Home size={14} />
+    <div className="max-w-5xl mx-auto space-y-4 pb-10 antialiased">
+      {/* ─── Minimal Header ────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <Link 
+          href="/jobseekers" 
+          className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500 hover:text-indigo-600 transition-colors bg-white px-2.5 py-1.5 rounded-lg border border-slate-200"
+        >
+          <ChevronLeft size={12} /> Back
         </Link>
-        <ChevronRight size={14} strokeWidth={1.5} className="shrink-0" />
-        <Link href="/jobseekers" className="hover:text-primary-600 transition-colors shrink-0">
-          Job Seekers
-        </Link>
-        <ChevronRight size={14} strokeWidth={1.5} className="shrink-0" />
-        <span className="text-surface-900 truncate">{data.name}</span>
-      </div>
-
-      {/* ─── Header Card ────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-surface-200 p-5 shadow-sm">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
-          <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center text-2xl font-black border border-primary-100 shadow-inner shrink-0">
-              {data.initials}
-            </div>
-            <div>
-              <div className="flex items-center gap-2.5 mb-1">
-                <h1 className="text-xl font-black text-surface-900 leading-none">{data.name}</h1>
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-black border border-emerald-100 uppercase tracking-tighter">
-                  <CheckCircle2 size={10} />
-                  Verified
-                </div>
-              </div>
-              <p className="text-[14px] text-surface-600 font-bold mb-2">{data.title}</p>
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-surface-400 font-bold uppercase tracking-tight">
-                <span className="flex items-center gap-1.5"><MapPin size={14} /> {data.location}</span>
-                <span className="flex items-center gap-1.5"><Calendar size={14} /> Joined {data.joinedDate}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white border border-surface-200 text-surface-700 text-[13px] font-bold rounded-xl hover:bg-surface-50 transition-all shadow-sm cursor-pointer">
-              <Edit2 size={14} /> Edit
-            </button>
-            <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 text-white text-[13px] font-bold rounded-xl hover:bg-primary-700 transition-all shadow-md shadow-primary-200 cursor-pointer">
-              <Download size={14} /> Resume
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── Navigation Tabs ────────────────────────────────────────────── */}
-      <div className="flex items-center gap-6 border-b border-surface-200 px-1 pt-1 overflow-x-auto no-scrollbar">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+        <div className="flex items-center gap-1.5">
+           <button
+            onClick={() => handleAction("disable")}
+            disabled={processing}
             className={clsx(
-              "pb-3 text-[14px] font-bold transition-all whitespace-nowrap relative px-1 cursor-pointer",
-              activeTab === tab
-                ? "text-primary-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary-600"
-                : "text-surface-400 hover:text-surface-600"
+                "px-3 py-1.5 text-[11px] font-semibold rounded-lg transition-all border shadow-sm flex items-center gap-1.5",
+                seeker.is_active ? "bg-white border-slate-200 text-slate-600 hover:bg-slate-50" : "bg-indigo-600 border-indigo-600 text-white hover:bg-indigo-700"
             )}
-          >
-            {tab}
-          </button>
-        ))}
+           >
+             {seeker.is_active ? "Disable Account" : "Enable Account"}
+           </button>
+           <button
+            onClick={() => handleAction("delete")}
+            disabled={processing}
+            className="p-2 bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 rounded-lg transition-all shadow-sm"
+           >
+             <Trash2 size={14} />
+           </button>
+        </div>
       </div>
 
-      {/* ─── Tab Content ────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        
-        {/* Main Content Area */}
-        <div className="lg:col-span-2 space-y-6">
-          {activeTab === "Profile Overview" && (
-            <>
-              {/* Experience Section */}
-              <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
-                <div className="flex items-center gap-2 mb-6 text-surface-900">
-                  <Briefcase size={18} className="text-primary-500" />
-                  <h3 className="text-[15px] font-black uppercase tracking-tight">Work Experience</h3>
-                </div>
-                <div className="space-y-6">
-                  {data.experience.map((exp, idx) => (
-                    <div key={idx} className="relative pl-6 border-l-2 border-surface-100 pb-2 last:pb-0">
-                      <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white border-2 border-primary-500" />
-                      <div className="flex items-center justify-between mb-1">
-                        <h4 className="text-[14px] font-black text-surface-900">{exp.role}</h4>
-                        <span className="text-[11px] font-bold text-surface-400 bg-surface-50 px-2 py-0.5 rounded uppercase tracking-tighter">{exp.period}</span>
-                      </div>
-                      <p className="text-[13px] font-bold text-primary-600 mb-2">{exp.school}</p>
-                      <p className="text-[13px] text-surface-500 font-medium leading-relaxed">{exp.description}</p>
-                    </div>
-                  ))}
-                </div>
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 bg-slate-50/10">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 overflow-hidden shrink-0">
+                {seeker.profile_photo ? (
+                    <img src={`${API_URL}/${seeker.profile_photo}`} alt="" className="w-full h-full object-cover" />
+                ) : (
+                    <UserIcon size={24} strokeWidth={1.5} />
+                )}
               </div>
-
-              {/* Skills Section */}
-              <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
-                <div className="flex items-center gap-2 mb-4 text-surface-900">
-                  <Award size={18} className="text-amber-500" />
-                  <h3 className="text-[15px] font-black uppercase tracking-tight">Technical Skills</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {data.skills.map(skill => (
-                    <span key={skill} className="px-3 py-1 bg-surface-50 text-surface-600 text-xs font-bold rounded-lg border border-surface-100 hover:border-primary-200 hover:text-primary-600 transition-colors cursor-default">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {activeTab === "Resume & Documents" && (
-            <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
-               <div className="flex items-center justify-between p-4 bg-primary-50/30 rounded-2xl border border-primary-100">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-primary-600 shadow-sm border border-primary-100">
-                      <FileText size={24} />
-                    </div>
-                    <div>
-                      <p className="text-[14px] font-black text-surface-900">{data.resume.filename}</p>
-                      <p className="text-[12px] font-medium text-surface-500">{data.resume.size} • Uploaded on {data.resume.uploadedAt}</p>
-                    </div>
+              <div>
+                 <div className="flex items-center gap-2">
+                   <h1 className="text-lg font-semibold text-slate-900 tracking-tight">{seeker.user?.name}</h1>
+                   <span className={clsx(
+                       "text-[10px] font-semibold px-1.5 py-0.5 rounded border leading-none",
+                       seeker.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-100 text-slate-900 border-slate-200"
+                   )}>
+                     {seeker.is_active ? "Active" : "Disabled"}
+                   </span>
+                 </div>
+                 <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[11px] text-slate-900 font-medium mt-0.5">
+                     <span className="text-indigo-700 font-bold">{seeker.title || "Education Talent"}</span>
+                     <span className="flex items-center gap-1 text-slate-900 font-medium"><MapPin size={12} className="text-slate-600" /> {seeker.location || "Location not set"}</span>
+                     <span className="flex items-center gap-1 text-slate-900 font-medium" suppressHydrationWarning><Calendar size={12} className="text-slate-600" /> Joined {new Date(seeker.created_at).toLocaleDateString()}</span>
                   </div>
-                  <button className="p-2.5 bg-primary-600 text-white rounded-xl hover:bg-primary-700 shadow-md shadow-primary-200 cursor-pointer">
-                    <Download size={18} />
-                  </button>
+              </div>
+           </div>
+        </div>
+
+        <div className="flex items-center gap-5 px-5 bg-white border-b border-slate-100">
+           {tabs.map(t => (
+               <button
+                key={t}
+                onClick={() => setActiveTab(t)}
+                className={clsx(
+                    "py-3 text-[11px] font-medium border-b-2 transition-all transition-colors",
+                    activeTab === t ? "text-indigo-600 border-indigo-600" : "text-slate-800 border-transparent hover:text-slate-900"
+                )}
+               >
+                 {t}
+               </button>
+           ))}
+        </div>
+
+        <div className="p-5">
+           {activeTab === "Overview" && (
+               <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                  <div className="lg:col-span-3 space-y-4">
+                     <section className="bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                        <h3 className="text-[11px] font-semibold text-indigo-500 mb-2">About candidate</h3>
+                        <p className="text-[13px] text-slate-800 leading-relaxed">
+                            {seeker.bio || "Candidate has not provided a biography."}
+                        </p>
+                     </section>
+
+                     <div className="grid grid-cols-3 gap-3">
+                        {[
+                           { label: "Total Experience", value: `${seeker.experience_years} Years`, icon: Briefcase, color: "text-indigo-600" },
+                           { label: "Availability", value: seeker.availability, icon: Calendar, color: "text-emerald-600" },
+                           { label: "Applications", value: seeker.job_applications?.length || 0, icon: FileText, color: "text-rose-600" }
+                        ].map((stat, i) => (
+                          <div key={i} className="p-3 bg-white border border-slate-100 rounded-xl flex items-center gap-3 shadow-sm hover:border-slate-200 transition-colors group">
+                             <div className={clsx("w-8 h-8 rounded-lg flex items-center justify-center bg-slate-50 group-hover:scale-110 transition-transform", stat.color)}>
+                                <stat.icon size={16} />
+                             </div>
+                              <div>
+                                 <p className="text-[10px] font-bold text-slate-900">{stat.label}</p>
+                                 <p className="text-[12px] font-bold text-slate-950 capitalize">{stat.value}</p>
+                              </div>
+                          </div>
+                        ))}
+                     </div>
+                  </div>
+
+                  <div className="space-y-4">
+                     <div className="p-4 bg-white rounded-xl border border-slate-200 space-y-3 shadow-sm">
+                        <h3 className="text-[11px] font-semibold text-indigo-500 leading-none">Contact information</h3>
+                        <div className="space-y-2.5">
+                           <div className="flex items-center gap-2 group">
+                              <Mail size={12} className="text-slate-300" />
+                              <span className="text-[12px] font-medium text-slate-700 truncate">{seeker.user?.email}</span>
+                           </div>
+                           <div className="flex items-center gap-2">
+                              <Phone size={12} className="text-slate-600" />
+                              <span className="text-[12px] font-bold text-slate-900">{seeker.phone}</span>
+                           </div>
+                           {seeker.portfolio_website && (
+                             <a 
+                                href={seeker.portfolio_website} 
+                                target="_blank" 
+                                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors"
+                             >
+                                <Globe size={12} />
+                                <span className="text-[12px] font-semibold">Visit Portfolio</span>
+                                <ExternalLink size={10}/>
+                             </a>
+                           )}
+                        </div>
+                     </div>
+
+                     <div className="p-4 bg-slate-900 rounded-xl text-white relative overflow-hidden shadow-lg shadow-slate-900/10">
+                        <div className="absolute -right-2 -top-2 w-12 h-12 bg-white/5 rounded-full" />
+                        <h3 className="text-[10px] font-semibold text-slate-500 mb-1">Administrative Note</h3>
+                        <p className="text-[11px] font-medium text-slate-400 leading-tight italic">
+                           Please verify all credentials before approving recruitment.
+                        </p>
+                     </div>
+                  </div>
                </div>
-            </div>
-          )}
+           )}
 
-          {activeTab !== "Profile Overview" && activeTab !== "Resume & Documents" && (
-            <div className="bg-white rounded-xl border border-surface-200 p-12 flex flex-col items-center justify-center text-center shadow-sm">
-              <History size={32} className="text-surface-200 mb-3" />
-              <h4 className="text-[15px] font-black text-surface-900 uppercase tracking-tight">{activeTab}</h4>
-              <p className="text-[13px] text-surface-500 font-medium mt-1">Activity logs and record history for this section are being generated.</p>
-            </div>
-          )}
-        </div>
+           {activeTab === "Experience" && (
+               <div className="max-w-xl space-y-4">
+                   <div className="flex items-center gap-2 text-slate-400 mb-2">
+                      <FileText size={20} className="text-indigo-400" />
+                      <div>
+                         <h3 className="text-[12px] font-semibold text-slate-900">Submitted documents</h3>
+                         <p className="text-[11px] font-medium text-slate-500">List of files provided by the candidate</p>
+                      </div>
+                   </div>
 
-        {/* Sidebar Info */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white rounded-xl border border-surface-200 p-6 shadow-sm">
-            <h3 className="text-[15px] font-black text-surface-900 uppercase tracking-tight mb-4">Contact Details</h3>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-surface-500 group">
-                <div className="w-8 h-8 rounded-lg bg-surface-50 flex items-center justify-center group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
-                  <Mail size={16} />
-                </div>
-                <span className="text-[13px] font-bold group-hover:text-surface-900 transition-colors cursor-pointer">{data.contact.email}</span>
-              </div>
-              <div className="flex items-center gap-3 text-surface-500 group">
-                <div className="w-8 h-8 rounded-lg bg-surface-50 flex items-center justify-center group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
-                  <Phone size={16} />
-                </div>
-                <span className="text-[13px] font-bold group-hover:text-surface-900 transition-colors cursor-pointer">{data.contact.phone}</span>
-              </div>
-              <div className="flex items-center gap-3 text-surface-500 group">
-                <div className="w-8 h-8 rounded-lg bg-surface-50 flex items-center justify-center group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
-                   <GraduationCap size={16} />
-                </div>
-                <span className="text-[13px] font-bold group-hover:text-surface-900 transition-colors cursor-pointer">Education Verified</span>
-              </div>
-            </div>
-          </div>
+                   <div className="grid gap-2">
+                      {seeker.resumes && seeker.resumes.length > 0 ? (
+                        seeker.resumes.map(resume => (
+                          <div key={resume.id} className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl hover:border-indigo-200 hover:bg-slate-50/30 transition-all group shadow-sm">
+                             <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center border border-indigo-100 group-hover:scale-110 transition-transform">
+                                   <FileText size={16} />
+                                </div>
+                                <div>
+                                   <div className="flex items-center gap-1.5">
+                                      <p className="text-[12px] font-semibold text-slate-900 truncate max-w-[200px]">{resume.file_name}</p>
+                                      {resume.is_default ? <span className="text-[9px] font-semibold px-1.5 py-0.5 bg-indigo-600 text-white rounded">Default</span> : null}
+                                   </div>
+                                   <p className="text-[11px] font-medium text-slate-400" suppressHydrationWarning>Uploaded on {new Date(resume.created_at).toLocaleDateString()}</p>
+                                </div>
+                             </div>
+                             <a 
+                                href={`${API_URL}/${resume.file_url}`}
+                                target="_blank"
+                                className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                             >
+                                <Download size={16} />
+                             </a>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-12 border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center">
+                            <AlertCircle size={24} className="text-slate-100 mb-2" />
+                            <p className="text-[12px] font-medium text-slate-400 italic">No resume documents found.</p>
+                        </div>
+                      )}
+                   </div>
+               </div>
+           )}
+
+           {activeTab === "Settings" && (
+               <div className="max-w-md bg-rose-50 border border-rose-100 p-4 rounded-xl flex items-start gap-3">
+                  <AlertCircle size={18} className="text-rose-600 mt-0.5 shrink-0" />
+                  <div>
+                     <h4 className="text-[12px] font-semibold text-rose-900">Danger Zone</h4>
+                     <p className="text-[11px] text-rose-700 mt-0.5 leading-tight font-medium">Permanently removing this account and all associated data.</p>
+                     <button 
+                        onClick={() => handleAction("delete")}
+                        className="mt-3 px-4 py-1.5 bg-rose-600 text-white text-[11px] font-semibold rounded-lg hover:bg-rose-700 transition-all shadow-sm active:scale-95"
+                     >
+                        Delete Candidate Account
+                     </button>
+                  </div>
+               </div>
+           )}
         </div>
-        
       </div>
     </div>
   );
