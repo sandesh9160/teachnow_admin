@@ -156,11 +156,12 @@ export interface DeletedItem {
 
 export type DeletedItemTab =
   | "users"
+  | "jobseekers"
   | "jobs"
   | "employers"
   | "cvs"
-  | "applications"
-  | "institutes";
+  | "testimonials"
+  | "resumes";
 
 // ─── CMS Types ───────────────────────────────────────────────────────────────
 

@@ -204,6 +204,8 @@ export const getReviews = (params?: Record<string, unknown>) =>
 export const updateReview = (id: number, data: Partial<Review>) =>
   dashboardServerFetch(`/admin/reviews/${id}`, { method: "PUT", data });
 
+
+
 // ─── CMS ─────────────────────────────────────────────────────────────────────
 
 export const getCMSSections = () => 
@@ -284,6 +286,27 @@ export const updateEmployerSEO = (id: number, data: any) =>
 
 export const getDeletedItems = (type: string, params?: Record<string, unknown>) =>
   dashboardServerFetch<PaginatedResponse<DeletedItem>>(`/admin/deleted/${type}`, { params });
+
+export const getDeletedUsers = (params?: Record<string, unknown>) =>
+  getDeletedItems("users", params);
+
+export const getDeletedJobSeekers = (params?: Record<string, unknown>) =>
+  getDeletedItems("job-seekers", params);
+
+export const getDeletedJobs = (params?: Record<string, unknown>) =>
+  getDeletedItems("jobs", params);
+
+export const getDeletedEmployers = (params?: Record<string, unknown>) =>
+  getDeletedItems("employers", params);
+
+export const getDeletedCVs = (params?: Record<string, unknown>) =>
+  getDeletedItems("cvs", params);
+
+export const getDeletedTestimonials = (params?: Record<string, unknown>) =>
+  getDeletedItems("testimonials", params);
+
+export const getDeletedResumes = (params?: Record<string, unknown>) =>
+  getDeletedItems("resumes", params);
 
 export const restoreItem = (type: string, id: number) =>
   dashboardServerFetch(`/admin/deleted/${type}/${id}/restore`, { method: "POST" });

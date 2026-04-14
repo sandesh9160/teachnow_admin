@@ -6,7 +6,11 @@ import {
   Search, 
   Loader2,
   RefreshCcw,
-  AlertCircle
+  AlertCircle,
+  Plus,
+  Pencil,
+  Trash2,
+  Clock
 } from "lucide-react";
 import { 
   getEmailTemplates, 
@@ -15,8 +19,8 @@ import {
   deleteEmailTemplate,
   toggleEmailTemplateStatus
 } from "@/services/admin.service";
-import { Plus } from "lucide-react";
-import EmailTemplateCard from "@/components/cards/EmailTemplateCard";
+
+import DataTable from "@/components/tables/DataTable";
 import EmailTemplateModal from "@/components/modals/EmailTemplateModal";
 import type { EmailTemplate } from "@/types";
 import { toast } from "sonner";
@@ -91,6 +95,17 @@ export default function EmailTemplatesPage() {
     }
   };
 
+  const handleDelete = async (id: number) => {
+    if (!confirm("Are you sure you want to delete this template?")) return;
+    try {
+      await deleteEmailTemplate(id);
+      setTemplates(prev => prev.filter(t => t.id !== id));
+      toast.success("Template deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete template");
+    }
+  };
+
   const filteredTemplates = templates.filter(t => {
     const matchesSearch = 
       t.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -102,6 +117,91 @@ export default function EmailTemplatesPage() {
     
     return matchesSearch && matchesFilter;
   });
+
+  const columns = [
+    {
+      key: "name",
+      title: "Template Identity",
+      render: (_: unknown, row: EmailTemplate) => (
+        <div className="flex items-center gap-3">
+          <div className={clsx(
+            "w-7 h-7 rounded-lg flex items-center justify-center border shrink-0",
+            row.is_active ? "bg-indigo-600 text-white border-indigo-700 shadow-sm" : "bg-slate-100 text-slate-400 border-slate-200"
+          )}>
+            <Mail size={12} strokeWidth={2.5} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold text-slate-900 truncate tracking-tight leading-tight">{row.name}</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-[9px] font-bold px-1.5 py-0 bg-indigo-50 text-indigo-600 rounded border border-indigo-100 uppercase tracking-tighter">
+                {row.slug}
+              </span>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "subject",
+      title: "Subject Line",
+      render: (val: any) => (
+        <div className="px-2 py-0.5 bg-blue-50/50 border-l-2 border-blue-400 rounded-r-md max-w-[280px]">
+          <p className="text-[10px] font-medium text-blue-700 line-clamp-1 italic">
+            "{val}"
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      title: "System Status",
+      render: (_: unknown, row: EmailTemplate) => (
+        <div className="flex items-center gap-2">
+            <div className={clsx(
+              "px-2.5 py-0.5 rounded-full border text-[8px] font-extrabold flex items-center gap-1 shadow-sm",
+              row.is_active 
+                ? "bg-emerald-500 text-white border-emerald-600" 
+                : "bg-rose-500 text-white border-rose-600"
+            )}>
+              <div className="w-1 h-1 rounded-full bg-white animate-pulse" />
+              {row.is_active ? "LIVE" : "DORMANT"}
+            </div>
+        </div>
+      ),
+    },
+    {
+      key: "updated_at",
+      title: "Modified",
+      render: (val: any) => (
+        <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400">
+          <Clock size={11} className="text-indigo-400" />
+          <span className="text-slate-500">{val ? new Date(val as string).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ""}</span>
+        </div>
+      ),
+    },
+    {
+      key: "actions",
+      title: "Actions",
+      render: (_: unknown, row: EmailTemplate) => (
+        <div className="flex items-center justify-end gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); handleEdit(row); }}
+            className="p-1.5 text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg transition-all hover:bg-indigo-600 hover:text-white shadow-sm"
+            title="Edit Template"
+          >
+            <Pencil size={12} />
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleDelete(row.id); }}
+            className="p-1.5 text-rose-600 bg-rose-50 border border-rose-100 rounded-lg transition-all hover:bg-rose-600 hover:text-white shadow-sm"
+            title="Delete Template"
+          >
+            <Trash2 size={12} />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   if (isEditing) {
     return (
@@ -180,31 +280,16 @@ export default function EmailTemplatesPage() {
         </div>
       </div>
 
-      {/* ─── Grid ────────────────────────────────────────────────────────── */}
-      {loading ? (
-        <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-slate-100 shadow-sm">
-          <Loader2 size={40} className="animate-spin text-indigo-600 mb-4" />
-          <p className="text-slate-500 font-bold text-sm">Loading templates...</p>
-        </div>
-      ) : filteredTemplates.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-slate-200 border-dashed">
-          <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center mb-4">
-            <Mail size={32} />
-          </div>
-          <h3 className="text-lg font-bold text-slate-900">No templates found</h3>
-          <p className="text-slate-500 text-sm mt-1">Try adjusting your search query.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-          {filteredTemplates.map((template) => (
-            <EmailTemplateCard 
-              key={template.id} 
-              template={template} 
-              onEdit={handleEdit}
-            />
-          ))}
-        </div>
-      )}
+      {/* ─── Table ───────────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <DataTable 
+          columns={columns} 
+          data={filteredTemplates} 
+          loading={loading}
+          onRowClick={handleEdit}
+          emptyMessage="No email templates found matching your criteria."
+        />
+      </div>
 
       {/* ─── Helper Notice ───────────────────────────────────────────────── */}
       <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 flex gap-4">

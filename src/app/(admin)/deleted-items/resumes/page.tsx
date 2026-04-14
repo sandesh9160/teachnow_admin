@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "@/components/tables/DataTable";
 import Badge from "@/components/ui/Badge";
-import { RotateCcw, Trash2, Search, ArrowLeft, Loader2 } from "lucide-react";
+import { RotateCcw, Trash2, Search, ArrowLeft, Loader2, FileText } from "lucide-react";
 import Link from "next/link";
 import { getDeletedItems, restoreItem, permanentDelete } from "@/services/admin.service";
 import { toast } from "sonner";
@@ -22,7 +22,11 @@ export default function DeletedResumesPage() {
     try {
       setLoading(true);
       const response = await getDeletedItems("resumes");
-      const data = response && typeof response === "object" && "data" in response ? (response as any).data : response;
+      let data = response && typeof response === "object" && "data" in response ? (response as any).data : response;
+      // Handle Laravel Pagination: if data has a .data property that is an array, use that
+      if (data && typeof data === "object" && "data" in data && Array.isArray(data.data)) {
+        data = data.data;
+      }
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch deleted resumes:", error);
@@ -54,20 +58,39 @@ export default function DeletedResumesPage() {
   };
 
   const filtered = items.filter(item => 
-    item.name?.toLowerCase().includes(search.toLowerCase()) ||
-    item.email?.toLowerCase().includes(search.toLowerCase())
+    (item as any).file_name?.toLowerCase().includes(search.toLowerCase()) ||
+    String((item as any).job_seeker_id).includes(search)
   );
 
   const columns = [
     { 
-      key: "name", 
-      title: "Name", 
-      render: (v: unknown) => <span className="font-semibold text-surface-900 text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
+      key: "file_name", 
+      title: "File Name", 
+      render: (v: unknown) => (
+        <div className="flex items-center gap-2">
+          <FileText size={14} className="text-blue-500" />
+          <span className="font-semibold text-surface-900 text-[13px] line-clamp-1">{typeof v === "string" && v ? v : "Untitled.pdf"}</span> 
+        </div>
+      )
     },
     { 
-      key: "email", 
-      title: "Email", 
-      render: (v: unknown) => <span className="text-surface-500 font-medium text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
+      key: "job_seeker_id", 
+      title: "Seeker ID", 
+      render: (v: unknown) => <Badge variant="default" className="text-[10px] font-bold">USER #{String(v)}</Badge> 
+    },
+    { 
+      key: "file_url", 
+      title: "Document", 
+      render: (v: unknown) => v ? (
+        <a 
+          href={`https://teachnowbackend.jobsvedika.in/${v}`} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-primary-600 hover:underline text-[12px] font-bold flex items-center gap-1"
+        >
+          View PDF
+        </a>
+      ) : <span className="text-surface-300 italic text-[12px]">N/A</span>
     },
     { 
       key: "deleted_at", 
