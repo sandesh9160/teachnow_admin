@@ -50,6 +50,7 @@ export default function MasterDataPage() {
   const [search, setSearch] = useState("");
   const [categories, setCategories] = useState<MasterDataItem[]>([]);
   const [locations, setLocations] = useState<MasterDataItem[]>([]);
+  const [skills, setSkills] = useState<MasterDataItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingItem, setEditingItem] = useState<Partial<MasterDataItem> | null>(null);
@@ -73,6 +74,11 @@ export default function MasterDataPage() {
             const res = await getLocations();
             const list = (res as any).data || [];
             setLocations(list);
+        } else if (activeTab === "skills") {
+            const res = await getSkills();
+            // In case the API formats it differently, we parse res.data
+            const list = (res as any).data || [];
+            setSkills(list);
         }
     } catch (err: any) {
         toast.error(err.message || "Failed to fetch data");
@@ -97,7 +103,7 @@ export default function MasterDataPage() {
     }
   };
 
-  const currentList = activeTab === "categories" ? categories : activeTab === "locations" ? locations : (initialMock[activeTab] || []);
+  const currentList = activeTab === "categories" ? categories : activeTab === "locations" ? locations : activeTab === "skills" ? skills : (initialMock[activeTab] || []);
   const filtered = currentList.filter(item => item.name?.toLowerCase().includes(search.toLowerCase()));
 
   const handleSave = async (e: React.FormEvent) => {
@@ -107,16 +113,25 @@ export default function MasterDataPage() {
     try {
         setSaving(true);
         const formData = new FormData();
-        formData.append("name", editingItem.name);
-        formData.append("slug", editingItem.slug || editingItem.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
-        formData.append("is_visible", editingItem.is_visible ? "1" : "0");
-        formData.append("is_featured", editingItem.is_featured ? "1" : "0");
-        formData.append("meta_title", editingItem.meta_title || "");
-        formData.append("meta_description", editingItem.meta_description || "");
-        formData.append("meta_keywords", editingItem.meta_keywords || "");
         
-        if (editingItem.icon_file) {
-            formData.append(activeTab === "categories" ? "icon" : "image", editingItem.icon_file);
+        if (activeTab === "skills") {
+           // Skills specific payload
+           formData.append("name", editingItem.name);
+           formData.append("is_active", editingItem.is_active !== undefined ? String(editingItem.is_active) : (editingItem.is_visible ? "1" : "0"));
+           formData.append("is_custom", editingItem.is_custom !== undefined ? String(editingItem.is_custom) : "1");
+        } else {
+           // Categories & Locations payload
+           formData.append("name", editingItem.name);
+           formData.append("slug", editingItem.slug || editingItem.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+           formData.append("is_visible", editingItem.is_visible ? "1" : "0");
+           formData.append("is_featured", editingItem.is_featured ? "1" : "0");
+           formData.append("meta_title", editingItem.meta_title || "");
+           formData.append("meta_description", editingItem.meta_description || "");
+           formData.append("meta_keywords", editingItem.meta_keywords || "");
+
+           if (editingItem.icon_file) {
+               formData.append(activeTab === "categories" ? "icon" : "image", editingItem.icon_file);
+           }
         }
 
         if (editingItem.id) {
@@ -182,15 +197,31 @@ export default function MasterDataPage() {
             </div>
         ) 
     },
-    { key: "slug", title: "Slug", render: (v: any) => <span className="text-surface-400 font-medium italic">{v}</span> },
+    { key: "slug", title: "Slug", render: (v: any) => v ? <span className="text-surface-400 font-medium italic">{v}</span> : <span className="text-surface-300">-</span> },
     { 
       key: "is_visible", 
-      title: "Visibility", 
-      render: (v: any) => (
-        <Badge variant={v ? "success" : "default"} dot className="text-[9px] uppercase font-semibold">
-          {v ? "Visible" : "Hidden"}
-        </Badge>
-      )
+      title: "Status", 
+      render: (v: any, r: any) => {
+        // Handle skills which use is_active instead of is_visible
+        const isActive = activeTab === "skills" ? (r.is_active === 1 || r.is_active === "1" || r.is_active === true) : v;
+        return (
+          <Badge variant={isActive ? "success" : "default"} dot className="text-[9px] uppercase font-semibold">
+            {isActive ? (activeTab === "skills" ? "Active" : "Visible") : (activeTab === "skills" ? "Inactive" : "Hidden")}
+          </Badge>
+        );
+      }
+    },
+    { 
+      key: "is_custom", 
+      title: "Type", 
+      render: (v: any, r: any) => {
+        if (activeTab !== "skills") return null;
+        return (
+          <span className="text-[10px] font-bold text-surface-500 uppercase">
+            {r.is_custom ? "Custom" : "System"}
+          </span>
+        );
+      }
     },
     { 
       key: "actions", 
@@ -234,7 +265,13 @@ export default function MasterDataPage() {
         </div>
         <div className="flex items-center gap-2">
           <button 
-            onClick={() => setEditingItem({ name: "", is_visible: 1, is_featured: 0, isNew: true } as any)} 
+            onClick={() => {
+               if (activeTab === "skills") {
+                  setEditingItem({ name: "", is_active: 1, is_custom: 1, isNew: true } as any);
+               } else {
+                  setEditingItem({ name: "", is_visible: 1, is_featured: 0, isNew: true } as any);
+               }
+            }} 
             className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-[12px] font-semibold hover:bg-primary-700 shadow-sm transition-all cursor-pointer"
           >
             <Plus size={16} /> New Entry
@@ -259,6 +296,12 @@ export default function MasterDataPage() {
                     {tab.label}
                     {tab.key === "categories" && (
                         <span className="text-[10px] py-0.5 px-1.5 bg-surface-50 border border-surface-100 rounded-md font-semibold text-surface-400 ml-1">{categories.length}</span>
+                    )}
+                    {tab.key === "locations" && (
+                        <span className="text-[10px] py-0.5 px-1.5 bg-surface-50 border border-surface-100 rounded-md font-semibold text-surface-400 ml-1">{locations.length}</span>
+                    )}
+                    {tab.key === "skills" && (
+                        <span className="text-[10px] py-0.5 px-1.5 bg-surface-50 border border-surface-100 rounded-md font-semibold text-surface-400 ml-1">{skills.length}</span>
                     )}
                 </button>
                 ))}
@@ -300,163 +343,241 @@ export default function MasterDataPage() {
                 
                 <form onSubmit={handleSave} className="p-5">
                     <div className="grid grid-cols-12 gap-5">
-                        <div className="col-span-7 space-y-4">
-                            <div className="flex items-center gap-4 p-3 bg-surface-50 border border-surface-100 rounded-xl">
-                                <div className="relative group w-14 h-14 bg-white border border-surface-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
-                                    {editingItem.icon_preview || editingItem.icon || editingItem.image ? (
-                                        <img 
-                                            src={editingItem.icon_preview || `https://teachnowbackend.jobsvedika.in/${editingItem.icon || editingItem.image}`} 
-                                            alt="" 
-                                            className="w-full h-full object-cover" 
-                                        />
-                                    ) : (
-                                        <Library size={20} className="text-surface-300" />
-                                    )}
-                                    <label className="absolute inset-0 bg-surface-900/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                                        <Plus size={16} className="text-white" />
-                                        <input 
-                                            type="file" 
-                                            className="hidden" 
-                                            accept="image/*"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0];
-                                                if (file) {
-                                                    const reader = new FileReader();
-                                                    reader.onload = (re) => {
-                                                        setEditingItem({ ...editingItem, icon_file: file, icon_preview: re.target?.result } as any);
-                                                    };
-                                                    reader.readAsDataURL(file);
-                                                }
-                                            }}
-                                        />
-                                    </label>
-                                </div>
-                                <div>
-                                    <p className="text-[11px] font-bold text-surface-700">{activeTab === "categories" ? "Category Icon" : "Location Image"}</p>
-                                    <p className="text-[9px] text-surface-400 font-medium">PNG or SVG (Max. 500KB)</p>
-                                    <button 
-                                        type="button"
-                                        onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
-                                        className="text-[10px] text-primary-600 font-bold hover:underline mt-1 cursor-pointer"
-                                    >
-                                        Change Image
-                                    </button>
+                        
+                        {/* ─── IMAGE UPLOAD (Categories & Locations Only) ─── */}
+                        {(activeTab === "categories" || activeTab === "locations") && (
+                            <div className="col-span-7 space-y-4">
+                                <div className="flex items-center gap-4 p-3 bg-surface-50 border border-surface-100 rounded-xl">
+                                    <div className="relative group w-14 h-14 bg-white border border-surface-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+                                        {editingItem.icon_preview || editingItem.icon || editingItem.image ? (
+                                            <img 
+                                                src={editingItem.icon_preview || `https://teachnowbackend.jobsvedika.in/${editingItem.icon || editingItem.image}`} 
+                                                alt="" 
+                                                className="w-full h-full object-cover" 
+                                            />
+                                        ) : (
+                                            <Library size={20} className="text-surface-300" />
+                                        )}
+                                        <label className="absolute inset-0 bg-surface-900/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                                            <Plus size={16} className="text-white" />
+                                            <input 
+                                                type="file" 
+                                                className="hidden" 
+                                                accept="image/*"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onload = (re) => {
+                                                            setEditingItem({ ...editingItem, icon_file: file, icon_preview: re.target?.result } as any);
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] font-bold text-surface-700">{activeTab === "categories" ? "Category Icon" : "Location Image"}</p>
+                                        <p className="text-[9px] text-surface-400 font-medium">PNG or SVG (Max. 500KB)</p>
+                                        <button 
+                                            type="button"
+                                            onClick={() => (document.querySelector('input[type="file"]') as HTMLInputElement)?.click()}
+                                            className="text-[10px] text-primary-600 font-bold hover:underline mt-1 cursor-pointer"
+                                        >
+                                            Change Image
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+                        )}
 
+                        {/* ─── NAME AND SLUG (Varies by Tab) ─── */}
+                        <div className={activeTab === "skills" ? "col-span-8 space-y-4" : "col-span-7"}>
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2">
+                                <div className={activeTab === "skills" ? "col-span-2" : "col-span-2"}>
                                     <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Name</label>
                                     <input 
                                         type="text"
-                                        placeholder="e.g. Maths Teaching"
-                                        value={editingItem.name}
+                                        placeholder={activeTab === 'locations' ? "e.g. New York" : activeTab === 'skills' ? "e.g. Next.js" : "e.g. Data Science"}
+                                        value={editingItem.name || ""}
                                         onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
                                         className="w-full px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-[13px] text-surface-700 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-medium"
                                     />
                                 </div>
-                                <div className="col-span-2">
-                                    <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Slug (Auto-generated)</label>
-                                    <input 
-                                        type="text"
-                                        placeholder="maths-teaching"
-                                        value={editingItem.slug}
-                                        onChange={(e) => setEditingItem({ ...editingItem, slug: e.target.value })}
-                                        className="w-full px-3 py-1.5 bg-surface-50 border border-surface-100 rounded-lg text-[12px] text-surface-400 focus:outline-none transition-all font-medium italic"
-                                    />
-                                </div>
+                                {(activeTab === "categories" || activeTab === "locations") && (
+                                  <div className="col-span-2">
+                                      <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Slug (Auto-generated)</label>
+                                      <input 
+                                          type="text"
+                                          placeholder={activeTab === 'locations' ? "new-york" : "data-science"}
+                                          value={editingItem.slug || ""}
+                                          onChange={(e) => setEditingItem({ ...editingItem, slug: e.target.value })}
+                                          className="w-full px-3 py-1.5 bg-surface-50 border border-surface-100 rounded-lg text-[12px] text-surface-400 focus:outline-none transition-all font-medium italic"
+                                      />
+                                  </div>
+                                )}
                             </div>
                         </div>
 
-                        <div className="col-span-5 space-y-2">
+                        {/* ─── STATUS AND TOGGLES ─── */}
+                        <div className={activeTab === "skills" ? "col-span-4 space-y-2" : "col-span-5 space-y-2"}>
                             <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Status & Visibility</label>
-                            <div className="flex items-center justify-between p-2.5 bg-surface-50 rounded-xl border border-surface-100">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-7 h-7 rounded-lg bg-white border border-surface-100 flex items-center justify-center text-amber-500">
-                                        <Star size={12} className={editingItem.is_featured ? "fill-amber-500" : ""} />
+                            
+                            {(activeTab === "categories" || activeTab === "locations") && (
+                                <div className="flex items-center justify-between p-2.5 bg-surface-50 rounded-xl border border-surface-100">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-lg bg-white border border-surface-100 flex items-center justify-center text-amber-500">
+                                            <Star size={12} className={editingItem.is_featured ? "fill-amber-500" : ""} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-bold text-surface-700">Featured</p>
+                                            <p className="text-[9px] text-surface-400 font-medium">Home highlight</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-[11px] font-bold text-surface-700">Featured</p>
-                                        <p className="text-[9px] text-surface-400 font-medium">Home highlight</p>
-                                    </div>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setEditingItem({ ...editingItem, is_featured: editingItem.is_featured ? 0 : 1 })}
+                                        className={clsx(
+                                            "w-8 h-4.5 rounded-full transition-colors relative",
+                                            editingItem.is_featured ? "bg-amber-500" : "bg-surface-300"
+                                        )}
+                                    >
+                                        <div className={clsx(
+                                            "absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm",
+                                            editingItem.is_featured ? "right-0.5" : "left-0.5"
+                                        )} />
+                                    </button>
                                 </div>
-                                <button 
-                                    type="button"
-                                    onClick={() => setEditingItem({ ...editingItem, is_featured: editingItem.is_featured ? 0 : 1 })}
-                                    className={clsx(
-                                        "w-8 h-4.5 rounded-full transition-colors relative",
-                                        editingItem.is_featured ? "bg-amber-500" : "bg-surface-300"
-                                    )}
-                                >
-                                    <div className={clsx(
-                                        "absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm",
-                                        editingItem.is_featured ? "right-0.5" : "left-0.5"
-                                    )} />
-                                </button>
-                            </div>
-                            <div className="flex items-center justify-between p-2.5 bg-primary-50/30 rounded-xl border border-primary-100/50">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-7 h-7 rounded-lg bg-white border border-primary-100/50 flex items-center justify-center text-primary-600">
-                                        <Check size={12} />
+                            )}
+
+                            {(activeTab === "categories" || activeTab === "locations") && (
+                                <div className="flex items-center justify-between p-2.5 bg-primary-50/30 rounded-xl border border-primary-100/50">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-lg bg-white border border-primary-100/50 flex items-center justify-center text-primary-600">
+                                            <Check size={12} />
+                                        </div>
+                                        <div>
+                                            <p className="text-[11px] font-bold text-primary-900">Is Visible</p>
+                                            <p className="text-[9px] text-primary-400 font-medium">Live on platform</p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p className="text-[11px] font-bold text-primary-900">Is Visible</p>
-                                        <p className="text-[9px] text-primary-400 font-medium">Live on platform</p>
-                                    </div>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setEditingItem({ ...editingItem, is_visible: editingItem.is_visible ? 0 : 1 })}
+                                        className={clsx(
+                                            "w-8 h-4.5 rounded-full transition-colors relative",
+                                            editingItem.is_visible ? "bg-primary-600" : "bg-surface-300"
+                                        )}
+                                    >
+                                        <div className={clsx(
+                                            "absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm",
+                                            editingItem.is_visible ? "right-0.5" : "left-0.5"
+                                        )} />
+                                    </button>
                                 </div>
-                                <button 
-                                    type="button"
-                                    onClick={() => setEditingItem({ ...editingItem, is_visible: editingItem.is_visible ? 0 : 1 })}
-                                    className={clsx(
-                                        "w-8 h-4.5 rounded-full transition-colors relative",
-                                        editingItem.is_visible ? "bg-primary-600" : "bg-surface-300"
-                                    )}
-                                >
-                                    <div className={clsx(
-                                        "absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm",
-                                        editingItem.is_visible ? "right-0.5" : "left-0.5"
-                                    )} />
-                                </button>
-                            </div>
+                            )}
+
+                            {activeTab === "skills" && (
+                                <>
+                                    <div className="flex items-center justify-between p-2.5 bg-primary-50/30 rounded-xl border border-primary-100/50">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-7 h-7 rounded-lg bg-white border border-primary-100/50 flex items-center justify-center text-primary-600">
+                                                <Check size={12} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[11px] font-bold text-primary-900">Is Active</p>
+                                                <p className="text-[9px] text-primary-400 font-medium">System usability</p>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            type="button"
+                                            onClick={() => {
+                                               const val = (editingItem as any).is_active === 1 || (editingItem as any).is_active === "1" ? 0 : 1;
+                                               setEditingItem({ ...editingItem, is_active: val } as any);
+                                            }}
+                                            className={clsx(
+                                                "w-8 h-4.5 rounded-full transition-colors relative",
+                                                (editingItem as any).is_active === 1 || (editingItem as any).is_active === "1" ? "bg-primary-600" : "bg-surface-300"
+                                            )}
+                                        >
+                                            <div className={clsx(
+                                                "absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm",
+                                                (editingItem as any).is_active === 1 || (editingItem as any).is_active === "1" ? "right-0.5" : "left-0.5"
+                                            )} />
+                                        </button>
+                                    </div>
+                                    <div className="flex items-center justify-between p-2.5 bg-surface-50 rounded-xl border border-surface-100">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-7 h-7 rounded-lg bg-white border border-surface-100 flex items-center justify-center text-surface-600">
+                                                <Plus size={12} />
+                                            </div>
+                                            <div>
+                                                <p className="text-[11px] font-bold text-surface-700">Custom Skill</p>
+                                                <p className="text-[9px] text-surface-400 font-medium">User suggested</p>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            type="button"
+                                            onClick={() => {
+                                               const val = (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" ? 0 : 1;
+                                               setEditingItem({ ...editingItem, is_custom: val } as any);
+                                            }}
+                                            className={clsx(
+                                                "w-8 h-4.5 rounded-full transition-colors relative",
+                                                (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" ? "bg-indigo-500" : "bg-surface-300"
+                                            )}
+                                        >
+                                            <div className={clsx(
+                                                "absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm",
+                                                (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" ? "right-0.5" : "left-0.5"
+                                            )} />
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
 
-                        <div className="col-span-12 bg-surface-50/50 rounded-xl p-4 border border-surface-100">
-                            <h4 className="text-[10px] font-bold text-surface-400 uppercase tracking-widest flex items-center gap-2 mb-3">
-                                <Search size={10} /> Search Engine Optimization (SEO)
-                            </h4>
-                            <div className="grid grid-cols-2 gap-x-5 gap-y-3">
-                                <div className="col-span-1">
-                                    <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Meta Title</label>
-                                    <input 
-                                        type="text"
-                                        placeholder="SEO Page Title"
-                                        value={(editingItem as any).meta_title || ""}
-                                        onChange={(e) => setEditingItem({ ...editingItem, meta_title: e.target.value } as any)}
-                                        className="w-full px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-[12px] text-surface-700 focus:outline-none focus:border-primary-500 transition-all"
-                                    />
-                                </div>
-                                <div className="col-span-1">
-                                    <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Meta Keywords</label>
-                                    <input 
-                                        type="text"
-                                        placeholder="comma, separated"
-                                        value={(editingItem as any).meta_keywords || ""}
-                                        onChange={(e) => setEditingItem({ ...editingItem, meta_keywords: e.target.value } as any)}
-                                        className="w-full px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-[12px] text-surface-700 focus:outline-none focus:border-primary-500 transition-all"
-                                    />
-                                </div>
-                                <div className="col-span-2">
-                                    <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Meta Description</label>
-                                    <textarea 
-                                        rows={2}
-                                        placeholder="Brief description for search engines..."
-                                        value={(editingItem as any).meta_description || ""}
-                                        onChange={(e) => setEditingItem({ ...editingItem, meta_description: e.target.value } as any)}
-                                        className="w-full px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-[12px] text-surface-700 focus:outline-none focus:border-primary-500 transition-all resize-none"
-                                    />
+                        {/* ─── SEO (Categories & Locations Only) ─── */}
+                        {(activeTab === "categories" || activeTab === "locations") && (
+                            <div className="col-span-12 bg-surface-50/50 rounded-xl p-4 border border-surface-100">
+                                <h4 className="text-[10px] font-bold text-surface-400 uppercase tracking-widest flex items-center gap-2 mb-3">
+                                    <Search size={10} /> Search Engine Optimization (SEO)
+                                </h4>
+                                <div className="grid grid-cols-2 gap-x-5 gap-y-3">
+                                    <div className="col-span-1">
+                                        <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Meta Title</label>
+                                        <input 
+                                            type="text"
+                                            placeholder="SEO Page Title"
+                                            value={(editingItem as any).meta_title || ""}
+                                            onChange={(e) => setEditingItem({ ...editingItem, meta_title: e.target.value } as any)}
+                                            className="w-full px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-[12px] text-surface-700 focus:outline-none focus:border-primary-500 transition-all"
+                                        />
+                                    </div>
+                                    <div className="col-span-1">
+                                        <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Meta Keywords</label>
+                                        <input 
+                                            type="text"
+                                            placeholder="comma, separated"
+                                            value={(editingItem as any).meta_keywords || ""}
+                                            onChange={(e) => setEditingItem({ ...editingItem, meta_keywords: e.target.value } as any)}
+                                            className="w-full px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-[12px] text-surface-700 focus:outline-none focus:border-primary-500 transition-all"
+                                        />
+                                    </div>
+                                    <div className="col-span-2">
+                                        <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Meta Description</label>
+                                        <textarea 
+                                            rows={2}
+                                            placeholder="Brief description for search engines..."
+                                            value={(editingItem as any).meta_description || ""}
+                                            onChange={(e) => setEditingItem({ ...editingItem, meta_description: e.target.value } as any)}
+                                            className="w-full px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-[12px] text-surface-700 focus:outline-none focus:border-primary-500 transition-all resize-none"
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     <div className="mt-5 pt-4 border-t border-surface-50 flex items-center justify-end gap-3">

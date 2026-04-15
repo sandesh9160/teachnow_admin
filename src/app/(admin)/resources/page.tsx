@@ -12,7 +12,8 @@ import {
   getResources, 
   createResource, 
   updateResource, 
-  deleteResource 
+  deleteResource,
+  toggleResourceVisibility
 } from "@/services/admin.service";
 import ResourceCard from "@/components/cards/ResourceCard";
 import ResourceModal from "@/components/modals/ResourceModal";
@@ -79,11 +80,7 @@ export default function ManageResourcesPage() {
   const handleToggleStatus = async (resource: TeachingResource) => {
     try {
       const newStatus = !resource.is_visible;
-      // Use standard POST without _method=PUT to avoid MethodNotAllowed on Laravel
-      const formData = new FormData();
-      formData.append("is_visible", newStatus ? "1" : "0");
-      
-      await updateResource(resource.id, formData);
+      await toggleResourceVisibility(resource.id);
       setResources(prev => prev.map(r => 
         r.id === resource.id ? { ...r, is_visible: newStatus ? 1 : 0 } : r
       ));

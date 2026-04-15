@@ -108,36 +108,36 @@ export default function ManagePlansPage() {
   const activeCount = (plans || []).filter(p => p.is_active).length;
 
   return (
-    <div className="space-y-6 pb-12 antialiased max-w-7xl mx-auto">
+    <div className="space-y-4 pb-8 antialiased max-w-7xl mx-auto">
       {/* ─── Premium Header ────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-1 border-b border-slate-100">
         <div className="space-y-1">
-          <div className="flex items-center gap-2.5">
-             <div className="w-9 h-9 rounded-[0.9rem] bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
-                <CreditCard size={18} />
+          <div className="flex items-center gap-2">
+             <div className="w-7 h-7 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/20">
+                <CreditCard size={14} />
              </div>
-             <h4 className="text-[11px] font-semibold text-indigo-600 tracking-wide">Monetization Hub</h4>
+             <h4 className="text-[10px] font-semibold text-indigo-600 tracking-wide uppercase">Monetization Hub</h4>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Manage Premium Offerings</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Manage Premium Offerings</h1>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex flex-col items-end mr-4">
+          <div className="hidden sm:flex flex-col items-end mr-3">
               <span className="text-[10px] font-medium text-slate-400">Current Inventory</span>
-              <span className="text-[14px] font-bold text-slate-900">{activeCount} / {(plans || []).length} Plans Active</span>
+              <span className="text-[13px] font-bold text-slate-900">{activeCount} / {(plans || []).length} Active</span>
           </div>
           <button 
             onClick={handleCreatePlan}
-            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-2xl text-[13px] font-semibold shadow-xl transition-all active:scale-95 group"
+            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-[12px] font-semibold shadow-md transition-all active:scale-95 group"
           >
-            <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" /> 
-            Create New Plan
+            <Plus size={16} className="group-hover:rotate-90 transition-transform duration-300" /> 
+            Create Plan
           </button>
         </div>
       </div>
 
       {/* ─── Flexible Statistics ──────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <StatWidget 
             label="Ecosystem Reach" 
             value={(plans || []).reduce((acc, p) => acc + (p.subscribers || 0), 0).toLocaleString()} 
@@ -198,16 +198,16 @@ function StatWidget({ label, value, icon, desc, color }: { label: string, value:
   };
 
   return (
-    <div className="bg-white p-5 rounded-[1.2rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
-      <div className="flex items-center gap-4 relative z-10">
-          <div className={clsx("w-10 h-10 rounded-2xl flex items-center justify-center border shadow-sm shrink-0", themes[color])}>
-            {React.cloneElement(icon as React.ReactElement<any>, { size: 18 })}
+    <div className="bg-white p-3.5 rounded-[1rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow transition-all">
+      <div className="flex items-center gap-3 relative z-10">
+          <div className={clsx("w-8 h-8 rounded-xl flex items-center justify-center border shadow-sm shrink-0", themes[color])}>
+            {React.cloneElement(icon as React.ReactElement<any>, { size: 14 })}
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-medium text-slate-400 mb-0.5">{label}</p>
+            <p className="text-[10px] font-medium text-slate-400 mb-0.5">{label}</p>
             <div className="flex items-baseline gap-2">
-                <p className="text-[20px] font-bold text-slate-900 leading-none">{value}</p>
-                <p className="text-[10px] font-medium text-slate-400 truncate">{desc}</p>
+                <p className="text-[16px] font-bold text-slate-900 leading-none">{value}</p>
+                <p className="text-[9px] font-medium text-slate-400 truncate">{desc}</p>
             </div>
           </div>
       </div>

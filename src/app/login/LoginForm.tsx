@@ -45,30 +45,30 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-6 antialiased">
-      <div className="w-full max-w-[440px] space-y-8 animate-fade-in-up">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4 antialiased">
+      <div className="w-full max-w-[360px] space-y-5 animate-fade-in-up">
         {/* Header */}
-        <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-50 text-orange-600 mb-2 border-4 border-white shadow-sm">
-            <ShieldCheck size={32} strokeWidth={1.5} />
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-50 text-orange-600 mb-1 border-4 border-white shadow-sm">
+            <ShieldCheck size={24} strokeWidth={1.5} />
           </div>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Admin Portal</h1>
-          <p className="text-[15px] text-slate-500 font-medium">Secure access for administrators</p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Admin Portal</h1>
+          <p className="text-[14px] text-slate-500 font-medium">Secure access for administrators</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-[24px] border border-slate-100 p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white rounded-[20px] border border-slate-100 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <label className="text-[12px] font-bold text-slate-500 tracking-wider ml-0.5 uppercase">Admin Username</label>
               <div className="relative group">
-                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Username"
-                  className="w-full pl-12 pr-4 py-4 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium"
+                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium"
                   disabled={loading}
                 />
               </div>
@@ -79,21 +79,21 @@ export default function LoginForm() {
                 <label className="text-[12px] font-bold text-slate-500 tracking-wider ml-0.5 uppercase">Admin Password</label>
               </div>
               <div className="relative group">
-                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-12 pr-12 py-4 bg-white border border-slate-200 rounded-xl text-[15px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium"
+                  className="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium"
                   disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
@@ -102,27 +102,27 @@ export default function LoginForm() {
               type="submit"
               disabled={loading}
               className={clsx(
-                "w-full py-4 rounded-xl bg-primary text-white text-[16px] font-bold hover:bg-primary-600 transition-all flex items-center justify-center gap-3 shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-[0.98]",
+                "w-full py-2.5 rounded-lg bg-primary text-white text-[15px] font-bold hover:bg-primary-600 transition-all flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]",
                 loading && "opacity-70 pointer-events-none"
               )}
             >
               {loading ? (
-                <Loader2 size={20} className="animate-spin" />
+                <Loader2 size={18} className="animate-spin" />
               ) : (
                 <>
-                  Sign In <span className="text-xl">→</span>
+                  Sign In <span className="text-lg">→</span>
                 </>
               )}
             </button>
           </form>
 
           {/* Security Box */}
-          <div className="mt-8 p-4 bg-slate-50/80 rounded-xl border border-dotted border-slate-200 flex items-start gap-4">
-            <div className="w-8 h-8 rounded-full bg-white border border-orange-100 flex items-center justify-center text-orange-600 shrink-0">
-              <ShieldCheck size={16} />
+          <div className="mt-5 p-3 bg-slate-50/80 rounded-lg border border-dotted border-slate-200 flex items-start gap-3">
+            <div className="w-7 h-7 rounded-full bg-white border border-orange-100 flex items-center justify-center text-orange-600 shrink-0">
+              <ShieldCheck size={14} />
             </div>
             <div className="space-y-0.5">
-              <p className="text-[13px] font-bold text-slate-800">Internal Security Protocol</p>
+              <p className="text-[12px] font-bold text-slate-800">Internal Security Protocol</p>
               <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
                 Secure administrative portal access. Unauthorized entry attempts are logged.
               </p>

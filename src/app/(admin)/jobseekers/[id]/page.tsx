@@ -33,7 +33,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
   const [processing, setProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState("Overview");
   
-  const tabs = ["Overview", "Experience", "Settings"];
+  const tabs = ["Overview", "Resumes", "Applications", "Settings"];
 
   useEffect(() => {
     fetchDetails();
@@ -170,6 +170,19 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                         </p>
                      </section>
 
+                     {seeker.skills && seeker.skills.length > 0 && (
+                        <section className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                           <h3 className="text-[11px] font-semibold text-indigo-500 mb-3">Skills & Expertise</h3>
+                           <div className="flex flex-wrap gap-2">
+                              {seeker.skills.map((s: any, i: number) => (
+                                 <span key={i} className="px-2.5 py-1 bg-slate-50 border border-slate-200 text-slate-700 text-[11px] font-semibold rounded-lg">
+                                     {s.skill?.name || s.name || (typeof s === 'string' ? s : 'Unknown Skill')}
+                                 </span>
+                              ))}
+                           </div>
+                        </section>
+                     )}
+
                      <div className="grid grid-cols-3 gap-3">
                         {[
                            { label: "Total Experience", value: `${seeker.experience_years} Years`, icon: Briefcase, color: "text-indigo-600" },
@@ -226,7 +239,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                </div>
            )}
 
-           {activeTab === "Experience" && (
+           {activeTab === "Resumes" && (
                <div className="max-w-xl space-y-4">
                    <div className="flex items-center gap-2 text-slate-400 mb-2">
                       <FileText size={20} className="text-indigo-400" />
@@ -265,6 +278,71 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                         <div className="p-12 border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center">
                             <AlertCircle size={24} className="text-slate-100 mb-2" />
                             <p className="text-[12px] font-medium text-slate-400 italic">No resume documents found.</p>
+                        </div>
+                      )}
+                   </div>
+               </div>
+           )}
+
+           {activeTab === "Applications" && (
+               <div className="max-w-3xl space-y-4">
+                   <div className="flex items-center gap-2 text-slate-400 mb-2">
+                      <Briefcase size={20} className="text-indigo-400" />
+                      <div>
+                         <h3 className="text-[12px] font-semibold text-slate-900">Job Applications</h3>
+                         <p className="text-[11px] font-medium text-slate-500">History of jobs this candidate has applied to</p>
+                      </div>
+                   </div>
+
+                   <div className="grid gap-3">
+                      {seeker.job_applications && seeker.job_applications.length > 0 ? (
+                        seeker.job_applications.map(app => (
+                          <div key={app.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-slate-100 rounded-xl hover:border-indigo-200 shadow-sm gap-4 transition-all">
+                             <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 bg-slate-50 text-slate-600 rounded-xl flex items-center justify-center border border-slate-200 shrink-0">
+                                   <Briefcase size={16} />
+                                </div>
+                                <div>
+                                   <Link href={`/jobs/${app.job?.id}`} className="text-[13px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors">
+                                      {app.job?.title || "Unknown Job Role"}
+                                   </Link>
+                                   <div className="flex items-center gap-3 mt-1.5 text-[11px] font-medium text-slate-500">
+                                      <span className="flex items-center gap-1" suppressHydrationWarning>
+                                        <Calendar size={12} className="text-slate-400" /> Applied {new Date(app.created_at).toLocaleDateString()}
+                                      </span>
+                                   </div>
+                                </div>
+                             </div>
+                             
+                             <div className="flex items-center gap-3 whitespace-nowrap">
+                                 <div className="flex flex-col sm:items-end gap-1.5">
+                                    <span className={clsx(
+                                        "px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md",
+                                        app.status === "shortlisted" ? "bg-amber-50 text-amber-600 border border-amber-200/50" :
+                                        app.status === "rejected" ? "bg-rose-50 text-rose-600 border border-rose-200/50" :
+                                        app.status === "applied" ? "bg-emerald-50 text-emerald-600 border border-emerald-200/50" :
+                                        "bg-slate-50 text-slate-600 border border-slate-200/50"
+                                    )}>
+                                        {app.status || "Unknown"}
+                                    </span>
+                                    {app.contact_status ? (
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight flex items-center gap-1">
+                                           <Phone size={9} /> {app.contact_status.replace('_', ' ')}
+                                        </span>
+                                    ) : (
+                                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-tight flex items-center gap-1">
+                                           <Phone size={9} /> Pending Contact
+                                        </span>
+                                    )}
+                                 </div>
+                             </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="p-12 border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-center bg-slate-50/50">
+                            <Briefcase size={24} className="text-slate-300 mb-2" />
+                            <p className="text-[12px] font-semibold text-slate-400">No job applications found</p>
+                            <p className="text-[11px] text-slate-400 mt-0.5">This candidate hasn't applied to any roles yet.</p>
                         </div>
                       )}
                    </div>

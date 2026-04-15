@@ -56,16 +56,16 @@ export const deleteLocation = (id: number) =>
   dashboardServerFetch(`/admin/locations/${id}`, { method: "DELETE" });
 
 export const getSkills = (params?: Record<string, unknown>) =>
-  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/skills", { params });
+  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/cms/skills", { params });
 
 export const createSkill = (data: Partial<MasterDataItem>) =>
-  dashboardServerFetch("/admin/skills", { method: "POST", data });
+  dashboardServerFetch("/admin/cms/skills", { method: "POST", data });
 
 export const updateSkill = (id: number, data: Partial<MasterDataItem>) =>
-  dashboardServerFetch(`/admin/skills/${id}`, { method: "PUT", data });
+  dashboardServerFetch(`/admin/cms/skills/${id}`, { method: "PUT", data });
 
 export const deleteSkill = (id: number) =>
-  dashboardServerFetch(`/admin/skills/${id}`, { method: "DELETE" });
+  dashboardServerFetch(`/admin/cms/skills/${id}`, { method: "DELETE" });
 
 // ─── Jobs ────────────────────────────────────────────────────────────────────
 
@@ -399,10 +399,18 @@ export const createResource = (data: FormData) =>
   dashboardServerFetch<ApiResponse<TeachingResource>>("/admin/cms/resources", { method: "POST", data });
 
 export const updateResource = (id: number, data: FormData) =>
-  dashboardServerFetch<ApiResponse<TeachingResource>>(`/admin/cms/resources/${id}`, { method: "POST", data });
+  dashboardServerFetch<ApiResponse<TeachingResource>>(`/admin/cms/resources/${id}`, { 
+    method: "POST", 
+    data,
+    params: { _method: "PUT" },
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
 
 export const deleteResource = (id: number) =>
   dashboardServerFetch(`/admin/cms/resources/${id}`, { method: "DELETE" });
+
+export const toggleResourceVisibility = (id: number) =>
+  dashboardServerFetch(`/admin/cms/resources/${id}/toggle-visibility`, { method: "PATCH" });
 
 // ─── Email Templates ─────────────────────────────────────────────────────────
 
@@ -446,3 +454,30 @@ export const deleteTestimonial = (id: number) =>
 
 export const toggleTestimonialStatus = (id: number) =>
   dashboardServerFetch(`/admin/cms/testimonials/${id}/toggle`, { method: "PATCH" });
+
+// ─── Blogs ───────────────────────────────────────────────────────────────────
+
+export const getBlogs = () =>
+  dashboardServerFetch<any>("/admin/cms/blogs");
+
+export const createBlog = (data: FormData) =>
+  dashboardServerFetch<any>("/admin/cms/blogs", { 
+    method: "POST", 
+    data,
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+
+export const updateBlog = (id: number, data: FormData) =>
+  dashboardServerFetch<any>(`/admin/cms/blogs/${id}`, { 
+    method: "POST", 
+    data,
+    params: { _method: "PUT" },
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+
+export const deleteBlog = (id: number) =>
+  dashboardServerFetch(`/admin/cms/blogs/${id}`, { method: "DELETE" });
+
+export const toggleBlogStatus = (id: number) =>
+  dashboardServerFetch(`/admin/cms/blogs/${id}/toggle`, { method: "PATCH" });
+

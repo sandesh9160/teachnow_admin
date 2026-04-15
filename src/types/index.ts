@@ -78,6 +78,8 @@ export interface MasterDataItem {
   count?: number;
   is_visible: boolean | number;
   is_featured?: boolean | number;
+  is_active?: boolean | number;
+  is_custom?: boolean | number;
   icon?: string;
   image?: string;
   country?: string;
@@ -257,6 +259,7 @@ export interface JobSeeker {
   };
   resumes?: JobSeekerResume[];
   job_applications?: Application[];
+  skills?: any[];
 }
 
 export interface Recruiter {
