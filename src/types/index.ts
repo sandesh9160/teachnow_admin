@@ -338,14 +338,15 @@ export interface Review {
   created_at: string;
 }
 
-// ─── Notification Types ────────────────────────────────────────────────────
 export interface Notification {
   id: number;
   title: string;
   message: string;
   type: string;
-  read_at: string | null;
-  is_read?: boolean;
+  notifiable_type?: string;  // e.g. "admin"
+  notifiable_id?: number;
+  read_at?: string | null;   // optional — admin API uses is_read only
+  is_read: boolean;
   created_at: string;
   data?: any;
 }

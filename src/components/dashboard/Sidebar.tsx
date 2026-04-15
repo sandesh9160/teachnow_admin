@@ -148,8 +148,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
     headerIcon: Mail,
     items: [
       { title: "Email Management", href: "/email", icon: Mail, children: [
-        { title: "Templates", href: "/email/templates" },
-        { title: "Configurations", href: "/email/config" },
+        { title: "Templates", href: "/email/templates" }
       ]},
       { title: "Cron Jobs", href: "/cron-jobs", icon: Timer },
       { title: "System Settings", href: "/settings", icon: Settings },

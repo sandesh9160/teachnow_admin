@@ -85,7 +85,7 @@ export default function NotificationBell() {
               <div className="divide-y divide-surface-50">
                 {notifications.map((n) => {
                   const config = getColorConfig(n.type);
-                  const isUnread = !n.read_at && !n.is_read;
+                  const isUnread = !n.is_read; // backend uses is_read only (no read_at)
                   return (
                     <div 
                       key={n.id}

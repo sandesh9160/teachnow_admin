@@ -373,14 +373,14 @@ export const rejectVerification = (id: number, reason: string) =>
   dashboardServerFetch(`/admin/verifications/${id}/reject`, { method: "POST", data: { reason } });
 
 // ─── Notifications ────────────────────────────────────────────────────────
-export const getNotifications = () => 
-  dashboardServerFetch("/admin/notifications");
+export const getNotifications = (params?: Record<string, unknown>) => 
+  dashboardServerFetch("/admin/notifications", { params });
 
 export const readNotification = (id: number) => 
-  dashboardServerFetch(`/admin/notifications/${id}/read`, { method: "POST" });
+  dashboardServerFetch(`/admin/notifications/${id}/read`, { method: "POST", data: {} });
 
 export const readAllNotifications = () => 
-  dashboardServerFetch("/admin/notifications/read-all", { method: "POST" });
+  dashboardServerFetch("/admin/notifications/read-all", { method: "POST", data: {} });
 
 // ─── Settings ────────────────────────────────────────────────────────────────
 
@@ -481,3 +481,19 @@ export const deleteBlog = (id: number) =>
 export const toggleBlogStatus = (id: number) =>
   dashboardServerFetch(`/admin/cms/blogs/${id}/toggle`, { method: "PATCH" });
 
+// ─── About Us ────────────────────────────────────────────────────────────────
+
+export const getAboutUs = () =>
+  dashboardServerFetch<any>("/admin/cms/about-us");
+
+export const updateAboutUsSection = (id: number, data: { title?: string; content?: string; is_active?: number }) =>
+  dashboardServerFetch<any>(`/admin/cms/about-us/${id}`, { method: "PUT", data });
+
+export const createAboutUsSection = (data: { title: string; content: string; parent_id?: number | null; display_order?: number }) =>
+  dashboardServerFetch<any>("/admin/cms/about-us", { method: "POST", data });
+
+export const deleteAboutUsSection = (id: number) =>
+  dashboardServerFetch(`/admin/cms/about-us/${id}`, { method: "DELETE" });
+
+export const toggleAboutUsSectionStatus = (id: number) =>
+  dashboardServerFetch(`/admin/cms/about-us/${id}/toggle`, { method: "PATCH" });

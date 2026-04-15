@@ -40,7 +40,7 @@ export default function NotificationsPage() {
     }
   };
 
-  if (loading && notifications.length === 0) {
+  if (loading) {
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-20 flex flex-col items-center justify-center gap-4 shadow-sm">
         <Loader2 className="w-8 h-8 animate-spin text-indigo-200" />
@@ -91,7 +91,7 @@ export default function NotificationsPage() {
       {/* Main List Container */}
       <div className="bg-white rounded-2xl border border-slate-200 p-2.5 shadow-sm space-y-1.5">
         {notifications.map((notification: any) => {
-          const isUnread = !notification.read_at && !notification.is_read;
+          const isUnread = !notification.is_read; // backend uses is_read only (no read_at)
           
           const typeColorMap: Record<string, string> = {
             job_applied: isUnread ? "bg-indigo-50 border-indigo-100" : "bg-white border-slate-100",
