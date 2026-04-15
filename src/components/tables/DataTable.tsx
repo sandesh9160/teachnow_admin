@@ -33,23 +33,25 @@ export default function DataTable<T>({
 
   return (
     <div className={clsx(
-        "relative w-full overflow-auto bg-white rounded-xl border border-surface-200 shadow-sm",
-        compact && "border-none shadow-none bg-transparent"
+        "relative w-full overflow-hidden bg-white/50 backdrop-blur-sm rounded-2xl border border-surface-200/60 shadow-xl shadow-surface-900/5",
+        compact && "border-none shadow-none bg-transparent rounded-none"
     )}>
-      <table suppressHydrationWarning className="w-full caption-bottom text-sm border-collapse">
+      <table suppressHydrationWarning className="w-full caption-bottom text-sm border-separate border-spacing-0">
         <thead className={clsx(
-            "bg-surface-50/80",
-            compact && "border-b border-surface-200/60"
+            "bg-surface-50/50 backdrop-blur-md sticky top-0 z-10",
+            compact && "bg-transparent border-b border-surface-200/40"
         )}>
           <tr className={clsx(
-              !compact && "border-b border-surface-200"
+              !compact && "border-b border-surface-200/60"
           )}>
-            {columns.map((col) => (
+            {columns.map((col, idx) => (
               <th
                 key={col.key}
                 className={clsx(
-                  "h-8 px-4 text-left align-middle font-bold text-surface-900 tracking-tight text-[11px] uppercase opacity-70",
-                  compact ? "h-7 px-4 border-none" : "h-10 px-6"
+                  "h-10 px-4 text-left align-middle font-black text-surface-400 tracking-widest text-[9.5px] uppercase border-b border-surface-100/50",
+                  compact ? "px-5" : "px-6",
+                  idx === 0 && "rounded-tl-2xl",
+                  idx === columns.length - 1 && "rounded-tr-2xl"
                 )}
                 style={{ width: col.width }}
               >
@@ -58,7 +60,7 @@ export default function DataTable<T>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-surface-100/80">
+        <tbody className="divide-y divide-surface-100/40">
           {data.length === 0 ? (
             <tr>
               <td
@@ -74,16 +76,16 @@ export default function DataTable<T>({
                 key={rowIndex}
                 onClick={() => onRowClick?.(row)}
                 className={clsx(
-                  "group transition-all duration-200 hover:bg-surface-50/50",
-                  onRowClick && "cursor-pointer active:bg-surface-100/30"
+                  "group transition-all duration-300",
+                  onRowClick ? "cursor-pointer hover:bg-primary/[0.02] active:bg-primary/[0.05]" : "hover:bg-surface-50/40"
                 )}
               >
                 {columns.map((col) => (
                   <td
                     key={col.key}
                     className={clsx(
-                      "align-middle text-surface-950 font-normal transition-colors",
-                      compact ? "py-1.5 px-4 text-[12px] leading-tight" : "py-3 px-6 text-[13px]"
+                      "align-middle text-surface-700 font-medium transition-colors",
+                      compact ? "py-2.5 px-5 text-[12px] leading-tight" : "py-4 px-6 text-[13.5px]"
                     )}
                   >
                     {col.render

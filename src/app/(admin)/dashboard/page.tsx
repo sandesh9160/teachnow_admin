@@ -42,6 +42,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { getDashboardStats } from "@/services/admin.service";
 import { DashboardStats } from "@/types";
+import { resolveMediaUrl } from "@/lib/media";
 
 // ─── Data (Empty initial states for backend integration) ───────────────────
 const barData: any[] = [];
@@ -225,20 +226,36 @@ export default function DashboardPage() {
                     compact
                     columns={[
                     { key: "name", title: "Candidate", render: (_: any, r: any) => {
-                        const name = r.user?.name || `User${r.job_seeker_id}`;
+                        const name = r.job_seeker?.user?.name || `User${r.job_seeker_id}`;
+                        const photo = r.job_seeker?.profile_photo;
                         const colors = ["bg-blue-50 text-blue-500 border-blue-100", "bg-indigo-50 text-indigo-500 border-indigo-100", "bg-purple-50 text-purple-500 border-purple-100", "bg-rose-50 text-rose-500 border-rose-100", "bg-cyan-50 text-cyan-500 border-cyan-100"];
                         const colorClass = colors[name.charCodeAt(0) % colors.length];
                         return (
-                            <div className="flex items-center gap-2.5">
-                                <div className={clsx("w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-bold uppercase tracking-tight border", colorClass)}>
-                                    {name.charAt(0)}
+                            <div className="flex items-center gap-2.5 py-0.5">
+                                <div className={clsx("w-6 h-6 rounded-md flex items-center justify-center text-[9px] font-bold uppercase tracking-tight border overflow-hidden shrink-0", !photo && colorClass)}>
+                                    {photo ? (
+                                        <img src={resolveMediaUrl(photo)} alt="" className="w-full h-full object-cover" />
+                                    ) : (
+                                        name.charAt(0)
+                                    )}
                                 </div>
                                 <span className="font-medium text-surface-950 text-[12.5px] tracking-tight">{name}</span>
                             </div>
                         );
                     }},
                     { key: "job", title: "Position", render: (v: unknown) => <span className="text-surface-500 font-medium text-[11px] truncate max-w-[150px] inline-block tracking-tight">{(v as any)?.title || "—"}</span> },
-                    { key: "status", title: "Status", render: (v: unknown) => <Badge variant={v === "shortlisted" ? "success" : "default"} dot className="text-[10px] px-2 h-4.5 bg-transparent border-none font-semibold">{typeof v === "string" ? v : ""}</Badge> },
+                    { key: "status", title: "Status", render: (v: unknown) => {
+                        const s = typeof v === "string" ? v.toLowerCase() : "";
+                        return (
+                            <Badge 
+                                variant={s === "shortlisted" ? "success" : s === "applied" ? "indigo" : "default"} 
+                                dot 
+                                className="text-[10px] px-0 h-4 min-w-[70px] bg-transparent border-none font-bold uppercase tracking-wider"
+                            >
+                                {s}
+                            </Badge>
+                        );
+                    }},
                     { key: "created_at", title: "Date", render: (v: unknown) => <span className="text-surface-400 text-[10px] font-medium tracking-tight whitespace-nowrap">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "—"}</span> }
                     ]}
                     data={stats?.recent_applications || []}
@@ -263,13 +280,31 @@ export default function DashboardPage() {
                     { key: "title", title: "Job Title", render: (v: unknown) => (
                         <span className="font-medium text-surface-950 text-[12.5px] truncate max-w-[180px] inline-block tracking-tight">{typeof v === "string" ? v : ""}</span>
                     )},
-                    { key: "employer", title: "Organization", render: (v: unknown) => (
-                        <span className="text-surface-500 font-medium text-[11px] truncate max-w-[140px] inline-block tracking-tight">
-                            {(v as { company_name?: string } | null)?.company_name || "—"}
-                        </span>
+                    { key: "employer", title: "Organization", render: (v: any) => (
+                        <div className="flex items-center gap-2 max-w-[140px]">
+                            {v?.company_logo && (
+                                <div className="w-5 h-5 rounded bg-surface-50 border border-surface-100 overflow-hidden shrink-0">
+                                    <img src={resolveMediaUrl(v.company_logo)} alt="" className="w-full h-full object-cover" />
+                                </div>
+                            )}
+                            <span className="text-surface-500 font-medium text-[11px] truncate tracking-tight">
+                                {v?.company_name || "—"}
+                            </span>
+                        </div>
                     )},
-                    { key: "location", title: "Location", render: (v: unknown) => <span className="text-surface-400 font-medium text-[10px] tracking-tight">{typeof v === "string" ? v : ""}</span> },
-                    { key: "status", title: "Status", render: (v: unknown) => <Badge variant={v === "pending" ? "warning" : "success"} dot className="text-[10px] px-2 h-4.5 bg-transparent border-none font-semibold">{typeof v === "string" ? v : ""}</Badge> }
+                    { key: "location", title: "Location", render: (v: unknown) => <span className="text-surface-400 font-medium text-[10px] tracking-tight truncate max-w-[80px] inline-block">{typeof v === "string" ? v : "—"}</span> },
+                    { key: "status", title: "Status", render: (v: unknown) => {
+                        const s = typeof v === "string" ? v.toLowerCase() : "";
+                        return (
+                            <Badge 
+                                variant={s === "approved" ? "success" : s === "rejected" ? "danger" : "warning"} 
+                                dot 
+                                className="text-[10px] px-0 h-4 min-w-[70px] bg-transparent border-none font-bold uppercase tracking-wider"
+                            >
+                                {s}
+                            </Badge>
+                        );
+                    }}
                     ]}
                     data={stats?.recent_jobs || []}
                     onRowClick={(row) => router.push(`/jobs/edit/${row.id}`)}
