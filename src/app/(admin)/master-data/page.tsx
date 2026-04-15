@@ -143,12 +143,12 @@ export default function MasterDataPage() {
             else if (activeTab === "locations") await createLocation(formData as any);
             else if (activeTab === "skills") await createSkill(formData as any);
             toast.success("Entry created successfully");
-        } else if (editingItem.id) {
-            if (activeTab === "categories") await createCategory(formData as any);
-            else if (activeTab === "locations") await createLocation(formData as any);
-            else if (activeTab === "skills") await createSkill(formData as any);
-            toast.success("Entry updated successfully");
-        }
+        }else if (editingItem.id) {
+                if (activeTab === "categories") await updateCategory(editingItem.id, formData as any);
+                else if (activeTab === "locations") await updateLocation(editingItem.id, formData as any);
+                else if (activeTab === "skills") await updateSkill(editingItem.id, formData as any);
+                toast.success("Entry updated successfully");
+                }
         
         setEditingItem(null);
         fetchData();
@@ -281,42 +281,37 @@ export default function MasterDataPage() {
 
       <div className="bg-white rounded-2xl border border-surface-100 shadow-xs overflow-hidden">
         <div className="px-6 pt-5 pb-1 flex items-center justify-between">
-            <div className="flex items-center gap-6 border-b border-surface-50 pb-px">
-                {tabs.map((tab) => (
-                <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={clsx(
-                    "pb-3 text-[13px] font-semibold transition-all whitespace-nowrap relative px-0.5 flex items-center gap-1.5 cursor-pointer",
-                    activeTab === tab.key
-                        ? "text-primary-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary-600"
-                        : "text-surface-400 hover:text-surface-600"
-                    )}
-                >
-                    {tab.label}
-                    {tab.key === "categories" && (
-                        <span className="text-[10px] py-0.5 px-1.5 bg-surface-50 border border-surface-100 rounded-md font-semibold text-surface-400 ml-1">{categories.length}</span>
-                    )}
-                    {tab.key === "locations" && (
-                        <span className="text-[10px] py-0.5 px-1.5 bg-surface-50 border border-surface-100 rounded-md font-semibold text-surface-400 ml-1">{locations.length}</span>
-                    )}
-                    {tab.key === "skills" && (
-                        <span className="text-[10px] py-0.5 px-1.5 bg-surface-50 border border-surface-100 rounded-md font-semibold text-surface-400 ml-1">{skills.length}</span>
-                    )}
-                </button>
-                ))}
-            </div>
-            <div className="relative max-w-xs pb-3">
-                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" />
-                <input 
-                    type="text" 
-                    placeholder="Search..." 
-                    value={search} 
-                    onChange={(e) => setSearch(e.target.value)} 
-                    className="w-full pl-9 pr-4 py-1.5 bg-surface-50 border border-surface-100 rounded-xl text-[13px] text-surface-700 focus:outline-none focus:border-primary-500 transition-all font-medium" 
-                />
-            </div>
-        </div>
+  <div className="flex items-center gap-6 border-b border-surface-50 pb-px">
+    {tabs.map((tab) => (
+      <button
+        key={tab.key}
+        onClick={() => setActiveTab(tab.key)}
+        className={clsx(
+          "pb-3 text-[13px] font-semibold transition-all whitespace-nowrap relative px-0.5 flex items-center gap-1.5 cursor-pointer",
+          activeTab === tab.key
+            ? "text-primary-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary-600"
+            : "text-surface-400 hover:text-surface-600"
+        )}
+      >
+        {tab.label}
+      </button>
+    ))}
+  </div>
+
+  <div className="relative max-w-xs pb-3">
+    <Search
+      size={14}
+      className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400"
+    />
+    <input
+      type="text"
+      placeholder="Search..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      className="w-full pl-9 pr-4 py-1.5 bg-surface-50 border border-surface-100 rounded-xl text-[13px] text-surface-700 focus:outline-none focus:border-primary-500 transition-all font-medium"
+    />
+  </div>
+</div>
 
         <DataTable 
             columns={columns} 

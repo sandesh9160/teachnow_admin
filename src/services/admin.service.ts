@@ -1,4 +1,5 @@
 import { dashboardServerFetch } from "@/actions/dashboardServerFetch";
+import { uploadFile, uploadAction } from "@/actions/FileUpload";
 import type {
   DashboardStats,
   MasterDataItem,
@@ -37,8 +38,15 @@ export const getCategories = (params?: Record<string, unknown>) =>
 export const createCategory = (data: Partial<MasterDataItem>) =>
   dashboardServerFetch("/admin/categories", { method: "POST", data });
 
+// export const updateCategory = (id: number, data: Partial<MasterDataItem>) =>
+//   dashboardServerFetch(`/admin/categories/${id}`, { method: "PUT", data });
+
 export const updateCategory = (id: number, data: Partial<MasterDataItem>) =>
-  dashboardServerFetch(`/admin/categories/${id}`, { method: "PUT", data });
+  dashboardServerFetch(`/admin/categories/${id}`, {
+    method: "POST",
+    data,
+    params: { _method: "PUT" }, // 🔥 important fix
+  });
 
 export const deleteCategory = (id: number) =>
   dashboardServerFetch(`/admin/categories/${id}`, { method: "DELETE" });
@@ -272,11 +280,11 @@ export const toggleCMSFooterLink = (id: number) =>
 export const getCMSCompanyLogos = () => 
   dashboardServerFetch<any[]>("/admin/cms/company-logos");
 
-export const createCMSCompanyLogo = (data: any) => 
-  dashboardServerFetch("/admin/cms/company-logos", { method: "POST", data });
+export const createCMSCompanyLogo = (data: FormData) => 
+  uploadAction("/admin/cms/company-logos", data, "POST");
 
-export const updateCMSCompanyLogo = (id: number, data: any) => 
-  dashboardServerFetch(`/admin/cms/company-logos/${id}`, { method: "POST", data });
+export const updateCMSCompanyLogo = (id: number, data: FormData) => 
+  uploadAction(`/admin/cms/company-logos/${id}`, data, "POST");
 
 export const deleteCMSCompanyLogo = (id: number) => 
   dashboardServerFetch(`/admin/cms/company-logos/${id}`, { method: "DELETE" });
@@ -286,7 +294,7 @@ export const getCMSHero = () =>
   dashboardServerFetch<any>("/admin/cms/hero");
 
 export const updateCMSHero = (data: FormData) => 
-  dashboardServerFetch<any>("/admin/cms/hero", { method: "POST", data });
+  uploadAction<any>("/admin/cms/hero", data, "POST");
 
 // Hero Stats
 export const getCMSStats = () => 
@@ -299,10 +307,10 @@ export const getCMSCTAs = () =>
   dashboardServerFetch<any>("/admin/cms/cta");
 
 export const createCMSCTA = (data: FormData) => 
-  dashboardServerFetch("/admin/cms/cta", { method: "POST", data });
+  uploadAction("/admin/cms/cta", data, "POST");
 
 export const updateCMSCTA = (id: number, data: FormData) => 
-  dashboardServerFetch(`/admin/cms/cta/${id}`, { method: "POST", data }); // POST correctly handles FormData with _method='PUT' on Laravel backend
+  uploadAction(`/admin/cms/cta/${id}`, data, "POST"); // POST correctly handles FormData with _method='PUT' on Laravel backend
 
 export const deleteCMSCTA = (id: number) => 
   dashboardServerFetch(`/admin/cms/cta/${id}`, { method: "DELETE" });
@@ -452,6 +460,33 @@ export const updateTestimonial = (id: number, data: FormData) =>
 export const deleteTestimonial = (id: number) =>
   dashboardServerFetch(`/admin/cms/testimonials/${id}`, { method: "DELETE" });
 
+// ─── FAQs ───────────────────────────────────────────────────────────────────
+
+export interface FAQResponse {
+  status: boolean;
+  total: number;
+  data: FAQ[];
+}
+
+export const getFAQs = () =>
+  dashboardServerFetch<FAQResponse>("/admin/cms/faqs");
+
+export const createFAQ = (data: Partial<FAQ>) =>
+  dashboardServerFetch<ApiResponse<FAQ>>("/admin/cms/faqs", { method: "POST", data });
+
+export const updateFAQ = (id: number, data: Partial<FAQ>) =>
+  dashboardServerFetch<ApiResponse<FAQ>>(`/admin/cms/faqs/${id}`, { 
+    method: "POST", 
+    data,
+    params: { _method: "PUT" }
+  });
+
+export const deleteFAQ = (id: number) =>
+  dashboardServerFetch(`/admin/cms/faqs/${id}`, { method: "DELETE" });
+
+export const toggleFAQStatus = (id: number) =>
+  dashboardServerFetch(`/admin/cms/faqs/${id}/toggle`, { method: "POST" });
+
 export const toggleTestimonialStatus = (id: number) =>
   dashboardServerFetch(`/admin/cms/testimonials/${id}/toggle`, { method: "PATCH" });
 
@@ -497,3 +532,46 @@ export const deleteAboutUsSection = (id: number) =>
 
 export const toggleAboutUsSectionStatus = (id: number) =>
   dashboardServerFetch(`/admin/cms/about-us/${id}/toggle`, { method: "PATCH" });
+
+// ─── Privacy Policy ───────────────────────────────────────────────────────────
+
+export interface PrivacyPolicyResponse {
+  status: boolean;
+  data: PrivacyPolicyItem[];
+}
+
+export const getPrivacyPolicies = () =>
+  dashboardServerFetch<PrivacyPolicyResponse>("/admin/cms/privacy-policy");
+
+export const createPrivacyPolicy = (data: Partial<PrivacyPolicyItem>) =>
+  dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>("/admin/cms/privacy-policy", { method: "POST", data });
+
+export const updatePrivacyPolicy = (id: number, data: Partial<PrivacyPolicyItem>) =>
+  dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>(`/admin/cms/privacy-policy/${id}`, { 
+    method: "POST", 
+    data,
+    params: { _method: "PUT" }
+  });
+
+export const deletePrivacyPolicy = (id: number) =>
+  dashboardServerFetch(`/admin/cms/privacy-policy/${id}`, { method: "DELETE" });
+
+export const togglePrivacyPolicyStatus = (id: number) =>
+  dashboardServerFetch(`/admin/cms/privacy-policy/${id}/toggle`, { method: "PATCH" });
+
+// ─── Cron Jobs & Mail Settings ──────────────────────────────────────────────────
+
+export const getCronTemplate = (type: string) =>
+  dashboardServerFetch<any>(`/admin/cms/corn/${type}`);
+
+export const saveCronTemplate = (data: any) =>
+  dashboardServerFetch<any>(`/admin/cms/corn/save`, { method: "POST", data });
+
+export const toggleCronTemplateStatus = (id: number, data: any) =>
+  dashboardServerFetch<any>(`/admin/cms/corn/toggle/${id}`, { method: "POST", data });
+
+export const saveMailSettings = (data: any) =>
+  dashboardServerFetch<any>(`/admin/cms/mail/settings`, { method: "POST", data });
+
+export const getMailSettings = () =>
+  dashboardServerFetch<any>(`/admin/cms/mail/settings`);

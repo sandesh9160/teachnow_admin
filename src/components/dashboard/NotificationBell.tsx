@@ -24,9 +24,9 @@ export default function NotificationBell() {
   const getColorConfig = (typeStr: string) => {
     const type = typeStr?.toLowerCase() || "";
     if (type.includes('applicant') || type.includes('user')) 
-      return { border: "border-indigo-100", bg: "bg-indigo-50/20", iconBg: "bg-indigo-50 text-indigo-500", icon: <AlertCircle size={14} className="text-indigo-500" /> };
+      return { border: "border-violet-100", bg: "bg-violet-50/20", iconBg: "bg-violet-50 text-violet-500", icon: <AlertCircle size={14} className="text-violet-500" /> };
     if (type.includes('job')) 
-      return { border: "border-emerald-100", bg: "bg-emerald-50/20", iconBg: "bg-emerald-50 text-emerald-500", icon: <Bell size={14} className="text-emerald-500" /> };
+      return { border: "border-cyan-100", bg: "bg-cyan-50/20", iconBg: "bg-cyan-50 text-cyan-500", icon: <Bell size={14} className="text-cyan-500" /> };
     if (type.includes('subscription') || type.includes('credit') || type.includes('system')) 
       return { border: "border-amber-100", bg: "bg-amber-50/20", iconBg: "bg-amber-50 text-amber-500", icon: <Info size={14} className="text-amber-500" /> };
     if (type.includes('alert') || type.includes('delete') || type.includes('reject')) 
@@ -57,7 +57,7 @@ export default function NotificationBell() {
       >
         <Bell size={20} />
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-indigo-600 text-white text-[9px] font-bold rounded-full ring-2 ring-white flex items-center justify-center animate-pulse">
+          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-violet-600 text-white text-[9px] font-bold rounded-full ring-2 ring-white flex items-center justify-center animate-pulse">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -73,7 +73,7 @@ export default function NotificationBell() {
             {unreadCount > 0 && (
               <button 
                 onClick={markAllAsRead}
-                className="text-[11px] font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+                className="text-[11px] font-bold text-violet-600 hover:text-violet-700 transition-colors"
               >
                 Mark all as read
               </button>
@@ -137,7 +137,7 @@ export default function NotificationBell() {
 
           <Link 
             href="/notifications" 
-            className="block py-3 text-center text-[11px] font-bold text-indigo-600 hover:bg-slate-50 border-t border-slate-100 transition-colors uppercase tracking-widest"
+            className="block py-3 text-center text-[11px] font-bold text-violet-600 hover:bg-slate-50 border-t border-slate-100 transition-colors uppercase tracking-widest"
           >
             See all notifications
           </Link>

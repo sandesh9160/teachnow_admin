@@ -98,9 +98,9 @@ export default function ManagePlansPage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
-        <Loader2 className="w-8 h-8 animate-spin mb-3 text-indigo-500" />
-        <p className="text-[12px] font-bold uppercase tracking-widest">Synchronizing Plans...</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-400">
+        <Loader2 className="w-8 h-8 animate-spin mb-4 text-violet-600" />
+        <p className="text-xs font-bold text-slate-500">Synchronizing Plans Database...</p>
       </div>
     );
   }
@@ -110,15 +110,15 @@ export default function ManagePlansPage() {
   return (
     <div className="space-y-4 pb-8 antialiased max-w-7xl mx-auto">
       {/* ─── Premium Header ────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-1 border-b border-slate-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-1 border-b border-slate-50">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-             <div className="w-7 h-7 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/20">
+             <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center text-white shadow-md shadow-violet-600/10">
                 <CreditCard size={14} />
              </div>
-             <h4 className="text-[10px] font-semibold text-indigo-600 tracking-wide uppercase">Monetization Hub</h4>
+             <h4 className="text-[11px] font-bold text-violet-600 tracking-tight">Monetization Hub</h4>
           </div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Manage Premium Offerings</h1>
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Manage Subscription Plans</h1>
         </div>
 
         <div className="flex items-center gap-3">
@@ -128,9 +128,9 @@ export default function ManagePlansPage() {
           </div>
           <button 
             onClick={handleCreatePlan}
-            className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl text-[12px] font-semibold shadow-md transition-all active:scale-95 group"
+            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 rounded-xl text-[12px] font-bold shadow-md shadow-violet-600/10 transition-all active:scale-95 group"
           >
-            <Plus size={16} className="group-hover:rotate-90 transition-transform duration-300" /> 
+            <Plus size={16} /> 
             Create Plan
           </button>
         </div>

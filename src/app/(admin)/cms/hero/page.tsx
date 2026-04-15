@@ -69,9 +69,9 @@ export default function CMSHeroPage() {
       const formData = new FormData();
       formData.append("title", data.title);
       formData.append("subtitle", data.subtitle);
-      formData.append("button_text", data.button_text);
-      formData.append("button_link", data.button_link);
-      formData.append("trust_text", data.trust_text);
+      formData.append("button_text", data.button_text || "");
+      formData.append("button_link", data.button_link || "");
+      formData.append("trust_text", data.trust_text || "");
       formData.append("is_active", String(data.is_active));
       
       const file = fileInputRef.current?.files?.[0];

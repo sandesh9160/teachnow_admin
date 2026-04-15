@@ -5,23 +5,19 @@ import { cookies } from "next/headers";
 import type { AxiosRequestConfig, AxiosResponse } from "axios";
 
 /**
- * File Upload Action - Uses api.ts for authenticated multipart requests
- * Automatically forwards cookies from Next.js request to API
- * 
- * @param endpoint - API endpoint (e.g., "/user/upload-resume")
- * @param options - Axios request options (must include FormData in 'data')
- * @returns Promise with response data
+ * uploadAction - Specialized for handling FormData in Server Actions
+ * Since FormData cannot be nested in objects when passed to a server action,
+ * we must pass it as a top-level argument.
  */
-export const uploadFile = async <T = any>(
+export async function uploadAction<T = any>(
     endpoint: string,
-    options?: AxiosRequestConfig & { data?: any }
-): Promise<T> => {
-
-    console.log("[FileUpload] target endpoint: ", endpoint);
+    formData: FormData,
+    method: "POST" | "PUT" | "PATCH" = "POST"
+): Promise<T> {
+    console.log(`[uploadAction] ${method} target: `, endpoint);
+    
     try {
         const cookieStore = await cookies();
-
-        // Format cookies from Next.js request for API call
         const allCookies = cookieStore.getAll();
         const uniqueNames = new Set<string>();
         const cookieHeader = allCookies
@@ -33,73 +29,50 @@ export const uploadFile = async <T = any>(
             .map((cookie) => `${cookie.name}=${cookie.value}`)
             .join("; ");
 
-        // Remove leading slash if present
         const cleanEndpoint = endpoint.startsWith("/") ? endpoint.slice(1) : endpoint;
-
-        // All dashboard calls use the shared API client (cookies forwarded below).
-        const apiInstance = api;
-
-        // Prepare headers with cookies
         const headers = {
-            ...(options?.headers || {}),
             ...(cookieHeader ? { Cookie: cookieHeader } : {}),
-        };
-
-        // Determine method from options or default to POST for uploads
-        const method = (options?.method?.toLowerCase() || "post") as "get" | "post" | "put" | "delete" | "patch";
-
-        // Prepare request config
-        const requestConfig: AxiosRequestConfig = {
-            ...options,
-            headers,
+            "Content-Type": "multipart/form-data",
         };
 
         let response: AxiosResponse<T>;
+        const config: AxiosRequestConfig = { headers };
 
-        switch (method) {
-            case "get":
-                response = await apiInstance.get<T>(`/${cleanEndpoint}`, requestConfig);
-                break;
-            case "post":
-                response = await apiInstance.post<T>(`/${cleanEndpoint}`, options?.data, requestConfig);
-                break;
-            case "put":
-                response = await apiInstance.put<T>(`/${cleanEndpoint}`, options?.data, requestConfig);
-                break;
-            case "delete":
-                response = await apiInstance.delete<T>(`/${cleanEndpoint}`, requestConfig);
-                break;
-            case "patch":
-                response = await apiInstance.patch<T>(`/${cleanEndpoint}`, options?.data, requestConfig);
-                break;
-            default:
-                response = await apiInstance.post<T>(`/${cleanEndpoint}`, options?.data, requestConfig);
+        if (method === "PUT") {
+            response = await api.put<T>(`/${cleanEndpoint}`, formData, config);
+        } else if (method === "PATCH") {
+            response = await api.patch<T>(`/${cleanEndpoint}`, formData, config);
+        } else {
+            response = await api.post<T>(`/${cleanEndpoint}`, formData, config);
         }
 
-        console.log(`[FileUpload] ${method.toUpperCase()} /${cleanEndpoint} status: ${response.status}`);
+        console.log(`[uploadAction] Success /${cleanEndpoint} status: ${response.status}`);
         return response.data;
     } catch (error: any) {
-        if (error?.response?.status !== 401) {
-            console.error("[FileUpload Error]:", error?.message || error);
-        }
+        console.error("[uploadAction Error]:", error?.message || error, error?.response?.data || "");
         
-        let message = "Error occurred";
-        let statusCode = 500;
-
-        if (error.response) {
-            message = error.response.data?.message || error.message || "Request failed";
-            statusCode = error.response.status;
-        } else if (error.request) {
-            message = "No response from server";
-            statusCode = 504;
-        } else if (error instanceof Error) {
-            message = error.message;
-        }
-
         return {
             status: false,
-            message,
-            statusCode,
+            message: error.response?.data?.message || error.message || "Upload failed",
+            statusCode: error.response?.status || 500,
         } as T;
     }
+}
+
+/**
+ * Maintain backward compatibility for existing code using uploadFile 
+ * (though nesting FormData in options will still fail if called as a server action)
+ */
+export const uploadFile = async <T = any>(
+    endpoint: string,
+    options?: AxiosRequestConfig & { data?: any }
+): Promise<T> => {
+    // If data is FormData, redirect to uploadAction logic
+    if (options?.data instanceof FormData) {
+        return uploadAction(endpoint, options.data, (options.method || "POST") as any);
+    }
+    
+    // ... rest of previous logic if needed, but the above is safer for server actions
+    console.log("[uploadFile] warning: utilizing standard fetch for potentially non-multipart data");
+    return uploadAction(endpoint, options?.data, (options?.method || "POST") as any);
 };

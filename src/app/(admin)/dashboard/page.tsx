@@ -124,15 +124,15 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <StatWidget label="Total Jobs" value={stats?.total_jobs || 0} icon={<Briefcase size={18} />} color="blue" trend="+12% vs last month" />
-        <StatWidget label="Job Seekers" value={stats?.total_job_seekers || 0} icon={<Users size={18} />} color="emerald" trend="9 verified" />
-        <StatWidget label="Recruiters" value={stats?.total_recruiters || 0} icon={<UserCheck size={18} />} color="purple" trend="2 online" />
-        <StatWidget label="Employers" value={stats?.total_employers || 0} icon={<Building2 size={18} />} color="indigo" trend="100% active" />
-        <StatWidget label="Inquiries" value={stats?.total_applications || 0} icon={<FileCheck size={18} />} color="rose" trend="2 pending" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        <StatWidget label="Total Jobs" value={stats?.total_jobs || 0} icon={<Briefcase size={16} />} color="blue" trend="+12%" />
+        <StatWidget label="Job Seekers" value={stats?.total_job_seekers || 0} icon={<Users size={16} />} color="emerald" trend="Verified" />
+        <StatWidget label="Recruiters" value={stats?.total_recruiters || 0} icon={<UserCheck size={16} />} color="purple" trend="Online" />
+        <StatWidget label="Employers" value={stats?.total_employers || 0} icon={<Building2 size={16} />} color="indigo" trend="Active" />
+        <StatWidget label="Inquiries" value={stats?.total_applications || 0} icon={<FileCheck size={16} />} color="rose" trend="Pending" />
       </div>
 
-      {/* Primary Charts Section */}
+      {/* Primary Charts Section - Commented out as there's no backend data yet
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 bg-white rounded-2xl border border-surface-100 p-6 shadow-sm overflow-hidden">
           <div className="flex items-start justify-between mb-8">
@@ -208,15 +208,15 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      */}
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl border border-surface-100 overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-surface-50 flex items-center justify-between">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-6">
+        <div className="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
+            <div className="px-5 py-3 border-b border-surface-100 flex items-center justify-between bg-surface-50">
                 <div>
-                    <h3 className="text-[14px] font-bold text-surface-900 tracking-tight">Recent Applications</h3>
-                    <p className="text-[11px] text-surface-400 font-medium mt-0.5">Latest applicant queue</p>
+                    <h3 className="text-sm font-semibold text-surface-900 tracking-tight">Recent Applications</h3>
                 </div>
-                <Link href="/jobseekers" className="flex items-center gap-1.5 h-7 px-3 bg-surface-50 text-surface-900 border border-surface-200 rounded-md text-[10px] font-bold hover:bg-white transition-all shadow-sm group">
+                <Link href="/jobseekers" className="flex items-center gap-1.5 h-7 px-3 bg-white text-surface-700 border border-surface-200 rounded-md text-[10px] font-semibold hover:bg-surface-50 transition-all shadow-sm group">
                     See all <ArrowUpRight size={12} className="text-surface-400 group-hover:text-primary transition-colors" />
                 </Link>
             </div>
@@ -247,13 +247,12 @@ export default function DashboardPage() {
             </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-surface-100 overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-surface-50 flex items-center justify-between">
+        <div className="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
+            <div className="px-5 py-3 border-b border-surface-100 flex items-center justify-between bg-surface-50">
                 <div>
-                    <h3 className="text-[14px] font-bold text-surface-900 tracking-tight">Recent Jobs</h3>
-                    <p className="text-[11px] text-surface-400 font-medium mt-0.5">Newly posted job openings</p>
+                    <h3 className="text-sm font-semibold text-surface-900 tracking-tight">Recent Jobs</h3>
                 </div>
-                <Link href="/jobs" className="flex items-center gap-1.5 h-7 px-3 bg-surface-50 text-surface-900 border border-surface-200 rounded-md text-[10px] font-bold hover:bg-white transition-all shadow-sm group">
+                <Link href="/jobs" className="flex items-center gap-1.5 h-7 px-3 bg-white text-surface-700 border border-surface-200 rounded-md text-[10px] font-semibold hover:bg-surface-50 transition-all shadow-sm group">
                     See all <ArrowUpRight size={12} className="text-surface-400 group-hover:text-primary transition-colors" />
                 </Link>
             </div>
@@ -284,29 +283,26 @@ export default function DashboardPage() {
 
 function StatWidget({ label, value, trend, icon, color }: any) {
   const themes: any = {
-    blue: { bg: "bg-blue-50/50", text: "text-blue-600", border: "border-blue-100", iconBg: "bg-blue-50" },
-    purple: { bg: "bg-purple-50/50", text: "text-purple-600", border: "border-purple-100", iconBg: "bg-purple-50" },
-    indigo: { bg: "bg-indigo-50/50", text: "text-indigo-600", border: "border-indigo-100", iconBg: "bg-indigo-50" },
-    emerald: { bg: "bg-emerald-50/50", text: "text-emerald-600", border: "border-emerald-100", iconBg: "bg-emerald-50" },
-    rose: { bg: "bg-rose-50/50", text: "text-rose-600", border: "border-rose-100", iconBg: "bg-rose-50" },
-    teal: { bg: "bg-teal-50/50", text: "text-teal-600", border: "border-teal-100", iconBg: "bg-teal-50" },
-    cyan: { bg: "bg-cyan-50/50", text: "text-cyan-600", border: "border-cyan-100", iconBg: "bg-cyan-50" },
+    blue: { bg: "bg-blue-50", text: "text-blue-700", trendBg: "bg-blue-100", trendText: "text-blue-700", iconText: "text-blue-500" },
+    purple: { bg: "bg-purple-50", text: "text-purple-700", trendBg: "bg-purple-100", trendText: "text-purple-700", iconText: "text-purple-500" },
+    indigo: { bg: "bg-indigo-50", text: "text-indigo-700", trendBg: "bg-indigo-100", trendText: "text-indigo-700", iconText: "text-indigo-500" },
+    emerald: { bg: "bg-emerald-50", text: "text-emerald-700", trendBg: "bg-emerald-100", trendText: "text-emerald-700", iconText: "text-emerald-500" },
+    rose: { bg: "bg-rose-50", text: "text-rose-700", trendBg: "bg-rose-100", trendText: "text-rose-700", iconText: "text-rose-500" },
   };
   const theme = themes[color] || themes.blue;
+
   return (
-    <div className="bg-white p-4 rounded-2xl border border-surface-100 shadow-sm group transition-all hover:bg-surface-50 relative overflow-hidden">
-      <div className="absolute top-0 right-0 p-3">
-        <div className={clsx("w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110", theme.iconBg, theme.text)}>
-          {React.cloneElement(icon as React.ReactElement<any>, { size: 16, strokeWidth: 2.5 })}
+    <div className={clsx("p-4 rounded-xl shadow-sm hover:shadow-md group transition-all relative overflow-hidden", theme.bg)}>
+      <div className="flex items-center justify-between mb-2">
+        <p className={clsx("text-[11px] font-semibold uppercase tracking-wider", theme.text)}>{label}</p>
+        <div className={clsx("w-6 h-6 flex items-center justify-center transition-all duration-300 group-hover:scale-110", theme.iconText)}>
+          {React.cloneElement(icon as React.ReactElement<any>, { size: 16 })}
         </div>
       </div>
-      <div className="space-y-3">
-        <p className="text-[12px] font-bold text-surface-400 tracking-tight">{label}</p>
-        <h4 className="text-2xl font-bold text-surface-900 tracking-tight leading-none text-shadow-none">{value}</h4>
-        <div className="flex items-center gap-1.5 border-t border-surface-50/50 pt-2">
-            <span className={clsx("text-[10px] font-bold tracking-tight px-1.5 py-0.5 rounded-md", theme.bg, theme.text)}>
-                {trend}
-            </span>
+      <div className="flex items-end justify-between">
+        <h4 className={clsx("text-2xl font-bold leading-none", theme.text)}>{value}</h4>
+        <div className={clsx("text-[9px] font-bold  px-1.5 py-0.5 rounded", theme.trendBg, theme.trendText)}>
+            {trend}
         </div>
       </div>
     </div>

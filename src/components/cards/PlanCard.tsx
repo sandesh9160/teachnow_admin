@@ -18,10 +18,10 @@ interface PlanCardProps {
 const getPlanTheme = (slug: string) => {
   const iconClass = "transition-transform group-hover:rotate-12 duration-500";
   switch (slug) {
-    case "basic": return { icon: <Zap size={12} className={iconClass} />, color: "text-sky-600", bg: "bg-sky-50", border: "border-sky-100", accent: "sky" };
-    case "professional": return { icon: <Star size={12} className={iconClass} />, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100", accent: "emerald" };
-    case "enterprise": return { icon: <Crown size={12} className={iconClass} />, color: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-100", accent: "indigo" };
-    default: return { icon: <Gift size={12} className={iconClass} />, color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-100", accent: "rose" };
+    case "basic": return { icon: <Zap size={12} className={iconClass} />, color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-100", accent: "violet" };
+    case "professional": return { icon: <Star size={12} className={iconClass} />, color: "text-cyan-600", bg: "bg-cyan-50", border: "border-cyan-100", accent: "cyan" };
+    case "enterprise": return { icon: <Crown size={12} className={iconClass} />, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100", accent: "blue" };
+    default: return { icon: <Gift size={12} className={iconClass} />, color: "text-slate-600", bg: "bg-slate-50", border: "border-slate-100", accent: "slate" };
   }
 };
 
@@ -51,8 +51,8 @@ export default function PlanCard({
       )}
     >
       {plan.is_highlighted && (
-        <div className="bg-gradient-to-r from-indigo-500 to-blue-500 py-0.5 text-center">
-          <span className="text-[8px] font-bold text-white tracking-widest uppercase">Premium</span>
+        <div className="bg-violet-600 py-0.5 text-center">
+          <span className="text-[9px] font-bold text-white tracking-wide">Featured Recommendation</span>
         </div>
       )}
 
@@ -134,16 +134,16 @@ export default function PlanCard({
                       type="number"
                       value={(editedPlan as any)[item.value] || 0}
                       onChange={e => setEditedPlan({...editedPlan, [item.value]: Number(e.target.value)})}
-                      className={clsx("w-full py-0.5 px-1 text-[11px] font-semibold bg-white border rounded-md text-center outline-none focus:ring-2 focus:ring-offset-1 transition-all",
-                         item.color === 'indigo' ? "border-indigo-200 focus:ring-indigo-100" :
-                         item.color === 'emerald' ? "border-emerald-200 focus:ring-emerald-100" :
-                         "border-sky-200 focus:ring-sky-100"
+                      className={clsx("w-full py-0.5 px-1 text-[11px] font-bold bg-white border rounded-md text-center outline-none focus:ring-2 focus:ring-offset-1 transition-all",
+                         item.color === 'indigo' ? "border-violet-200 focus:ring-violet-100" :
+                         item.color === 'emerald' ? "border-cyan-200 focus:ring-cyan-100" :
+                         "border-slate-300 focus:ring-slate-100"
                       )}
                     />
                   ) : (
                     <span className={clsx(
-                      "text-[12px] font-extrabold",
-                      item.color === 'indigo' ? "text-indigo-700" : item.color === 'emerald' ? "text-emerald-700" : "text-sky-700"
+                      "text-[12px] font-bold",
+                      item.color === 'indigo' ? "text-violet-700" : item.color === 'emerald' ? "text-cyan-700" : "text-slate-700"
                     )}>{(plan as any)[item.value] || 0}</span>
                   )}
                </div>
@@ -184,7 +184,7 @@ export default function PlanCard({
 
         {/* ─── Polished Features ─── */}
         <div className="flex-1 mb-4">
-          <p className="text-[9px] font-semibold text-slate-400 mb-1.5 uppercase tracking-tight">Plan Features</p>
+          <p className="text-[10px] font-bold text-slate-400 mb-2 tracking-tight">Included Plan Features</p>
           {isEditing ? (
             <textarea 
               value={(editedPlan.features ?? []).join("\n")}
@@ -211,18 +211,18 @@ export default function PlanCard({
         </div>
 
         {/* ─── Action Footer ─── */}
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
+        <div className="pt-3 border-t border-slate-50 flex items-center justify-between mt-auto">
           {isEditing ? (
             <div className="flex gap-1.5 w-full">
               <button 
                 onClick={() => onSave?.(editedPlan)} 
-                className="flex-1 py-1.5 bg-indigo-600 text-white rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 shadow-sm transition-transform active:scale-95"
+                className="flex-1 py-1.5 bg-violet-600 text-white rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-all"
               >
-                <Save size={10} /> Save Changes
+                <Save size={12} /> Save changes
               </button>
               <button 
                 onClick={onCancel} 
-                className="px-3 py-1.5 bg-white text-slate-500 rounded-lg text-[10px] font-bold border border-slate-200 hover:bg-slate-50 transition-colors"
+                className="px-3 py-1.5 bg-slate-50 text-slate-500 rounded-lg text-[11px] font-medium hover:bg-slate-100 transition-colors"
               >
                 Cancel
               </button>
@@ -232,28 +232,28 @@ export default function PlanCard({
               <div className="flex items-center gap-1">
                 <button 
                   onClick={() => onEdit?.(plan)} 
-                  className="px-2 py-1 text-[10px] font-semibold text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-all flex items-center gap-1"
+                  className="px-2 py-1 text-[11px] font-bold text-slate-500 hover:text-violet-600 hover:bg-violet-50 rounded-md transition-all flex items-center gap-1.5"
                 >
-                  <Pencil size={10} /> Edit
+                  <Pencil size={11} /> Edit
                 </button>
                 <button 
                   onClick={() => onToggleHighlight?.(plan)} 
                   className={clsx(
-                    "px-2 py-1 text-[10px] font-semibold rounded-md transition-all flex items-center gap-1",
+                    "px-2 py-1 text-[11px] font-bold rounded-md transition-all flex items-center gap-1.5",
                     plan.is_highlighted ? "text-amber-600 bg-amber-50" : "text-slate-400 hover:text-amber-500 hover:bg-amber-100/50"
                   )}
                 >
-                  <Star size={10} className={plan.is_highlighted ? "fill-amber-500" : ""} />
+                  <Star size={11} className={plan.is_highlighted ? "fill-amber-500" : ""} />
                   {plan.is_highlighted ? "Featured" : "Highlight"}
                 </button>
               </div>
               <button 
                 onClick={() => onToggleStatus?.(plan)} 
                 className={clsx(
-                  "text-[9px] font-bold px-2 py-1 rounded-md transition-all uppercase tracking-wider",
+                  "text-[10px] font-bold px-2 py-1 rounded-md transition-all",
                   plan.is_active 
-                    ? "text-rose-500 bg-rose-50 hover:bg-rose-100" 
-                    : "text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
+                    ? "text-orange-600 bg-orange-50 hover:bg-orange-100" 
+                    : "text-violet-600 bg-violet-50 hover:bg-violet-100"
                 )}
               >
                 {plan.is_active ? "Disable" : "Enable"}

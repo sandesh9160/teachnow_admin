@@ -425,3 +425,29 @@ export interface Testimonial {
   deleted_at: string | null;
   rating: number | null;
 }
+
+export interface FAQ {
+  id: number;
+  question: string;
+  answer: string;
+  display_order: number;
+  is_active: number | boolean;
+  created_at: string;
+  updated_at: string;
+  meta_title: string | null;
+  meta_description: string | null;
+  meta_keywords: string | null;
+  slug: string | null;
+}
+
+export interface PrivacyPolicyItem {
+  id: number;
+  parent_id: number | null;
+  title: string;
+  content: string;
+  display_order: number;
+  is_active: number | boolean;
+  created_at: string;
+  updated_at: string;
+  children: PrivacyPolicyItem[];
+}
