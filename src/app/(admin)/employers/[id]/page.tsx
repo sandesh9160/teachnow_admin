@@ -16,8 +16,7 @@ import { getEmployer, verifyEmployer, featureEmployer, deleteEmployer } from "@/
 import { Employer } from "@/types";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
-const API_URL = "https://teachnowbackend.jobsvedika.in";
+import { resolveMediaUrl } from "@/lib/media";
 
 export default function InstituteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -104,7 +103,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
           <div className="absolute inset-0 opacity-10" style={{backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "30px 30px"}} />
           <div className="relative z-10 w-14 h-14 rounded-lg bg-white/20 border-2 border-white/30 shadow-lg flex items-center justify-center shrink-0 overflow-hidden">
             {employer.company_logo 
-              ? <img src={`${API_URL}/${employer.company_logo}`} alt="" className="w-full h-full object-contain" />
+              ? <img src={resolveMediaUrl(employer.company_logo)} alt="" className="w-full h-full object-contain" />
               : <Building2 size={26} className="text-white" />
             }
           </div>
@@ -278,7 +277,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                 { key: "is_verified", title: "Verified", render: (v: any) => <Badge variant={v ? "success" : "danger"} dot>{v ? "Yes" : "No"}</Badge> },
                 { key: "created_at", title: "Uploaded", render: (v: any) => <span className="text-[10px] text-surface-400">{fmt(v)}</span> },
                 { key: "document_file", title: "", render: (v: any) => (
-                  <a href={`${API_URL}/${v}`} target="_blank"
+                  <a href={resolveMediaUrl(v)} target="_blank"
                     className="flex items-center gap-1 h-6 px-2 bg-surface-50 border border-surface-200 rounded text-[10px] font-bold text-surface-600 hover:text-primary transition-all">
                     <Download size={10} /> View
                   </a>

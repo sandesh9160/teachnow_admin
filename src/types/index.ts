@@ -292,6 +292,7 @@ export interface Employer {
   phone: string;
   country: string;
   city: string;
+  is_active?: number | boolean;
   is_profile_verified: number | boolean;
   is_verified: number | boolean;
   is_featured: number | boolean;

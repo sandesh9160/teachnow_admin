@@ -1,316 +1,335 @@
 "use client";
 
-import React, { useState, useEffect, use } from "react";
+import React, { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
-    ChevronLeft,
-    MapPin,
-    Calendar,
-    Mail,
-    Phone,
-    FileText,
-    Download,
-    Briefcase,
-    Trash2,
-    AlertCircle,
-    Loader2,
-    User as UserIcon,
-    Globe,
-    ExternalLink,
-    ShieldCheck,
-    Ban,
-    Clock,
-    CheckCircle2,
-    GraduationCap,
-    Award,
-    Link as LinkIcon
+  Briefcase,
+  Calendar,
+  ChevronLeft,
+  Clock,
+  ExternalLink,
+  FileCheck,
+  FileText,
+  Hash,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  Power,
+  ShieldCheck,
+  Trash2,
+  User as UserIcon,
 } from "lucide-react";
 import { getJobSeeker, deleteJobSeeker, disableJobSeeker } from "@/services/admin.service";
 import { JobSeeker } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
-
-const API_URL = "https://teachnowbackend.jobsvedika.in";
+import { resolveMediaUrl } from "@/lib/media";
+import Badge from "@/components/ui/Badge";
 
 export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const resolvedParams = use(params);
-    const [seeker, setSeeker] = useState<JobSeeker | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [processing, setProcessing] = useState(false);
-    const [activeTab, setActiveTab] = useState("Profile");
+  const resolvedParams = use(params);
+  const router = useRouter();
+  const [seeker, setSeeker] = useState<JobSeeker | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [activeTab, setActiveTab] = useState<"Overview" | "Documents" | "Activity">("Overview");
 
-    const tabs = [
-        { id: "Profile", icon: UserIcon },
-        { id: "Documents", icon: FileText },
-        { id: "Activity", icon: Clock },
-    ];
+  useEffect(() => {
+    fetchDetails();
+  }, [resolvedParams.id]);
 
-    useEffect(() => {
-        fetchDetails();
-    }, [resolvedParams.id]);
-
-    const fetchDetails = async () => {
-        try {
-            setLoading(true);
-            const res = await getJobSeeker(Number(resolvedParams.id));
-            setSeeker(res.data);
-        } catch (err) {
-            toast.error("Failed to load candidate details");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleAction = async (action: "disable" | "delete") => {
-        if (!seeker) return;
-        try {
-            setProcessing(true);
-            if (action === "disable") {
-                await disableJobSeeker(seeker.id);
-                toast.success(seeker.is_active ? "Account disabled" : "Account enabled");
-            } else if (action === "delete") {
-                if (!confirm("Permanently delete this candidate? All data will be lost.")) return;
-                await deleteJobSeeker(seeker.id);
-                toast.success("Candidate removed");
-                window.history.back();
-                return;
-            }
-            fetchDetails();
-        } catch (err) {
-            toast.error("Action failed");
-        } finally {
-            setProcessing(false);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="h-[60vh] flex flex-col items-center justify-center gap-4">
-                <div className="w-8 h-8 border-2 border-violet-600 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-[11px] font-bold text-slate-400 ">Loading Details...</p>
-            </div>
-        );
+  const fetchDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await getJobSeeker(Number(resolvedParams.id));
+      setSeeker(res.data);
+    } catch {
+      toast.error("Failed to load candidate details");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (!seeker) return (
-        <div className="p-20 text-center">
-            <p className="text-sm font-bold text-slate-900">Candidate Not Found</p>
-        </div>
-    );
+  const handleDelete = async () => {
+    if (!seeker) return;
+    if (!confirm("Permanently delete this candidate? This cannot be undone.")) return;
+    try {
+      setProcessing(true);
+      await deleteJobSeeker(seeker.id);
+      toast.success("Candidate deleted successfully");
+      router.push("/jobseekers");
+    } catch {
+      toast.error("Failed to delete candidate");
+    } finally {
+      setProcessing(false);
+    }
+  };
 
+  const handleToggleStatus = async () => {
+    if (!seeker) return;
+    try {
+      setProcessing(true);
+      await disableJobSeeker(seeker.id);
+      toast.success("Candidate status updated");
+      fetchDetails();
+    } catch {
+      toast.error("Failed to update status");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  if (loading) {
     return (
-        <div className="max-w-4xl mx-auto pb-20 antialiased space-y-4">
-            {/* ─── COMPACT HEADER ────────────────────────────────────────────── */}
-            <div className="bg-white p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <Link href="/jobseekers" className="text-slate-400 hover:text-slate-600 transition-none">
-                        <ChevronLeft size={20} />
-                    </Link>
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg bg-slate-50 flex items-center justify-center border-none overflow-hidden relative">
-                            {seeker.profile_photo ? (
-                                <img src={`${API_URL}/${seeker.profile_photo}`} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                                <UserIcon size={24} className="text-slate-300" />
-                            )}
-                        </div>
-                        <div>
-                            <h1 className="text-lg font-bold text-slate-900 leading-none">{seeker.user?.name}</h1>
-                    <p className="text-[11px] font-bold text-violet-600 mt-1">{seeker.title || "Jobseeker"}</p>
-                </div>
-            </div>
-        </div>
+      <div className="h-[50vh] flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+        <p className="text-[11px] font-bold text-surface-400 tracking-widest uppercase">Loading...</p>
+      </div>
+    );
+  }
 
+  if (!seeker) return <div className="p-20 text-center text-surface-400 font-bold uppercase tracking-widest">Candidate not found</div>;
+
+  const fmt = (d?: string | null) => (d ? new Date(d).toLocaleDateString() : "—");
+  const initials = seeker.user?.name?.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase() || "JS";
+
+  return (
+    <div className="space-y-4 pb-12 antialiased animate-fade-in-up">
+      <div className="flex items-center justify-between gap-4">
+        <Link href="/jobseekers" className="flex items-center gap-1.5 h-8 px-3 bg-white border border-surface-200 rounded-lg text-[11px] font-bold text-surface-600 hover:text-primary hover:bg-surface-50 transition-all shadow-sm active:scale-95">
+          <ChevronLeft size={14} /> Back
+        </Link>
         <div className="flex items-center gap-2">
-           <button
-            onClick={() => handleAction("disable")}
+          <button
+            onClick={handleToggleStatus}
             disabled={processing}
             className={clsx(
-                "h-9 px-4 text-[11px] font-bold rounded-lg",
-                seeker.is_active ? "bg-slate-100 text-slate-600" : "bg-cyan-600 text-white"
+              "flex items-center gap-1.5 h-8 px-3 text-[11px] font-bold rounded-lg border transition-all shadow-sm active:scale-95",
+              !seeker.is_active ? "bg-emerald-50 border-emerald-200 text-emerald-600" : "bg-amber-50 border-amber-200 text-amber-600"
             )}
-           >
-             {seeker.is_active ? "Disable" : "Enable"}
-           </button>
-           <button
-            onClick={() => handleAction("delete")}
+          >
+            <Power size={13} />
+            {!seeker.is_active ? "Enable Account" : "Disable Account"}
+          </button>
+          <button
+            onClick={handleDelete}
             disabled={processing}
-            className="h-9 px-4 text-[11px] font-bold rounded-lg bg-orange-50 text-orange-600"
-           >
-             Delete
-           </button>
-                </div>
-            </div>
-
-            {/* ─── SINGLE COLUMN LAYOUT ────────────────────────────────────────────── */}
-            <div className="space-y-4">
-                {/* Quick Stats Banner */}
-                <div className="bg-violet-600/5 p-4 rounded-xl grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="text-center sm:text-left">
-                        <p className="text-[9px] font-bold text-slate-600 ">Status</p>
-                        <p className={clsx("text-xs font-bold mt-0.5", seeker.is_active ? "text-cyan-700 font-extrabold" : "text-orange-700 font-extrabold")}>
-                            {seeker.is_active ? "Verified" : "Inactive"}
-                        </p>
-                    </div>
-                    <div className="text-center sm:text-left">
-                        <p className="text-[9px] font-extrabold text-slate-600 ">Location</p>
-                        <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{seeker.location || "N/A"}</p>
-                    </div>
-                    <div className="text-center sm:text-left">
-                        <p className="text-[9px] font-semibold text-slate-600">Applications</p>
-                        <p className="text-xs font-bold text-slate-900 mt-0.5">{seeker.job_applications?.length || 0}</p>
-                    </div>
-                    <div className="text-center sm:text-left">
-                        <p className="text-[9px] font-semibold text-slate-600">Registered</p>
-                        <p className="text-xs font-bold text-slate-900 mt-0.5" suppressHydrationWarning>{new Date(seeker.created_at).toLocaleDateString()}</p>
-                    </div>
-                </div>
-
-                {/* Contact Bar */}
-                <div className="bg-white p-3 rounded-xl flex flex-wrap gap-6 items-center border-none">
-                    <div className="flex items-center gap-2 text-slate-600">
-                        <Mail size={14} className="text-slate-400" />
-                        <span className="text-[12px] font-bold">{seeker.user?.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-slate-600">
-                        <Phone size={14} className="text-slate-400" />
-                        <span className="text-[12px] font-semibold">{seeker.phone}</span>
-                    </div>
-                </div>
-
-                {/* Tabs Control */}
-                <div className="bg-violet-600/5 p-1.5 rounded-xl flex items-center gap-1.5 border-none">
-                    {tabs.map((t) => (
-                        <button
-                            key={t.id}
-                            onClick={() => setActiveTab(t.id)}
-                            className={clsx(
-                                "flex-1 py-2 text-[10px] font-extrabold uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 transition-none",
-                                activeTab === t.id ? "bg-white text-violet-700 shadow-sm" : "text-slate-500 hover:text-slate-800"
-                            )}
-                        >
-                            <t.icon size={14} />
-                            {t.id}
-                        </button>
-                    ))}
-                </div>
-
-                {/* Content Area */}
-                <div className="bg-white p-6 rounded-xl border-none">
-                    {activeTab === "Profile" && (
-                        <div className="space-y-8 animate-none">
-                            <section>
-                                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Professional Bio</h4>
-                                <p className="text-[13px] text-slate-600 leading-relaxed font-medium">
-                                    {seeker.bio || "No biography provided."}
-                                </p>
-                            </section>
-
-                            {seeker.skills && seeker.skills.length > 0 && (
-                                <section>
-                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-3">Core Expertise</h4>
-                                    <div className="flex flex-wrap gap-2 text-none">
-                                        {seeker.skills.map((s: any, i: number) => {
-                                            const name = s.skill?.name || s.name || (typeof s === 'string' ? s : 'Unknown');
-                                            return (
-                                                <span key={i} className="px-3 py-1.5 bg-violet-50 text-slate-700 text-[11px] font-bold rounded-lg border-none">
-                                                    {name}
-                                                </span>
-                                            );
-                                        })}
-                                    </div>
-                                </section>
-                            )}
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4 border-t border-slate-50">
-                                <section>
-                                    <h4 className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] mb-5">Qualification Background</h4>
-                                    <div className="space-y-4">
-                                        <div className="bg-violet-600/5 p-5 rounded-2xl border border-violet-100/50">
-                                            <p className="text-[12px] font-extrabold text-slate-900 leading-tight">Post Graduate Degree</p>
-                                            <p className="text-[11px] font-black text-violet-700 mt-1 uppercase tracking-tight">Stanford University</p>
-                                            <p className="text-[10px] font-extrabold text-slate-500 mt-3 uppercase tracking-widest border-t border-violet-100 pt-2">Class of 2020</p>
-                                        </div>
-                                    </div>
-                                </section>
-                                <section>
-                                    <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">System Identity</h4>
-                                    <div className="space-y-2">
-                                        <div className="flex justify-between py-1 border-b border-slate-50">
-                                            <span className="text-[11px] font-bold text-slate-400 uppercase">Seeker ID</span>
-                                            <span className="text-[11px] font-bold text-slate-900">#{seeker.id}</span>
-                                        </div>
-                                        <div className="flex justify-between py-1 border-b border-slate-50">
-                                            <span className="text-[11px] font-bold text-slate-400 uppercase">User ID</span>
-                                            <span className="text-[11px] font-bold text-slate-900">#{seeker.user_id}</span>
-                                        </div>
-                                    </div>
-                                </section>
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === "Documents" && (
-                        <div className="space-y-3 animate-none">
-                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Uploaded Files</h4>
-                            {seeker.resumes && seeker.resumes.length > 0 ? (
-                                seeker.resumes.map(resume => (
-                                    <div key={resume.id} className="bg-slate-50 p-4 rounded-xl flex items-center justify-between border-none">
-                                        <div className="flex items-center gap-3">
-                                            <FileText size={18} className="text-slate-400" />
-                                            <div>
-                                                <p className="text-[12px] font-bold text-slate-900 leading-none">{resume.file_name}</p>
-                                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                                                    {resume.is_default ? "Primary Document" : "Standard Resume"}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <a
-                                            href={`${API_URL}/${resume.file_url}`}
-                                            target="_blank"
-                                            className="h-8 px-4 bg-white rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-violet-600 transition-none"
-                                        >
-                                            View
-                                        </a>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-xs font-bold text-slate-400 py-10 text-center uppercase tracking-widest">No documents found</p>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === "Activity" && (
-                        <div className="space-y-4 animate-none">
-                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Recent Applications ({seeker.job_applications?.length || 0})</h4>
-                            {seeker.job_applications && seeker.job_applications.length > 0 ? (
-                                <div className="flex flex-col gap-2">
-                                    {seeker.job_applications.map((app: any) => (
-                                        <div key={app.id} className="p-3 bg-slate-50 rounded-xl flex items-center justify-between border-none">
-                                            <div className="min-w-0">
-                                                <p className="text-[12px] font-bold text-slate-900 leading-none truncate pr-4">{app.job?.title || "Position"}</p>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest" suppressHydrationWarning>{new Date(app.created_at).toLocaleDateString()}</span>
-                                                    <span className="w-1 h-1 rounded-full bg-slate-200" />
-                                                    <span className="text-[10px] font-bold text-violet-500 uppercase tracking-widest">Applied</span>
-                                                </div>
-                                            </div>
-                                            <div className="px-3 py-1 bg-white rounded text-[9px] font-extrabold uppercase tracking-widest text-slate-500">
-                                                Open
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="py-12 text-center bg-slate-50 rounded-2xl">
-                                    <Briefcase className="w-8 h-8 text-slate-200 mx-auto mb-2" />
-                                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest font-mono">Engagement history is empty</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
+            className="flex items-center justify-center w-8 h-8 bg-white border border-surface-200 text-surface-300 hover:text-danger hover:border-danger/30 rounded-lg transition-all shadow-sm active:scale-95"
+          >
+            <Trash2 size={14} />
+          </button>
         </div>
-    );
+      </div>
+
+      <div className="bg-white border border-surface-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="relative p-6 flex items-center gap-4 border-b border-indigo-700 bg-indigo-600 overflow-hidden">
+          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "30px 30px" }} />
+          <div className="relative z-10 w-14 h-14 rounded-lg bg-white/20 border-2 border-white/30 shadow-lg flex items-center justify-center shrink-0 overflow-hidden">
+            {seeker.profile_photo ? (
+              <img src={resolveMediaUrl(seeker.profile_photo)} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="flex items-center justify-center text-xl font-bold text-white tracking-widest">{initials}</div>
+            )}
+          </div>
+          <div className="relative z-10 flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-[17px] font-bold text-white tracking-tight">{seeker.user?.name}</h1>
+              <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border",
+                seeker.is_active ? "bg-emerald-500/80 text-white border-emerald-400" : "bg-white/20 text-white border-white/30"
+              )}>
+                {seeker.is_active ? "Active" : "Inactive"}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
+              <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><Mail size={11} /> {seeker.user?.email || "—"}</span>
+              <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><Phone size={11} /> {seeker.phone || "—"}</span>
+              <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><Calendar size={11} /> Joined {fmt(seeker.created_at)}</span>
+              <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><Hash size={11} /> #{seeker.id}</span>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center gap-3 shrink-0 relative z-10">
+            <Pill label="Applications" value={seeker.job_applications?.length || 0} color="text-white bg-white/20 border-white/20" />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-0 px-4 bg-surface-50/50 border-b border-surface-100 overflow-x-auto no-scrollbar">
+          {(["Overview", "Documents", "Activity"] as const).map((t, i) => {
+            const tabColors = ["border-indigo-500 text-indigo-600", "border-cyan-500 text-cyan-600", "border-emerald-500 text-emerald-600"];
+            return (
+              <button
+                key={t}
+                suppressHydrationWarning
+                onClick={() => setActiveTab(t)}
+                className={clsx("px-4 py-3 text-[11px] font-bold border-b-2 transition-all whitespace-nowrap",
+                  activeTab === t ? tabColors[i] : "border-transparent text-surface-400 hover:text-surface-700"
+                )}
+              >
+                {t}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="p-5">
+          {activeTab === "Overview" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <Section title="Candidate Details" icon={UserIcon} color="indigo">
+                  <div className="space-y-3">
+                    <Field label="Full Name" value={seeker.user?.name} />
+                    <Field label="Title" value={seeker.title || "—"} />
+                    <Field label="Location" value={seeker.location || "—"} icon={MapPin} />
+                    <Field label="Experience" value={`${seeker.experience_years || 0} years`} />
+                    <Field label="Availability" value={seeker.availability || "—"} />
+                  </div>
+                </Section>
+                <Section title="Profile Summary" icon={FileText} color="purple">
+                  <p className="text-[13px] text-surface-600 leading-relaxed">
+                    {seeker.bio || "No professional summary added yet."}
+                  </p>
+                </Section>
+              </div>
+
+              <div className="space-y-4">
+                <Section title="Contact Information" icon={Mail} color="emerald">
+                  <div className="space-y-3">
+                    <Field label="Email" value={seeker.user?.email} icon={Mail} />
+                    <Field label="Phone" value={seeker.phone} icon={Phone} />
+                  </div>
+                </Section>
+                <Section title="System Status" icon={ShieldCheck} color="cyan">
+                  <div className="space-y-2">
+                    <StatusRow label="Account Active" value={!!seeker.is_active} />
+                  </div>
+                </Section>
+                <Section title="Skills" icon={Briefcase} color="rose">
+                  <div className="flex flex-wrap gap-2">
+                    {(seeker.skills || []).length > 0 ? (
+                      seeker.skills?.map((s: any, i: number) => {
+                        const name = s?.skill?.name || s?.name || (typeof s === "string" ? s : "Unknown");
+                        return (
+                          <span key={i} className="px-3 py-1 rounded-lg text-[10px] font-bold bg-surface-50 border border-surface-200 text-surface-700">
+                            {name}
+                          </span>
+                        );
+                      })
+                    ) : (
+                      <span className="text-[11px] text-surface-400 font-medium">No skills added.</span>
+                    )}
+                  </div>
+                </Section>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "Documents" && (
+            <div className="space-y-4">
+              <Section title="Resume Files" icon={FileCheck} color="cyan">
+                {(seeker.resumes || []).length > 0 ? (
+                  <div className="space-y-2">
+                    {seeker.resumes?.map((resume) => (
+                      <div key={resume.id} className="p-3 rounded-lg border border-surface-200 bg-white flex items-center justify-between">
+                        <div>
+                          <p className="text-[12px] font-semibold text-surface-900">{resume.file_name}</p>
+                          <p className="text-[10px] text-surface-400">{resume.is_default ? "Default resume" : "Resume"}</p>
+                        </div>
+                        <a
+                          href={resolveMediaUrl(resume.file_url || (resume as any).resume_file)}
+                          target="_blank"
+                          className="h-8 px-3 rounded-lg border border-surface-200 text-[10px] font-bold text-surface-600 hover:text-primary hover:bg-surface-50 transition-all flex items-center gap-1.5"
+                        >
+                          <ExternalLink size={12} />
+                          Open
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-surface-400 font-medium">No documents uploaded.</p>
+                )}
+              </Section>
+            </div>
+          )}
+
+          {activeTab === "Activity" && (
+            <div className="space-y-4">
+              <Section title="Application Activity" icon={Clock} color="emerald">
+                {(seeker.job_applications || []).length > 0 ? (
+                  <div className="space-y-2">
+                    {seeker.job_applications?.map((app: any) => (
+                      <div key={app.id} className="p-3 rounded-lg border border-surface-200 bg-white flex items-center justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="text-[12px] font-semibold text-surface-900 truncate">{app.job?.title || "Untitled Job"}</p>
+                          <p className="text-[10px] text-surface-400">{fmt(app.created_at)}</p>
+                        </div>
+                        <Badge variant={app.status === "shortlisted" ? "success" : "default"} dot>{app.status || "applied"}</Badge>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-surface-400 font-medium">No activity found.</p>
+                )}
+              </Section>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Pill({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div className={clsx("flex flex-col items-center px-3 py-1.5 rounded-lg border border-current/10 text-center", color)}>
+      <span className="text-[16px] font-bold leading-none">{value}</span>
+      <span className="text-[9px] font-bold opacity-70 mt-0.5">{label}</span>
+    </div>
+  );
+}
+
+const sectionColors: Record<string, { icon: string; header: string; border: string }> = {
+  indigo: { icon: "text-indigo-500", header: "bg-indigo-50/60 border-indigo-100", border: "border-indigo-200/60" },
+  purple: { icon: "text-purple-500", header: "bg-purple-50/60 border-purple-100", border: "border-purple-200/60" },
+  emerald: { icon: "text-emerald-500", header: "bg-emerald-50/60 border-emerald-100", border: "border-emerald-200/60" },
+  cyan: { icon: "text-cyan-500", header: "bg-cyan-50/60 border-cyan-100", border: "border-cyan-200/60" },
+  rose: { icon: "text-rose-500", header: "bg-rose-50/60 border-rose-100", border: "border-rose-200/60" },
+  default: { icon: "text-surface-400", header: "bg-surface-50 border-surface-100", border: "border-surface-200" },
+};
+
+function Section({ title, icon: Icon, children, color = "default" }: { title: string; icon: any; children: React.ReactNode; color?: string }) {
+  const c = sectionColors[color] || sectionColors.default;
+  return (
+    <div className={clsx("border rounded-lg overflow-hidden", c.border)}>
+      <div className={clsx("px-4 py-2.5 border-b flex items-center gap-2", c.header)}>
+        <Icon size={12} className={c.icon} />
+        <h3 className={clsx("text-[11px] font-bold tracking-tight", c.icon)}>{title}</h3>
+      </div>
+      <div className="p-4">{children}</div>
+    </div>
+  );
+}
+
+function Field({ label, value, mono, icon: Icon }: { label: string; value?: string | number | null; mono?: boolean; icon?: any }) {
+  return (
+    <div>
+      <p className="text-[9px] font-bold text-surface-400 uppercase tracking-wider mb-0.5">{label}</p>
+      <div className="flex items-center gap-1.5">
+        {Icon && <Icon size={12} className="text-surface-300 shrink-0" />}
+        <p className={clsx("text-[12px] text-surface-800", mono ? "font-mono" : "font-medium")}>
+          {value || <span className="text-surface-300">—</span>}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function StatusRow({ label, value }: { label: string; value: boolean }) {
+  return (
+    <div className="flex items-center justify-between py-1">
+      <span className="text-[11px] text-surface-600 font-medium">{label}</span>
+      <Badge variant={value ? "success" : "default"} dot>{value ? "Yes" : "No"}</Badge>
+    </div>
+  );
 }

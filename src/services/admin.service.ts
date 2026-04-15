@@ -226,7 +226,11 @@ export const createCMSSection = (data: Partial<CMSSection>) =>
   dashboardServerFetch(`/admin/cms`, { method: "POST", data });
 
 export const updateCMSSection = (id: number, data: Partial<CMSSection>) =>
-  dashboardServerFetch(`/admin/cms/${id}`, { method: "PUT", data });
+  dashboardServerFetch(`/admin/cms/${id}`, {
+    method: "POST",
+    data,
+    params: { _method: "PUT" },
+  });
 
 // Navigation
 export const getCMSNavigations = () => 
@@ -236,7 +240,11 @@ export const createCMSNavigation = (data: any) =>
   dashboardServerFetch("/admin/cms/navigation", { method: "POST", data });
 
 export const updateCMSNavigation = (id: number, data: any) => 
-  dashboardServerFetch(`/admin/cms/navigation/${id}`, { method: "PUT", data });
+  dashboardServerFetch(`/admin/cms/navigation/${id}`, {
+    method: "POST",
+    data,
+    params: { _method: "PUT" },
+  });
 
 export const deleteCMSNavigation = (id: number) => 
   dashboardServerFetch(`/admin/cms/navigation/${id}`, { method: "DELETE" });
@@ -254,7 +262,11 @@ export const createCMSFooterSection = (data: any) =>
   dashboardServerFetch("/admin/cms/footer-sections", { method: "POST", data });
 
 export const updateCMSFooterSection = (id: number, data: any) => 
-  dashboardServerFetch(`/admin/cms/footer-sections/${id}`, { method: "PUT", data });
+  dashboardServerFetch(`/admin/cms/footer-sections/${id}`, {
+    method: "POST",
+    data,
+    params: { _method: "PUT" },
+  });
 
 export const deleteCMSFooterSection = (id: number) => 
   dashboardServerFetch(`/admin/cms/footer-sections/${id}`, { method: "DELETE" });
@@ -270,7 +282,11 @@ export const createCMSFooterLink = (data: any) =>
   dashboardServerFetch("/admin/cms/footer-links", { method: "POST", data });
 
 export const updateCMSFooterLink = (id: number, data: any) => 
-  dashboardServerFetch(`/admin/cms/footer-links/${id}`, { method: "PUT", data });
+  dashboardServerFetch(`/admin/cms/footer-links/${id}`, {
+    method: "POST",
+    data,
+    params: { _method: "PUT" },
+  });
 
 export const deleteCMSFooterLink = (id: number) => 
   dashboardServerFetch(`/admin/cms/footer-links/${id}`, { method: "DELETE" });
@@ -325,7 +341,11 @@ export const getSEOSettings = () =>
   dashboardServerFetch<SEOSetting[]>("/admin/seo");
 
 export const updateSEOSetting = (id: number, data: Partial<SEOSetting>) =>
-  dashboardServerFetch(`/admin/seo/${id}`, { method: "PUT", data });
+  dashboardServerFetch(`/admin/seo/${id}`, {
+    method: "POST",
+    data,
+    params: { _method: "PUT" },
+  });
 
 export const updateJobSEO = (id: number, data: any) =>
   dashboardServerFetch(`/admin/seo/job/${id}`, { method: "PUT", data });

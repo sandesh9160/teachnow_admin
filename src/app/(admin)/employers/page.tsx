@@ -23,11 +23,12 @@ import {
   Activity,
   ArrowUpRight
 } from "lucide-react";
-import { getEmployers, verifyEmployer, featureEmployer, deleteEmployer, updateEmployerSEO } from "@/services/admin.service";
+import { getEmployers, verifyEmployer, featureEmployer, deleteEmployer, updateEmployerSEO, updateEmployer } from "@/services/admin.service";
 import { Employer } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 import SEOEditModal from "@/components/modals/SEOEditModal";
+import { resolveMediaUrl } from "@/lib/media";
 
 export default function EmployersPage() {
   const router = useRouter();
@@ -76,6 +77,22 @@ export default function EmployersPage() {
     }
   };
 
+  const handleToggleStatus = async (row: Employer) => {
+    try {
+      setProcessingId(row.id);
+      const nextStatus = row.is_active ? 0 : 1;
+      await updateEmployer(row.id, { is_active: nextStatus });
+      setEmployers((prev) =>
+        prev.map((e) => (e.id === row.id ? { ...e, is_active: Boolean(nextStatus) } : e))
+      );
+      toast.success(nextStatus ? "Employer enabled" : "Employer disabled");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to update employer status");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   const handleUpdateSEO = async (data: any) => {
     if (!seoModal.employer) return;
     try {
@@ -101,7 +118,7 @@ export default function EmployersPage() {
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-surface-100 flex items-center justify-center overflow-hidden shrink-0 border border-surface-200/50">
             {row.company_logo ? (
-                <img src={`https://teachnowbackend.jobsvedika.in/${row.company_logo}`} alt="" className="w-full h-full object-cover" />
+                <img src={resolveMediaUrl(row.company_logo)} alt="" className="w-full h-full object-cover" />
             ) : (
                 <span className="text-surface-400 font-bold text-[10px]">{row.company_name?.charAt(0)}</span>
             )}
@@ -136,6 +153,15 @@ export default function EmployersPage() {
       )
     },
     { 
+      key: "is_active", 
+      title: "Account",
+      render: (val: any) => (
+        <Badge variant={val ? "success" : "danger"} dot className="text-[10px] px-2 h-4.5 bg-transparent border-none">
+          {val ? "Enabled" : "Disabled"}
+        </Badge>
+      )
+    },
+    { 
       key: "created_at", 
       title: "Joined On",
       render: (val: any) => (
@@ -158,6 +184,18 @@ export default function EmployersPage() {
                   <CheckCircle2 size={14} />
               </button>
           )}
+          <button 
+            onClick={(e) => { e.stopPropagation(); handleToggleStatus(row); }}
+            disabled={processingId === row.id}
+            className={clsx(
+              "w-8 h-8 rounded-md flex items-center justify-center transition-all",
+              row.is_active ? "text-amber-600 hover:bg-amber-50" : "text-emerald-600 hover:bg-emerald-50",
+              processingId === row.id && "opacity-50 cursor-not-allowed"
+            )}
+            title={row.is_active ? "Disable employer" : "Enable employer"}
+          >
+            <Clock size={14} />
+          </button>
           <button 
                 onClick={(e) => { e.stopPropagation(); setSeoModal({ isOpen: true, employer: row }); }}
                 className="w-8 h-8 text-surface-400 hover:bg-surface-100 hover:text-primary rounded-md flex items-center justify-center transition-all"

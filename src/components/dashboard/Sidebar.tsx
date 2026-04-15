@@ -301,7 +301,12 @@ export default function Sidebar({
                         >
                           {!hasChildren ? (
                             <Link href={item.href} className="flex items-center gap-3.5 w-full">
-                               <Icon size={19} className={clsx("transition-transform group-hover:scale-110", active ? "text-primary" : clsx(group.color, "opacity-60 group-hover:opacity-100"))} strokeWidth={active ? 2.5 : 2} />
+                               <div className="relative">
+                                 <Icon size={19} className={clsx("transition-transform group-hover:scale-110", active ? "text-primary" : clsx(group.color, "opacity-60 group-hover:opacity-100"))} strokeWidth={active ? 2.5 : 2} />
+                                 {item.badge === "unread" && unreadCount > 0 && collapsed && (
+                                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full ring-2 ring-white" />
+                                 )}
+                               </div>
                                {!collapsed && (
                                  <div className="flex items-center justify-between flex-1">
                                    <span className={clsx("text-[13px] font-semibold tracking-tight", active ? "text-primary" : "text-surface-600 group-hover:text-surface-900")}>{item.title}</span>

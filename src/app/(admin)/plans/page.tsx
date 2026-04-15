@@ -7,11 +7,13 @@ import { clsx } from "clsx";
 import { getPlans, updatePlan, createPlan } from "@/services/admin.service";
 import { toast } from "sonner";
 import { Plus, Loader2, Sparkles, TrendingUp, ShieldCheck, CreditCard } from "lucide-react";
+import PlanEditModal from "@/components/modals/PlanEditModal";
 
 export default function ManagePlansPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+  const [savingPlan, setSavingPlan] = useState(false);
 
   useEffect(() => {
     fetchPlans();
@@ -36,13 +38,16 @@ export default function ManagePlansPage() {
 
   const handleUpdatePlan = async (updatedPlan: Plan) => {
     try {
+      setSavingPlan(true);
       await updatePlan(updatedPlan.id, updatedPlan);
       setPlans(prev => prev.map(p => p.id === updatedPlan.id ? updatedPlan : p));
-      setEditingId(null);
+      setEditingPlan(null);
       toast.success("Plan updated successfully");
     } catch (error) {
       console.error("Failed to update plan:", error);
       toast.error("Failed to update plan");
+    } finally {
+      setSavingPlan(false);
     }
   };
 
@@ -176,16 +181,22 @@ export default function ManagePlansPage() {
             <PlanCard
               key={plan.id}
               plan={plan}
-              isEditing={editingId === plan.id}
-              onEdit={() => setEditingId(plan.id)}
+              onEdit={() => setEditingPlan(plan)}
               onSave={handleUpdatePlan}
-              onCancel={() => setEditingId(null)}
+              onCancel={() => setEditingPlan(null)}
               onToggleHighlight={handleToggleHighlight}
               onToggleStatus={handleToggleStatus}
             />
           ))}
         </div>
       )}
+      <PlanEditModal
+        isOpen={Boolean(editingPlan)}
+        plan={editingPlan}
+        saving={savingPlan}
+        onClose={() => setEditingPlan(null)}
+        onSave={handleUpdatePlan}
+      />
     </div>
   );
 }
