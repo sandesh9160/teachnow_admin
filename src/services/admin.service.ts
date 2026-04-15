@@ -19,6 +19,8 @@ import type {
   TeachingResource,
   EmailTemplate,
   Testimonial,
+  FAQ,
+  PrivacyPolicyItem,
 } from "@/types";
 
 /**

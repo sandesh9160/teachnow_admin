@@ -238,7 +238,7 @@ export default function PrivacyPolicyPage() {
                                  <span className="text-xs font-bold text-slate-500">Visibility</span>
                                  <input 
                                     type="checkbox"
-                                    checked={editorData.is_active}
+                                    checked={Boolean(editorData.is_active)}
                                     onChange={e => setEditorData({...editorData, is_active: e.target.checked})}
                                     className="w-4 h-4 accent-violet-600 rounded-lg"
                                  />

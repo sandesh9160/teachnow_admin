@@ -154,7 +154,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                     </div>
                     <div className="text-center sm:text-left">
                         <p className="text-[9px] font-extrabold text-slate-600 ">Location</p>
-                        <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{seeker.user?.state || "N/A"}</p>
+                        <p className="text-xs font-bold text-slate-900 mt-0.5 truncate">{seeker.location || "N/A"}</p>
                     </div>
                     <div className="text-center sm:text-left">
                         <p className="text-[9px] font-semibold text-slate-600">Applications</p>
@@ -174,7 +174,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                     </div>
                     <div className="flex items-center gap-2 text-slate-600">
                         <Phone size={14} className="text-slate-400" />
-                        <span className="text-[12px] font-bold">{seeker.user?.phone}</span>
+                        <span className="text-[12px] font-semibold">{seeker.phone}</span>
                     </div>
                 </div>
 
@@ -266,7 +266,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                                             </div>
                                         </div>
                                         <a
-                                            href={`${API_URL}/${resume.resume_file}`}
+                                            href={`${API_URL}/${resume.file_url}`}
                                             target="_blank"
                                             className="h-8 px-4 bg-white rounded-lg flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-violet-600 transition-none"
                                         >
