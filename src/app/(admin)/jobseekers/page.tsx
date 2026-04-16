@@ -41,7 +41,16 @@ export default function JobSeekersPage() {
       setLoading(true);
       const res = await getJobSeekers({ page });
       const resData = (res as any).data;
-      const list = resData?.data || [];
+      const list = (resData?.data || []).map((item: any) => {
+        if (typeof item.is_active === "undefined") {
+          if (typeof item.user?.is_active !== "undefined") {
+            item.is_active = item.user.is_active;
+          } else if (typeof item.status !== "undefined") {
+            item.is_active = item.status;
+          }
+        }
+        return item;
+      });
       
       setJobSeekers(list);
       setPagination({
@@ -67,8 +76,9 @@ export default function JobSeekersPage() {
       setProcessingId(id);
       const res = await disableJobSeeker(id) as any;
       const rawData = res?.data?.data ?? res?.data ?? res;
+      console.log(`[handleAction] Raw Data:`, rawData);
       const nextIsActiveValue =
-        rawData?.is_active ?? rawData?.isActive ?? rawData?.status;
+        rawData?.is_active ?? rawData?.user?.is_active ?? rawData?.isActive ?? rawData?.status;
 
       setJobSeekers((prev) =>
         prev.map((j) => {

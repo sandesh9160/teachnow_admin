@@ -55,10 +55,26 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
         setEmployer(prev => prev ? { ...prev, is_verified: true } : null);
       }
       else if (action === "feature") {
-        const res = await featureEmployer(employer.id);
+        const res = await featureEmployer(employer.id) as any;
         console.log(`[handleAction] Feature Result:`, res);
-        // @ts-ignore
-        setEmployer(prev => prev ? { ...prev, is_featured: !prev.is_featured } : null);
+        const rawData = res?.data?.data ?? res?.data ?? res;
+        
+        // Normalize featured status from various possible field names
+        const nextIsFeatured = typeof rawData?.is_featured !== 'undefined' 
+          ? !!rawData.is_featured 
+          : typeof rawData?.company_featured !== 'undefined' 
+            ? !!rawData.company_featured 
+            : !(employer.is_featured || (employer as any).company_featured);
+            
+        setEmployer(prev => prev ? { 
+          ...prev, 
+          is_featured: nextIsFeatured, 
+          company_featured: nextIsFeatured 
+        } : null);
+        
+        toast.success(nextIsFeatured ? "Organization is now featured" : "Featured status removed");
+        await fetchDetails();
+        return;
       }
       else if (action === "delete") {
         if (!confirm("Permanently delete this employer? This cannot be undone.")) return;
@@ -110,13 +126,6 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
               <CheckCircle2 size={13} /> Verify Organization
             </button>
           )}
-          <button onClick={() => handleAction("feature")} disabled={processing}
-            className={clsx("flex items-center gap-1.5 h-8 px-3 text-[11px] font-semibold rounded-lg border transition-all shadow-sm active:scale-95",
-              (employer.is_featured || (employer as any).company_featured) ? "bg-amber-50 border-amber-200 text-amber-600" : "bg-white border-surface-200 text-surface-600 hover:bg-surface-50"
-            )}>
-            <Star size={13} className={(employer.is_featured || (employer as any).company_featured) ? "fill-amber-500" : ""} />
-            {(employer.is_featured || (employer as any).company_featured) ? "Featured" : "Feature"}
-          </button>
           
           <button onClick={() => handleAction("delete")} disabled={processing}
             className="flex items-center justify-center w-8 h-8 bg-white border border-surface-200 text-surface-400 hover:text-rose-600 hover:border-rose-100 rounded-lg transition-all shadow-sm active:scale-95">
@@ -265,6 +274,27 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
 
                 {/* Status */}
                 <Section title="Platform Status" icon={ShieldCheck} color="cyan">
+                  <div className="mb-4">
+                    <button
+                      disabled={processing}
+                      onClick={() => handleAction("feature")}
+                      className={clsx(
+                        "w-full flex items-center justify-center gap-2.5 py-3 rounded-2xl text-[12px] font-bold transition-all border shadow-sm active:scale-[0.98] group",
+                        (employer.is_featured || (employer as any).company_featured)
+                          ? "bg-amber-50 text-amber-700 border-amber-200/50 hover:bg-amber-100/80 hover:border-amber-300" 
+                          : "bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-600/20"
+                      )}
+                    >
+                      <Star 
+                        size={16} 
+                        className={clsx(
+                          "transition-all duration-300",
+                          (employer.is_featured || (employer as any).company_featured) ? "fill-amber-500 text-amber-500 rotate-[72deg]" : "text-indigo-100 group-hover:scale-110"
+                        )} 
+                      />
+                      {(employer.is_featured || (employer as any).company_featured) ? "Remove Featured Status" : "Mark as Featured Partner"}
+                    </button>
+                  </div>
                   <div className="space-y-2">
                     <StatusRow 
                         label="Identity Verified" 
@@ -274,13 +304,13 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                         onToggle={!employer.is_verified ? () => handleAction("verify") : undefined}
                         loading={processing}
                     />
+                    <StatusRow label="Featured Status" value={!!(employer.is_featured || (employer as any).company_featured)} activeLabel="Featured" inactiveLabel="Standard" variant="warning" />
                     <StatusRow 
                         label="Profile Data" 
-                        value={!!(employer as any).company_description} 
+                        value={!!((employer as any).company_description || (employer as any).about_company)} 
                         activeLabel="Complete" 
                         inactiveLabel="Incomplete" 
                     />
-                    <StatusRow label="Featured Status" value={!!employer.company_featured} activeLabel="Featured" inactiveLabel="Standard" variant="warning" />
                   </div>
                 </Section>
               </div>

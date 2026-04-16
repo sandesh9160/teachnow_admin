@@ -37,6 +37,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState<"Overview" | "Documents" | "Activity">("Overview");
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
     fetchDetails();
@@ -50,9 +51,13 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
       console.log(`[JobSeekerDetails] Full Response:`, res);
       
       const rawData: any = res.data || res;
-      // Normalize is_active if it comes in a field named 'status'
-      if (typeof rawData.is_active === 'undefined' && typeof rawData.status !== 'undefined') {
-        rawData.is_active = rawData.status;
+      // Normalize is_active if it exists in nested user or status field
+      if (typeof rawData.is_active === "undefined") {
+        if (typeof rawData.user?.is_active !== "undefined") {
+          rawData.is_active = rawData.user.is_active;
+        } else if (typeof rawData.status !== "undefined") {
+          rawData.is_active = rawData.status;
+        }
       }
       
       setSeeker(rawData);
@@ -74,8 +79,9 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
         const res = await disableJobSeeker(seeker.id) as any;
         // Response may come as { data: { job_seeker_id, is_active } } or nested one level deeper.
         const rawData = res?.data?.data ?? res?.data ?? res;
+        console.log(`[handleAction] Raw Data:`, rawData);
         const nextIsActiveValue =
-          rawData?.is_active ?? rawData?.isActive ?? rawData?.status;
+          rawData?.is_active ?? rawData?.user?.is_active ?? rawData?.isActive ?? rawData?.status;
         const nextStatus =
           typeof nextIsActiveValue !== "undefined" ? !!nextIsActiveValue : !seeker.is_active;
 
@@ -123,17 +129,6 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
         </Link>
         <div className="flex items-center gap-2">
 
-          <button
-            onClick={() => handleAction("toggle-status")}
-            disabled={processing}
-            className={clsx(
-              "flex items-center gap-1.5 h-8 px-4 text-[11px] font-semibold rounded-lg border transition-all shadow-sm active:scale-95",
-              seeker.is_active ? "text-warning bg-warning/5 border-warning/10" : "text-success bg-success/5 border-success/10"
-            )}
-          >
-            {seeker.is_active ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
-            {seeker.is_active ? "Disable Account" : "Enable Account"}
-          </button>
           <button
             onClick={() => handleAction("delete")}
             disabled={processing}
@@ -239,6 +234,21 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                 </Section>
 
                 <Section title="Platform Status" icon={ShieldCheck} color="cyan">
+                  <div className="mb-4">
+                    <button
+                      disabled={processing}
+                      onClick={() => handleAction("toggle-status")}
+                      className={clsx(
+                        "w-full flex items-center justify-center gap-2.5 py-3 rounded-2xl text-[12px] font-bold transition-all border shadow-sm active:scale-[0.98] group",
+                        seeker.is_active 
+                          ? "bg-amber-50 text-amber-700 border-amber-200/50 hover:bg-amber-100/80 hover:border-amber-300" 
+                          : "bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-600/20"
+                      )}
+                    >
+                      {seeker.is_active ? <XCircle size={16} className="text-amber-500 group-hover:rotate-90 transition-transform duration-300" /> : <Power size={16} className="text-emerald-100 group-hover:scale-110 transition-transform" />}
+                      {seeker.is_active ? "Suspend Candidate Access" : "Activate Candidate Account"}
+                    </button>
+                  </div>
                   <div className="space-y-2">
                     <StatusRow 
                       label="Account Access" 
@@ -246,8 +256,6 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                       activeLabel="Enabled" 
                       inactiveLabel="Disabled" 
                       variant="success"
-                      onToggle={() => handleAction("toggle-status")}
-                      loading={processing}
                     />
                     <StatusRow label="Email Verified" value={!!seeker.user?.email_verified_at} activeLabel="Verified" inactiveLabel="Pending" />
                   </div>
