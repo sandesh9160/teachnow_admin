@@ -2,6 +2,7 @@
 
 import React from "react";
 import { clsx } from "clsx";
+import { Filter } from "lucide-react";
 
 interface Column<T> {
   key: string;

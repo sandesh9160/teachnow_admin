@@ -250,6 +250,7 @@ export interface JobSeeker {
   portfolio_website?: string | null;
   bio?: string | null;
   is_active?: number | boolean;
+  status?: any;
   is_verified?: number | boolean;
   created_at: string;
   updated_at: string;
@@ -257,6 +258,7 @@ export interface JobSeeker {
     id: number;
     name: string;
     email: string;
+    email_verified_at?: string | null;
   };
   resumes?: JobSeekerResume[];
   job_applications?: Application[];
@@ -269,6 +271,7 @@ export interface Recruiter {
   name: string;
   email: string;
   is_active: number | boolean;
+  status?: any;
   is_verified?: number | boolean;
   created_at: string;
   updated_at: string;
@@ -295,6 +298,7 @@ export interface Employer {
   country: string;
   city: string;
   is_active?: number | boolean;
+  status?: any;
   is_profile_verified: number | boolean;
   is_verified: number | boolean;
   is_featured: number | boolean;

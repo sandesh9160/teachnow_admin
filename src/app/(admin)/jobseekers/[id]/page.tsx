@@ -49,7 +49,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
       const res = await getJobSeeker(Number(resolvedParams.id));
       console.log(`[JobSeekerDetails] Full Response:`, res);
       
-      const rawData = res.data || res;
+      const rawData: any = res.data || res;
       // Normalize is_active if it comes in a field named 'status'
       if (typeof rawData.is_active === 'undefined' && typeof rawData.status !== 'undefined') {
         rawData.is_active = rawData.status;
