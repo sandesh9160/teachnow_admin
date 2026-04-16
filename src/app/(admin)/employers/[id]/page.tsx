@@ -28,7 +28,11 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
   
   const tabs = ["Overview", "Recruiters", "Jobs", "Documents", "SEO"];
 
-  useEffect(() => { fetchDetails(); }, [resolvedParams.id]);
+  useEffect(() => { 
+    if (!isNaN(Number(resolvedParams.id))) {
+      fetchDetails(); 
+    }
+  }, [resolvedParams.id]);
 
   const fetchDetails = async () => {
     try {
@@ -41,20 +45,24 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
 
   const handleAction = async (action: "verify" | "feature" | "delete" | "toggle-status") => {
     if (!employer) return;
+    console.log(`[handleAction] Starting action: ${action} for ID: ${employer.id}`);
     try {
       setProcessing(true);
-      if (action === "verify") await verifyEmployer(employer.id);
-      else if (action === "feature") await featureEmployer(employer.id);
-      else if (action === "toggle-status") {
-        const nextStatus = employer.is_active ? 0 : 1;
-        await updateEmployer(employer.id, { is_active: nextStatus });
-        setEmployer(prev => prev ? { ...prev, is_active: !!nextStatus } : null);
-        toast.success(nextStatus ? "Employer account enabled" : "Employer account disabled");
-        return;
+      if (action === "verify") {
+        const res = await verifyEmployer(employer.id);
+        console.log(`[handleAction] Verify Result:`, res);
+        setEmployer(prev => prev ? { ...prev, is_verified: true } : null);
+      }
+      else if (action === "feature") {
+        const res = await featureEmployer(employer.id);
+        console.log(`[handleAction] Feature Result:`, res);
+        // @ts-ignore
+        setEmployer(prev => prev ? { ...prev, is_featured: !prev.is_featured } : null);
       }
       else if (action === "delete") {
         if (!confirm("Permanently delete this employer? This cannot be undone.")) return;
-        await deleteEmployer(employer.id);
+        const res = await deleteEmployer(employer.id);
+        console.log(`[handleAction] Delete Result:`, res);
         router.push("/employers");
         return;
       }
@@ -66,9 +74,14 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
       };
       
       toast.success(messages[action as keyof typeof messages]);
+      console.log(`[handleAction] Refreshing details...`);
       fetchDetails();
-    } catch { toast.error("Action failed"); }
-    finally { setProcessing(false); }
+    } catch (err: any) {
+      console.error(`[handleAction] Error:`, err);
+      toast.error(err.response?.data?.message || "Action failed");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   if (loading) return (
@@ -86,33 +99,26 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
     <div className="space-y-4 pb-12 antialiased animate-fade-in-up">
       {/* ─── Top Action Bar ─────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-4">
-        <Link href="/employers" className="flex items-center gap-1.5 h-8 px-3 bg-white border border-surface-200 rounded-lg text-[11px] font-bold text-surface-600 hover:text-primary hover:bg-surface-50 transition-all shadow-sm active:scale-95">
+        <Link href="/employers" className="flex items-center gap-1.5 h-8 px-3 bg-white border border-surface-200 rounded-lg text-[11px] font-medium text-surface-600 hover:text-primary hover:bg-surface-50 transition-all shadow-sm active:scale-95">
           <ChevronLeft size={14} /> Back
         </Link>
         <div className="flex items-center gap-2">
           {!employer.is_verified && (
             <button onClick={() => handleAction("verify")} disabled={processing}
-              className="flex items-center gap-1.5 h-8 px-3 bg-primary text-white text-[11px] font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm active:scale-95">
-              <CheckCircle2 size={13} /> Verify
+              className="flex items-center gap-1.5 h-8 px-3 bg-emerald-600 text-white text-[11px] font-semibold rounded-lg hover:bg-emerald-700 transition-all shadow-sm active:scale-95">
+              <CheckCircle2 size={13} /> Verify Organization
             </button>
           )}
           <button onClick={() => handleAction("feature")} disabled={processing}
-            className={clsx("flex items-center gap-1.5 h-8 px-3 text-[11px] font-bold rounded-lg border transition-all shadow-sm active:scale-95",
-              employer.company_featured ? "bg-amber-50 border-amber-200 text-amber-600" : "bg-white border-surface-200 text-surface-600 hover:bg-surface-50"
+            className={clsx("flex items-center gap-1.5 h-8 px-3 text-[11px] font-semibold rounded-lg border transition-all shadow-sm active:scale-95",
+              (employer.is_featured || (employer as any).company_featured) ? "bg-amber-50 border-amber-200 text-amber-600" : "bg-white border-surface-200 text-surface-600 hover:bg-surface-50"
             )}>
-            <Star size={13} className={employer.company_featured ? "fill-amber-500" : ""} />
-            {employer.company_featured ? "Featured" : "Feature"}
+            <Star size={13} className={(employer.is_featured || (employer as any).company_featured) ? "fill-amber-500" : ""} />
+            {(employer.is_featured || (employer as any).company_featured) ? "Featured" : "Feature"}
           </button>
           
-          <button onClick={() => handleAction("toggle-status")} disabled={processing}
-            className={clsx("flex items-center gap-1.5 h-8 px-3 text-[11px] font-bold rounded-lg border transition-all shadow-sm active:scale-95",
-                employer.is_active ? "bg-amber-50 border-amber-200 text-amber-600" : "bg-emerald-50 border-emerald-200 text-emerald-600"
-            )}>
-            <Clock size={13} />
-            {employer.is_active ? "Disable Account" : "Enable Account"}
-          </button>
           <button onClick={() => handleAction("delete")} disabled={processing}
-            className="flex items-center justify-center w-8 h-8 bg-white border border-surface-200 text-surface-300 hover:text-danger hover:border-danger/30 rounded-lg transition-all shadow-sm active:scale-95">
+            className="flex items-center justify-center w-8 h-8 bg-white border border-surface-200 text-surface-400 hover:text-rose-600 hover:border-rose-100 rounded-lg transition-all shadow-sm active:scale-95">
             <Trash2 size={14} />
           </button>
         </div>
@@ -131,25 +137,21 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
           </div>
           <div className="relative z-10 flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-[17px] font-bold text-white tracking-tight">{employer.company_name}</h1>
-              <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest uppercase border transition-all",
-                employer.is_active 
-                  ? "bg-emerald-500/90 text-white border-emerald-400 shadow-sm" 
-                  : "bg-rose-500/90 text-white border-rose-400 shadow-sm"
-              )}>
-                {employer.is_active ? "Account Enabled" : "Account Disabled"}
-              </span>
-              <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border",
+              <h1 className="text-[17px] font-semibold text-white tracking-tight">{employer.company_name}</h1>
+
+              <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium border transition-all",
                 employer.is_verified ? "bg-white/20 text-white border-white/30" : "bg-rose-500/80 text-white border-rose-400"
               )}>
                 {employer.is_verified ? <ShieldCheck size={10} /> : <ShieldAlert size={10} />}
                 {employer.is_verified ? "Verified" : "Unverified"}
               </span>
-              {employer.company_featured && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-400/80 text-white border border-amber-300">
-                  <Star size={10} className="fill-white" /> Featured
-                </span>
-              )}
+              
+              <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium border transition-all",
+                (employer.is_featured || (employer as any).company_featured) ? "bg-amber-400/90 text-white border-amber-300 shadow-sm" : "bg-white/10 text-white/60 border-white/10"
+              )}>
+                <Star size={10} className={(employer.is_featured || (employer as any).company_featured) ? "fill-white" : ""} />
+                {(employer.is_featured || (employer as any).company_featured) ? "Featured" : "Standard"}
+              </span>
             </div>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
               <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><Tag size={11} /> {employer.institution_type || "—"}</span>
@@ -171,7 +173,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
             const tabColors = ["border-indigo-500 text-indigo-600", "border-purple-500 text-purple-600", "border-emerald-500 text-emerald-600", "border-cyan-500 text-cyan-600", "border-rose-500 text-rose-600"];
             return (
             <button key={t} suppressHydrationWarning onClick={() => setActiveTab(t)}
-              className={clsx("px-4 py-3 text-[11px] font-bold border-b-2 transition-all whitespace-nowrap",
+              className={clsx("px-4 py-3 text-[11px] font-semibold border-b-2 transition-all whitespace-nowrap",
                 activeTab === t ? tabColors[i] : "border-transparent text-surface-400 hover:text-surface-700"
               )}>
               {t}
@@ -207,9 +209,9 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                     </div>
 
                     <div className="pt-2">
-                      <p className="text-[9px] font-bold text-surface-400 uppercase tracking-wider mb-2">Location Map</p>
+                      <p className="text-[9px] font-semibold text-surface-400 uppercase tracking-wider mb-2">Location Map</p>
                       <div className="w-full h-48 rounded-xl border border-surface-200 overflow-hidden bg-surface-50 relative group">
-                        {(employer as any).map_link || ((employer as any).latitude && (employer as any).longitude) ? (
+                        {(employer as any).map_link || ((employer as any).address) ? (
                           <iframe
                             width="100%"
                             height="100%"
@@ -217,22 +219,17 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                             loading="lazy"
                             allowFullScreen
                             referrerPolicy="no-referrer-when-downgrade"
-                            src={`https://www.google.com/maps?q=${encodeURIComponent((employer as any).address || employer.city + ", " + employer.country)}&output=embed`}
+                            src={
+                              (employer as any).map_link?.includes("https://") 
+                                ? (employer as any).map_link 
+                                : `https://www.google.com/maps?q=${encodeURIComponent((employer as any).map_link || (employer as any).address || employer.city + ", " + employer.country)}&output=embed`
+                            }
                           />
                         ) : (
                           <div className="flex flex-col items-center justify-center h-full gap-2 text-surface-300">
                             <MapPin size={24} strokeWidth={1.5} />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">No Location Data</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-widest">No Location Data</span>
                           </div>
-                        )}
-                        {(employer as any).map_link && (
-                          <a 
-                            href={(employer as any).map_link} 
-                            target="_blank" 
-                            className="absolute bottom-3 right-3 h-8 px-3 bg-white/90 backdrop-blur-sm border border-surface-200 rounded-lg text-[10px] font-black text-primary shadow-lg flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all hover:bg-white"
-                          >
-                            <ExternalLink size={12} /> Open Maps
-                          </a>
                         )}
                       </div>
                     </div>
@@ -243,30 +240,45 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
               <div className="space-y-4">
                 {/* Contact */}
                 <Section title="Contact" icon={Mail} color="emerald">
-                  <div className="space-y-3">
-                    <Field label="Email" value={employer.email} icon={Mail} />
-                    <Field label="Phone" value={(employer as any).phone} icon={Phone} />
-                    {(employer as any).website && (
-                      <a href={(employer as any).website} target="_blank"
-                        className="flex items-center gap-1.5 w-full h-8 px-3 border border-surface-200 rounded-lg text-[11px] font-bold text-surface-700 hover:text-primary hover:border-primary/30 transition-all bg-surface-50 mt-1">
-                        <Globe size={12} /> {(employer as any).website} <ArrowUpRight size={10} className="ml-auto text-surface-300" />
-                      </a>
-                    )}
-                    {(employer as any).map_link && (
-                      <a href={(employer as any).map_link} target="_blank"
-                        className="flex items-center gap-1.5 w-full h-8 px-3 border border-surface-200 rounded-lg text-[11px] font-bold text-surface-700 hover:text-primary hover:border-primary/30 transition-all bg-surface-50">
-                        <MapPin size={12} /> View on Maps <ArrowUpRight size={10} className="ml-auto text-surface-300" />
-                      </a>
-                    )}
-                  </div>
+                    <div className="space-y-3">
+                      <Field label="Email" value={employer.email} icon={Mail} />
+                      <Field label="Phone" value={(employer as any).phone} icon={Phone} />
+                      {(employer as any).website && (
+                        <a href={(employer as any).website.startsWith("http") ? (employer as any).website : `https://${(employer as any).website}`} 
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 w-full h-8 px-3 border border-surface-200 rounded-lg text-[11px] font-medium text-surface-700 hover:text-primary hover:border-primary/30 transition-all bg-surface-50 mt-1">
+                          <Globe size={12} /> {(employer as any).website} <ArrowUpRight size={10} className="ml-auto text-surface-300" />
+                        </a>
+                      )}
+                      {(employer as any).map_link && (
+                        <a href={(employer as any).map_link.includes("http") ? (employer as any).map_link : `https://www.google.com/maps?q=${encodeURIComponent((employer as any).map_link)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 w-full h-8 px-3 border border-surface-200 rounded-lg text-[11px] font-medium text-surface-700 hover:text-primary hover:border-primary/30 transition-all bg-surface-50">
+                          <MapPin size={12} /> View on Maps <ArrowUpRight size={10} className="ml-auto text-surface-300" />
+                        </a>
+                      )}
+                    </div>
                 </Section>
 
                 {/* Status */}
                 <Section title="Platform Status" icon={ShieldCheck} color="cyan">
                   <div className="space-y-2">
-                    <StatusRow label="Account Access" value={!!employer.is_active} activeLabel="Enabled" inactiveLabel="Disabled" variant="success" />
-                    <StatusRow label="Identity Verified" value={!!employer.is_verified} activeLabel="Verified" inactiveLabel="Pending" />
-                    <StatusRow label="Profile Verified" value={!!(employer as any).is_profile_verified} activeLabel="Verified" inactiveLabel="Pending" />
+                    <StatusRow 
+                        label="Identity Verified" 
+                        value={!!employer.is_verified} 
+                        activeLabel="Verified" 
+                        inactiveLabel="Unverified"
+                        onToggle={!employer.is_verified ? () => handleAction("verify") : undefined}
+                        loading={processing}
+                    />
+                    <StatusRow 
+                        label="Profile Data" 
+                        value={!!(employer as any).company_description} 
+                        activeLabel="Complete" 
+                        inactiveLabel="Incomplete" 
+                    />
                     <StatusRow label="Featured Status" value={!!employer.company_featured} activeLabel="Featured" inactiveLabel="Standard" variant="warning" />
                   </div>
                 </Section>
@@ -411,11 +423,38 @@ function Field({ label, value, mono, icon: Icon }: { label: string; value?: stri
   );
 }
 
-function StatusRow({ label, value, activeLabel = "Active", inactiveLabel = "Inactive", variant = "success" }: { label: string; value: boolean; activeLabel?: string; inactiveLabel?: string; variant?: "success" | "danger" | "default" | "warning" }) {
+function StatusRow({ 
+    label, 
+    value, 
+    activeLabel = "Active", 
+    inactiveLabel = "Inactive", 
+    variant = "success",
+    onToggle,
+    loading
+}: { 
+    label: string; 
+    value: boolean; 
+    activeLabel?: string; 
+    inactiveLabel?: string; 
+    variant?: "success" | "danger" | "default" | "warning";
+    onToggle?: () => void;
+    loading?: boolean;
+}) {
   return (
     <div className="flex items-center justify-between py-1">
       <span className="text-[11px] text-surface-600 font-medium">{label}</span>
-      <Badge variant={value ? variant : "default"} dot>{value ? activeLabel : inactiveLabel}</Badge>
+      <div className="flex items-center gap-2">
+        <Badge variant={value ? variant : "default"} dot>{value ? activeLabel : inactiveLabel}</Badge>
+        {onToggle && (
+            <button 
+                onClick={onToggle}
+                disabled={loading}
+                className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 hover:bg-emerald-100 transition-all active:scale-95 disabled:opacity-50"
+            >
+                Verify
+            </button>
+        )}
+      </div>
     </div>
   );
 }

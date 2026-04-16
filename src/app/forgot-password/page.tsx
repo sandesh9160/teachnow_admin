@@ -87,7 +87,7 @@ function ForgotPasswordForm() {
         password_confirmation: confirmPassword
       });
       toast.success("Security credentials updated. Redirecting...");
-      setTimeout(() => router.push("/login"), 2000);
+      setTimeout(() => router.push("/"), 2000);
     } catch (err: any) {
       toast.error(err?.message || "Failed to finalize new credentials.");
     } finally {
@@ -265,7 +265,7 @@ function ForgotPasswordForm() {
 
         {/* Footer */}
         <div className="text-center pt-2">
-          <Link href="/login" className="text-[11px] font-semibold text-slate-400 hover:text-indigo-600 transition-colors flex items-center justify-center gap-1.5">
+          <Link href="/" className="text-[11px] font-semibold text-slate-400 hover:text-indigo-600 transition-colors flex items-center justify-center gap-1.5">
             <ChevronLeft size={12} /> Remember your password? Sign in
           </Link>
         </div>

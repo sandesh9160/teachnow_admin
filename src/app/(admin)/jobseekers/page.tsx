@@ -91,9 +91,9 @@ export default function JobSeekersPage() {
             <div className={clsx("absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white", row.is_active ? "bg-emerald-500" : "bg-surface-300")} />
           </div>
           <div className="min-w-0">
-            <p className="font-bold text-surface-900 leading-tight truncate max-w-[200px] text-[13.5px] tracking-tight">{row.user?.name}</p>
+            <p className="font-semibold text-surface-900  max-w-[200px] text-[13.5px]">{row.user?.name}</p>
             <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-[10px] text-primary font-bold uppercase tracking-wider uppercase">
+                <span className="text-[10px] text-primary font-medium ">
                     {row.title || "Educator"}
                 </span>
             </div>
@@ -122,7 +122,7 @@ export default function JobSeekersPage() {
         render: (v: any) => (
             <div className="flex items-center gap-1.5 px-2 py-0.5 w-fit">
                 <span className="text-[12px] font-semibold text-surface-900">{v || 0}</span>
-                <span className="text-[9px] font-bold text-surface-400 tracking-tight">Years</span>
+                <span className="text-[9px] font-medium text-surface-400">Years</span>
             </div>
         ) 
     },
@@ -132,12 +132,12 @@ export default function JobSeekersPage() {
         render: (_: any, row: JobSeeker) => (
             <div className="flex items-center gap-2">
                 <div className={clsx(
-                    "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border",
+                    "px-2 py-0.5 rounded text-[9px] font-semibold uppercase border",
                     row.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"
                 )}>
                     {row.is_active ? "Account Active" : "Account Inactive"}
                 </div>
-                <span className="text-surface-400 font-bold text-[10.5px] whitespace-nowrap">
+                <span className="text-surface-400 font-medium text-[10.5px] whitespace-nowrap">
                     {new Date(row.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                 </span>
             </div>
@@ -164,10 +164,10 @@ export default function JobSeekersPage() {
             </button>
             <Link
                 href={`/jobseekers/${row.id}`} 
-                className="flex items-center gap-1.5 h-7 px-2.5 bg-white text-surface-900 border border-surface-200 rounded-md text-[10px] font-bold hover:bg-surface-50 transition-all shadow-sm active:scale-95 group"
+                className="flex items-center gap-1.5 h-7 px-3 bg-white text-indigo-600 border border-indigo-100 rounded-lg text-[10px] font-semibold hover:bg-indigo-50 transition-all shadow-sm active:scale-95 group"
             >
                 View
-                <ArrowUpRight size={12} className="text-surface-300 group-hover:text-primary transition-colors" />
+                <ArrowUpRight size={12} className="text-indigo-300 group-hover:text-indigo-600 transition-colors" />
             </Link>
         </div>
       )
@@ -185,14 +185,14 @@ export default function JobSeekersPage() {
           </div>
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-1">
-               <span className="text-[10px] font-black text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 tracking-[0.1em] uppercase">Talent Pool</span>
+               <span className="text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 uppercase">Talent Pool</span>
             </div>
-            <h1 className="text-2xl font-black text-surface-900 tracking-tight leading-tight">Candidate Directory</h1>
-            <p className="text-[13px] text-surface-400 font-semibold mt-1 max-w-md">Orchestrate and manage all educator profiles and professional contact information across the platform.</p>
+            <h1 className="text-2xl font-semibold text-surface-900 tracking-tight leading-tight">Candidate Directory</h1>
+            <p className="text-[13px] text-surface-400 font-medium mt-1 max-w-md">Orchestrate and manage all educator profiles and professional contact information across the platform.</p>
           </div>
         </div>
         <div className="flex items-center gap-3 relative z-10">
-          <button className="flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-white border border-surface-200 text-surface-700 text-[12px] font-black hover:bg-surface-50 hover:border-surface-300 transition-all shadow-sm active:scale-95 group uppercase tracking-widest">
+          <button className="flex items-center gap-2.5 px-6 py-3 rounded-2xl bg-white border border-surface-200 text-surface-700 text-[12px] font-medium hover:bg-surface-50 hover:border-surface-300 transition-all shadow-sm active:scale-95 group uppercase">
             <Layers size={16} className="text-surface-400 group-hover:text-primary transition-colors" /> Export
           </button>
         </div>
@@ -200,31 +200,32 @@ export default function JobSeekersPage() {
 
       {/* Metrics Lightbar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-surface-200/60 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-4 rounded-xl border border-blue-100 shadow-card flex items-center justify-between group hover:shadow-lg transition-all">
             <div>
-                <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest">Total Talent</p>
-                <p className="text-xl font-black text-surface-900 mt-1">{pagination?.total || 0}</p>
+                <p className="text-[10px] font-medium text-surface-400 uppercase">Total Talent</p>
+                <p className="text-2xl font-semibold text-surface-900 mt-1">{pagination?.total || 0}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                <UserCircle size={18} />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                <UserCircle size={20} strokeWidth={2} />
             </div>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-surface-200/60 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-4 rounded-xl border border-emerald-100 shadow-card flex items-center justify-between group hover:shadow-lg transition-all">
             <div>
-                <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest">Active Seekers</p>
-                <p className="text-xl font-black text-surface-900 mt-1">{jobSeekers.filter(j => j.is_active).length}</p>
+                <p className="text-[10px] font-medium text-surface-400 uppercase">Active Seekers</p>
+                <p className="text-2xl font-semibold text-surface-900 mt-1">{jobSeekers.filter(j => j.is_active).length}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                <UserCheck size={18} />
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
+                <UserCheck size={20} strokeWidth={2} />
             </div>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-surface-200/60 shadow-sm flex items-center justify-between">
+        <div className="bg-white p-4 rounded-xl border border-amber-100 shadow-card flex items-center justify-between group hover:shadow-lg transition-all">
             <div>
-                <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest">Recent Activity</p>
-                <p className="text-xl font-black text-surface-900 mt-1">{jobSeekers.filter(j => new Date(j.created_at).getTime() > Date.now() - 7*24*60*60*1000).length}</p>
+                <p className="text-[10px] font-medium text-surface-400 uppercase">Recent Activity</p>
+                <p className="text-xl font-semibold text-surface-900 mt-1 leading-none">{jobSeekers.filter(j => new Date(j.created_at).getTime() > Date.now() - 7*24*60*60*1000).length}</p>
+                <span className="text-[9px] font-medium text-amber-600">Last 7 days</span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
-                <Briefcase size={18} />
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+                <Briefcase size={20} strokeWidth={2} />
             </div>
         </div>
       </div>
@@ -238,12 +239,18 @@ export default function JobSeekersPage() {
               placeholder="Query by candidate name, professional role or geographic location..." 
               value={search} 
               onChange={(e) => setSearch(e.target.value)} 
-              className="w-full pl-12 pr-6 py-4 bg-white border border-surface-200 rounded-2xl text-[14px] font-bold text-surface-800 placeholder:text-surface-300 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/50 transition-all tracking-tight" 
+              className="w-full pl-12 pr-6 py-4 bg-white border border-surface-200 rounded-2xl text-[14px] font-medium text-surface-800 placeholder:text-surface-300 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/50 transition-all font-medium" 
           />
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-surface-200/60 shadow-xl shadow-surface-900/5 overflow-hidden">
+      <div className="bg-white rounded-xl border border-surface-200 shadow-card overflow-hidden border-t-2 border-t-indigo-500">
+        <div className="px-6 py-4 border-b border-surface-50 bg-surface-50/30 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-surface-900">Talent Registry</h3>
+            <div className="text-[11px] font-medium text-surface-400 uppercase">
+                Latest Entries First
+            </div>
+        </div>
         <DataTable 
             compact
             columns={columns} 
@@ -255,30 +262,30 @@ export default function JobSeekersPage() {
 
         {/* Pagination Console */}
         {pagination && pagination.lastPage > 1 && (
-            <div className="px-6 py-4 border-t border-surface-200 flex items-center justify-between">
-            <p className="text-[11px] font-bold text-surface-500 tracking-tight">
-                Total candidates: <span className="text-primary">{pagination.total}</span>
+            <div className="px-6 py-4 border-t border-surface-50 flex items-center justify-between bg-surface-50/20">
+            <p className="text-[11px] font-bold text-surface-400 uppercase tracking-widest">
+                Total Records: <span className="text-indigo-600">{pagination.total}</span>
             </p>
             
             <div className="flex items-center gap-2">
                 <button
                 disabled={pagination.currentPage === 1 || loading}
                 onClick={() => fetchJobSeekers(pagination.currentPage - 1)}
-                className="h-9 w-9 flex items-center justify-center rounded-xl border border-surface-200 bg-white text-surface-400 disabled:opacity-30 hover:border-primary/50 hover:text-primary transition-all active:scale-95 shadow-sm"
+                className="h-8 pr-3 pl-2 flex items-center gap-1 rounded-lg border border-surface-200 bg-white text-surface-600 disabled:opacity-30 hover:border-indigo-500/50 hover:text-indigo-600 transition-all shadow-sm active:scale-90 text-[10px] font-bold"
                 >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={14} /> Prev
                 </button>
                 
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-50 rounded-xl border border-surface-100 font-bold text-[12px] text-surface-900 shadow-inner">
-                   {pagination.currentPage} <span className="text-surface-200">/</span> {pagination.lastPage}
+                <div className="px-3 py-1 bg-white rounded-lg border border-surface-200 font-bold text-[11px] text-surface-600 shadow-sm">
+                   {pagination.currentPage} of {pagination.lastPage}
                 </div>
-
+                
                 <button
                 disabled={pagination.currentPage === pagination.lastPage || loading}
                 onClick={() => fetchJobSeekers(pagination.currentPage + 1)}
-                className="h-9 w-9 flex items-center justify-center rounded-xl border border-surface-200 bg-white text-surface-400 disabled:opacity-30 hover:border-primary/50 hover:text-primary transition-all active:scale-95 shadow-sm"
+                className="h-8 pl-3 pr-2 flex items-center gap-1 rounded-lg border border-surface-200 bg-white text-surface-600 disabled:opacity-30 hover:border-indigo-500/50 hover:text-indigo-600 transition-all shadow-sm active:scale-90 text-[10px] font-bold"
                 >
-                <ChevronRight size={16} />
+                Next <ChevronRight size={14} />
                 </button>
             </div>
             </div>

@@ -118,10 +118,10 @@ export default function RecruitersPage() {
             <div className="flex items-center justify-end gap-0.5" onClick={(e) => e.stopPropagation()}>
                 <Link
                     href={`/recruiters/${row.id}`}
-                    className="flex items-center gap-1.5 h-7 px-2.5 bg-white text-surface-900 border border-surface-200 rounded-md text-[10px] font-bold hover:bg-surface-50 transition-all shadow-sm active:scale-95 group"
+                    className="flex items-center gap-1.5 h-7 px-3 bg-white text-indigo-600 border border-indigo-100 rounded-lg text-[10px] font-semibold hover:bg-indigo-50 transition-all shadow-sm active:scale-95 group"
                 >
                     View
-                    <ArrowUpRight size={12} className="text-surface-300 group-hover:text-primary transition-colors" />
+                    <ArrowUpRight size={12} className="text-indigo-300 group-hover:text-indigo-600 transition-colors" />
                 </Link>
                     <button 
                         onClick={() => handleAction(row.id, "disable")}
@@ -148,7 +148,7 @@ export default function RecruitersPage() {
   return (
     <div className="space-y-4 pb-10 antialiased animate-fade-in-up">
       {/* ─── Header Banner ────────────────────────────────────── */}
-      <div className="relative bg-purple-600 rounded-xl p-6 overflow-hidden shadow-lg shadow-purple-500/20">
+      <div className="relative bg-indigo-600 rounded-xl p-6 overflow-hidden shadow-lg shadow-indigo-500/20">
         <div className="absolute inset-0 opacity-10" style={{backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "30px 30px"}} />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -156,9 +156,9 @@ export default function RecruitersPage() {
               <UserCheck size={22} strokeWidth={2.5} className="text-white" />
             </div>
             <div>
-              <span className="text-[10px] font-bold text-purple-200 tracking-widest uppercase">Recruitment Team</span>
-              <h1 className="text-[20px] font-bold text-white tracking-tight leading-none mt-0.5">Recruiters</h1>
-              <p className="text-[12px] text-purple-200 font-medium mt-0.5">Manage all recruitment agents and independent members</p>
+              <span className="text-[10px] font-semibold text-indigo-200 uppercase">Recruitment Team</span>
+              <h1 className="text-[20px] font-semibold text-white mt-0.5">Recruiters</h1>
+              <p className="text-[12px] text-indigo-200 font-medium mt-0.5">Manage all recruitment agents and independent members</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -167,7 +167,7 @@ export default function RecruitersPage() {
               <RotateCcw size={16} className={clsx(loading && "animate-spin")} />
             </button>
             <button suppressHydrationWarning
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white text-purple-700 text-[11px] font-bold hover:bg-purple-50 transition-all active:scale-95 shadow-md">
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white text-indigo-700 text-[11px] font-semibold hover:bg-indigo-50 transition-all active:scale-95 shadow-md">
               <Download size={15} /> Export list
             </button>
           </div>
@@ -176,7 +176,7 @@ export default function RecruitersPage() {
 
       {/* ─── Stats Overview ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <StatMini label="Active" value={recruiters.filter(r => r.is_active).length} color="purple" icon={<UserCheck size={16} />} />
+          <StatMini label="Active" value={recruiters.filter(r => r.is_active).length} color="indigo" icon={<UserCheck size={16} />} />
           <StatMini label="Inactive" value={recruiters.filter(r => !r.is_active).length} color="rose" icon={<StopCircle size={16} />} />
           <StatMini label="With organization" value={recruiters.filter(r => r.employer_id).length} color="blue" icon={<Building2 size={16} />} />
           <StatMini label="Independent" value={recruiters.filter(r => !r.employer_id).length} color="amber" icon={<Users size={16} />} />
@@ -203,15 +203,23 @@ export default function RecruitersPage() {
       </div>
 
       {/* ─── Data Registry Table ────────────────────────────────────────── */}
-      <div className="overflow-hidden">
-        <DataTable 
-            compact
-            columns={columns} 
-            data={filtered} 
-            loading={loading}
-            onRowClick={(row) => router.push(`/recruiters/${row.id}`)}
-            emptyMessage="No agents found in your list."
-        />
+      <div className="bg-white rounded-xl border border-surface-200 shadow-card overflow-hidden border-t-2 border-t-indigo-500">
+        <div className="px-6 py-4 border-b border-surface-50 bg-surface-50/30 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-surface-900">Agent Registry</h3>
+            <div className="text-[11px] font-medium text-surface-400 uppercase leading-none">
+                System Active
+            </div>
+        </div>
+        <div className="overflow-hidden">
+            <DataTable 
+                compact
+                columns={columns} 
+                data={filtered} 
+                loading={loading}
+                onRowClick={(row) => router.push(`/recruiters/${row.id}`)}
+                emptyMessage="No agents found in your list."
+            />
+        </div>
       </div>
 
     </div>
@@ -221,18 +229,22 @@ export default function RecruitersPage() {
 function StatMini({ label, value, color, icon }: any) {
     const colors: any = {
         primary: "text-primary bg-primary/5 border-primary/10",
-        slate: "text-surface-400 bg-surface-50 border-surface-100",
-        blue: "text-blue-500 bg-blue-50/50 border-blue-100",
-        orange: "text-orange-500 bg-orange-50/50 border-orange-100",
+        slate:   "text-surface-400 bg-surface-50 border-surface-100",
+        blue:    "text-blue-600 bg-blue-50 border-blue-100",
+        orange:  "text-orange-600 bg-orange-50 border-orange-100",
+        purple:  "text-purple-600 bg-purple-50 border-purple-100",
+        rose:    "text-rose-600 bg-rose-50 border-rose-100",
+        emerald: "text-emerald-600 bg-emerald-50 border-emerald-100",
+        amber:   "text-amber-600 bg-amber-50 border-amber-100",
     };
     return (
-        <div className="bg-white p-3 px-4 rounded-xl border border-surface-200 shadow-sm flex items-center justify-between group hover:bg-surface-50 transition-all">
+        <div className={clsx("bg-white p-4 rounded-xl border shadow-card flex items-center justify-between group hover:shadow-lg transition-all", (colors[color] || colors.slate).split(' ')[2])}>
             <div className="space-y-0.5">
-                <p className="text-[10px] font-bold text-surface-500 tracking-tight">{label}</p>
-                <h3 className="text-xl font-bold text-surface-900 leading-tight">{value}</h3>
+                <p className="text-[10px] font-medium text-surface-400 uppercase">{label}</p>
+                <h3 className="text-2xl font-semibold text-surface-900 leading-tight">{value}</h3>
             </div>
-            <div className={clsx("w-8 h-8 rounded-lg flex items-center justify-center border transition-all group-hover:scale-110", colors[color])}>
-                {icon}
+            <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center border transition-all group-hover:scale-110", colors[color] || colors.slate)}>
+                {React.cloneElement(icon as React.ReactElement<any>, { size: 18, strokeWidth: 2.5 })}
             </div>
         </div>
     );

@@ -38,8 +38,8 @@ export default function DataTable<T>({
     )}>
       <table suppressHydrationWarning className="w-full caption-bottom text-sm border-separate border-spacing-0">
         <thead className={clsx(
-            "bg-surface-50/50 backdrop-blur-md sticky top-0 z-10",
-            compact && "bg-transparent border-b border-surface-200/40"
+            "bg-indigo-50/40 sticky top-0 z-10",
+            compact && "bg-transparent border-b-2 border-indigo-100"
         )}>
           <tr className={clsx(
               !compact && "border-b border-surface-200/60"
@@ -48,10 +48,10 @@ export default function DataTable<T>({
               <th
                 key={col.key}
                 className={clsx(
-                  "h-10 px-4 text-left align-middle font-black text-surface-400 tracking-widest text-[9.5px] uppercase border-b border-surface-100/50",
-                  compact ? "px-5" : "px-6",
-                  idx === 0 && "rounded-tl-2xl",
-                  idx === columns.length - 1 && "rounded-tr-2xl"
+                    "px-6 py-4 text-left text-[11px] font-semibold text-indigo-500/80 border-b border-indigo-100/80 bg-indigo-50/50",
+                    compact && "px-4 py-3",
+                    idx === 0 && "rounded-tl-2xl",
+                    idx === columns.length - 1 && "rounded-tr-2xl"
                 )}
                 style={{ width: col.width }}
               >
@@ -60,32 +60,35 @@ export default function DataTable<T>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-surface-100/40">
+        <tbody className="divide-y divide-indigo-100/40">
           {data.length === 0 ? (
             <tr>
               <td
                 colSpan={columns.length}
                 className="h-24 text-center align-middle text-surface-400 text-[12px] font-medium italic"
               >
-                {emptyMessage}
+                <div className="flex flex-col items-center justify-center py-10 opacity-60">
+                    <Filter size={24} className="text-indigo-200 mb-2" />
+                    <span className="text-indigo-400 font-medium italic">{emptyMessage}</span>
+                </div>
               </td>
             </tr>
           ) : (
             data.map((row, rowIndex) => (
-              <tr
-                key={rowIndex}
-                onClick={() => onRowClick?.(row)}
-                className={clsx(
-                  "group transition-all duration-300",
-                  onRowClick ? "cursor-pointer hover:bg-primary/[0.02] active:bg-primary/[0.05]" : "hover:bg-surface-50/40"
-                )}
-              >
+                <tr 
+                    key={rowIndex} 
+                    onClick={() => onRowClick && onRowClick(row)}
+                    className={clsx(
+                        "group transition-all duration-200 border-b border-indigo-100/50 hover:bg-indigo-50/60",
+                        onRowClick ? "cursor-pointer" : "cursor-default"
+                    )}
+                >
                 {columns.map((col) => (
                   <td
                     key={col.key}
                     className={clsx(
-                      "align-middle text-surface-700 font-medium transition-colors",
-                      compact ? "py-2.5 px-5 text-[12px] leading-tight" : "py-4 px-6 text-[13.5px]"
+                      "align-middle text-indigo-950 font-medium transition-colors",
+                      compact ? "py-2.5 px-5 text-[12.5px] leading-tight" : "py-4 px-6 text-[13.5px]"
                     )}
                   >
                     {col.render
@@ -104,24 +107,24 @@ export default function DataTable<T>({
 
 function DataTableSkeleton({ columns }: { columns: number }) {
   return (
-    <div className="bg-white rounded-2xl border border-surface-100 overflow-hidden shadow-sm">
+    <div className="bg-white rounded-2xl border border-indigo-50 overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-surface-50 bg-surface-50/50">
+            <tr className="border-b border-indigo-50 bg-indigo-50/30">
               {Array.from({ length: columns }).map((_, i) => (
                 <th key={i} className="px-6 py-4">
-                  <div className="h-2 w-16 bg-surface-100 rounded-full animate-pulse" />
+                  <div className="h-2 w-16 bg-indigo-100/50 rounded-full animate-pulse" />
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-surface-50">
+          <tbody className="divide-y divide-indigo-50">
             {Array.from({ length: 5 }).map((_, rowIndex) => (
               <tr key={rowIndex}>
                 {Array.from({ length: columns }).map((_, colIndex) => (
                   <td key={colIndex} className="px-6 py-5">
-                    <div className="h-3 w-full bg-surface-50/80 rounded-full animate-pulse" />
+                    <div className="h-3 w-full bg-indigo-50/60 rounded-full animate-pulse" />
                   </td>
                 ))}
               </tr>

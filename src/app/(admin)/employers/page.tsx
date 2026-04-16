@@ -77,21 +77,7 @@ export default function EmployersPage() {
     }
   };
 
-  const handleToggleStatus = async (row: Employer) => {
-    try {
-      setProcessingId(row.id);
-      const nextStatus = row.is_active ? 0 : 1;
-      await updateEmployer(row.id, { is_active: nextStatus });
-      setEmployers((prev) =>
-        prev.map((e) => (e.id === row.id ? { ...e, is_active: Boolean(nextStatus) } : e))
-      );
-      toast.success(nextStatus ? "Employer enabled" : "Employer disabled");
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to update employer status");
-    } finally {
-      setProcessingId(null);
-    }
-  };
+
 
   const handleUpdateSEO = async (data: any) => {
     if (!seoModal.employer) return;
@@ -125,10 +111,10 @@ export default function EmployersPage() {
             )}
           </div>
           <div className="min-w-0">
-            <span className="font-semibold text-surface-900 block truncate leading-tight tracking-tight text-[13px]">{row.company_name}</span>
+            <span className="font-semibold text-surface-900 block truncate leading-tight text-[13px]">{row.company_name}</span>
             <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[9px] font-bold text-surface-400 uppercase tracking-widest">{row.institution_type || 'Institution'}</span>
-                {row.company_featured && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+                <span className="text-[9px] font-semibold text-surface-400 uppercase">{row.institution_type || 'Institution'}</span>
+                {row.is_featured && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
             </div>
           </div>
         </div>
@@ -153,15 +139,7 @@ export default function EmployersPage() {
         </Badge>
       )
     },
-    { 
-      key: "is_active", 
-      title: "Account Status",
-      render: (val: any) => (
-        <Badge variant={val ? "success" : "danger"} dot className="text-[10px] px-0 h-auto bg-transparent border-none">
-          {val ? "Enabled" : "Disabled"}
-        </Badge>
-      )
-    },
+
     { 
       key: "created_at", 
       title: "Joined On",
@@ -185,18 +163,7 @@ export default function EmployersPage() {
                   <CheckCircle2 size={14} />
               </button>
           )}
-          <button 
-            onClick={(e) => { e.stopPropagation(); handleToggleStatus(row); }}
-            disabled={processingId === row.id}
-            className={clsx(
-              "w-8 h-8 rounded-md flex items-center justify-center transition-all",
-              row.is_active ? "text-amber-600 hover:bg-amber-50" : "text-emerald-600 hover:bg-emerald-50",
-              processingId === row.id && "opacity-50 cursor-not-allowed"
-            )}
-            title={row.is_active ? "Disable employer" : "Enable employer"}
-          >
-            <Clock size={14} />
-          </button>
+
           <button 
                 onClick={(e) => { e.stopPropagation(); setSeoModal({ isOpen: true, employer: row }); }}
                 className="w-8 h-8 text-surface-400 hover:bg-surface-100 hover:text-primary rounded-md flex items-center justify-center transition-all"
@@ -205,10 +172,10 @@ export default function EmployersPage() {
           </button>
           <Link
             href={`/employers/${row.id}`} 
-            className="flex items-center gap-1.5 h-7 px-2.5 bg-white text-surface-900 border border-surface-200 rounded-md text-[10px] font-bold hover:bg-surface-50 transition-all shadow-sm active:scale-95 group"
+            className="flex items-center gap-1.5 h-7 px-3 bg-white text-indigo-600 border border-indigo-100 rounded-lg text-[10px] font-semibold hover:bg-indigo-50 transition-all shadow-sm active:scale-95 group"
           >
             View
-            <ArrowUpRight size={12} className="text-surface-300 group-hover:text-primary transition-colors" />
+            <ArrowUpRight size={12} className="text-indigo-300 group-hover:text-indigo-600 transition-colors" />
           </Link>
           <button 
             onClick={(e) => { e.stopPropagation(); handleAction(row.id, "delete"); }}
@@ -233,8 +200,8 @@ export default function EmployersPage() {
               <Building2 size={22} strokeWidth={2.5} className="text-white" />
             </div>
             <div>
-              <span className="text-[10px] font-bold text-indigo-200 tracking-widest uppercase">Partner Management</span>
-              <h1 className="text-[20px] font-bold text-white tracking-tight leading-none mt-0.5">Employers</h1>
+              <span className="text-[10px] font-semibold text-indigo-200 uppercase">Partner Management</span>
+              <h1 className="text-[20px] font-semibold text-white mt-0.5">Employers</h1>
               <p className="text-[12px] text-indigo-200 font-medium mt-0.5">Manage all educational centers and recruitment partners</p>
             </div>
           </div>
@@ -246,7 +213,7 @@ export default function EmployersPage() {
             >
               <RotateCcw size={16} className={clsx(loading && "animate-spin")} />
             </button>
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white text-indigo-700 text-[11px] font-bold hover:bg-indigo-50 transition-all active:scale-95 shadow-md">
+            <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white text-indigo-700 text-[11px] font-semibold hover:bg-indigo-50 transition-all active:scale-95 shadow-md">
               <Download size={15} /> Export list
             </button>
           </div>
@@ -257,7 +224,7 @@ export default function EmployersPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatMini label="All employers" value={employers.length} color="indigo" icon={<Building2 size={16} />} />
           <StatMini label="Verified" value={employers.filter(e => e.is_verified).length} color="emerald" icon={<CheckCircle2 size={16} />} />
-          <StatMini label="Featured" value={employers.filter(e => e.company_featured).length} color="amber" icon={<Star size={16} />} />
+          <StatMini label="Featured" value={employers.filter(e => e.is_featured || (e as any).company_featured).length} color="amber" icon={<Star size={16} />} />
           <StatMini label="Pending review" value={employers.filter(e => !e.is_verified).length} color="rose" icon={<Activity size={16} />} />
       </div>
 
@@ -273,22 +240,30 @@ export default function EmployersPage() {
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-surface-200 rounded-xl text-[13px] font-medium text-surface-700 placeholder:text-surface-300 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/50 transition-all tracking-tight" 
           />
         </div>
-        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-surface-200 text-surface-700 text-[11px] font-bold hover:bg-surface-50 transition-all shadow-sm active:scale-95 group shrink-0">
-          <Filter size={14} className="group-hover:rotate-180 transition-transform duration-500" /> 
-          Filters
+        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-surface-200 text-surface-700 text-[11px] font-semibold hover:bg-surface-50 hover:text-indigo-600 transition-all shadow-sm active:scale-95 group shrink-0">
+          <Filter size={14} className="group-hover:rotate-180 transition-transform duration-500 group-hover:text-indigo-500" /> 
+          Registry Filters
         </button>
       </div>
 
       {/* ─── Data Registry Table ────────────────────────────────────────── */}
-      <div className="overflow-hidden">
-        <DataTable 
-            compact
-            columns={columns} 
-            data={filtered} 
-            loading={loading}
-            onRowClick={(row) => router.push(`/employers/${row.id}`)}
-            emptyMessage="No partners found in this list."
-        />
+      <div className="bg-white rounded-xl border border-surface-200 shadow-card overflow-hidden border-t-2 border-t-indigo-500">
+        <div className="px-6 py-4 border-b border-surface-50 bg-surface-50/30 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-surface-900">Partner Registry</h3>
+            <div className="text-[11px] font-medium text-surface-400 uppercase leading-none">
+                System Active
+            </div>
+        </div>
+        <div className="overflow-hidden">
+            <DataTable 
+                compact
+                columns={columns} 
+                data={filtered} 
+                loading={loading}
+                onRowClick={(row) => router.push(`/employers/${row.id}`)}
+                emptyMessage="No partners found in this list."
+            />
+        </div>
       </div>
 
       <SEOEditModal 
@@ -316,13 +291,13 @@ function StatMini({ label, value, color, icon }: any) {
         slate:   "text-surface-400 bg-surface-50 border-surface-100",
     };
     return (
-        <div className="bg-white p-3 px-4 rounded-xl border border-surface-100 shadow-sm flex items-center justify-between group hover:bg-surface-50 transition-all">
+        <div className={clsx("bg-white p-4 rounded-xl border shadow-card flex items-center justify-between group hover:shadow-lg transition-all", colors[color].split(' ')[2])}>
             <div className="space-y-0.5">
-                <p className="text-[10px] font-bold text-surface-400 tracking-wide">{label}</p>
-                <h3 className="text-xl font-bold text-surface-800 leading-tight">{value}</h3>
+                <p className="text-[10px] font-medium text-surface-400 uppercase">{label}</p>
+                <h3 className="text-2xl font-semibold text-surface-900 leading-tight">{value}</h3>
             </div>
-            <div className={clsx("w-8 h-8 rounded-lg flex items-center justify-center border transition-all group-hover:scale-110", colors[color] || colors.slate)}>
-                {icon}
+            <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center border transition-all group-hover:scale-110", colors[color])}>
+                {React.cloneElement(icon as React.ReactElement<any>, { size: 18, strokeWidth: 2.5 })}
             </div>
         </div>
     );

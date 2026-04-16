@@ -30,6 +30,7 @@
   --color-surface-700: #3f3f46;
   --color-surface-800: #27272a;
   --color-surface-900: #18181b;
+  --color-surface-950: #09090b;
 
   /* Status Colors */
   --color-success: hsl(142.1 76.2% 36.3%);

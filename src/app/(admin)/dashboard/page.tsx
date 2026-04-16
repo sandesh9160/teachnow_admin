@@ -104,33 +104,20 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 pb-20 antialiased animate-fade-in-up">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 tracking-tight text-shadow-none">Platform Analytics</h1>
-          <p className="text-[13px] text-surface-500 font-medium mt-0.5">Real-time platform performance metrics</p>
-        </div>
-        <div className="flex items-center p-0.5 bg-surface-100 rounded-lg border border-surface-200/50">
-          {["1M", "3M", "6M", "1Y"].map((range) => (
-            <button 
-              key={range} 
-              className={clsx(
-                "px-3 py-1 text-[11px] font-bold rounded-md transition-all", 
-                range === "6M" ? "bg-white text-surface-900 shadow-sm" : "text-surface-400 hover:text-surface-600"
-              )}
-            >
-              {range}
-            </button>
-          ))}
+          <h1 className="text-xl font-extrabold text-surface-950 tracking-tight leading-none">Platform Analytics</h1>
+          <p className="text-[12px] text-surface-500 font-medium mt-1">Live platform performance snapshot</p>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        <StatWidget label="Total Jobs" value={stats?.total_jobs || 0} icon={<Briefcase size={16} />} color="blue" trend="+12%" />
-        <StatWidget label="Job Seekers" value={stats?.total_job_seekers || 0} icon={<Users size={16} />} color="emerald" trend="Verified" />
-        <StatWidget label="Recruiters" value={stats?.total_recruiters || 0} icon={<UserCheck size={16} />} color="purple" trend="Online" />
-        <StatWidget label="Employers" value={stats?.total_employers || 0} icon={<Building2 size={16} />} color="indigo" trend="Active" />
-        <StatWidget label="Inquiries" value={stats?.total_applications || 0} icon={<FileCheck size={16} />} color="rose" trend="Pending" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+        <StatWidget label="Total Jobs" value={stats?.total_jobs || 0} icon={<Briefcase size={14} />} color="blue" trend="+12%" />
+        <StatWidget label="Job Seekers" value={stats?.total_job_seekers || 0} icon={<Users size={14} />} color="emerald" trend="Verified" />
+        <StatWidget label="Recruiters" value={stats?.total_recruiters || 0} icon={<UserCheck size={14} />} color="orange" trend="Online" />
+        <StatWidget label="Employers" value={stats?.total_employers || 0} icon={<Building2 size={14} />} color="indigo" trend="Active" />
+        <StatWidget label="Inquiries" value={stats?.total_applications || 0} icon={<FileCheck size={14} />} color="rose" trend="Pending" />
       </div>
 
       {/* Primary Charts Section - Commented out as there's no backend data yet
@@ -212,13 +199,15 @@ export default function DashboardPage() {
       */}
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-6">
-        <div className="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
-            <div className="px-5 py-3 border-b border-surface-100 flex items-center justify-between bg-surface-50">
+        <div className="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-card">
+            <div className="px-4 py-3 border-b border-surface-100 border-t-2 border-t-indigo-500 flex items-center justify-between bg-white">
                 <div>
-                    <h3 className="text-sm font-semibold text-surface-900 tracking-tight">Recent Applications</h3>
+                    <h3 className="text-[13px] font-bold text-surface-900 tracking-tight flex items-center gap-2">
+                        <Users size={14} className="text-indigo-500" /> Recent Applications
+                    </h3>
                 </div>
-                <Link href="/jobseekers" className="flex items-center gap-1.5 h-7 px-3 bg-white text-surface-700 border border-surface-200 rounded-md text-[10px] font-semibold hover:bg-surface-50 transition-all shadow-sm group">
-                    See all <ArrowUpRight size={12} className="text-surface-400 group-hover:text-primary transition-colors" />
+                <Link href="/jobseekers" className="flex items-center gap-1.5 h-7 px-3 bg-surface-50 text-surface-700 border border-surface-200 rounded-md text-[10px] font-bold hover:bg-surface-100 transition-all shadow-sm group">
+                    View All <ArrowUpRight size={11} className="text-surface-400 group-hover:text-primary transition-colors" />
                 </Link>
             </div>
             <div className="overflow-hidden">
@@ -243,7 +232,7 @@ export default function DashboardPage() {
                             </div>
                         );
                     }},
-                    { key: "job", title: "Position", render: (v: unknown) => <span className="text-surface-500 font-medium text-[11px] truncate max-w-[150px] inline-block tracking-tight">{(v as any)?.title || "—"}</span> },
+                    { key: "job", title: "Position", render: (v: unknown) => <span className="text-surface-900 font-bold text-[11px] tracking-tight">{(v as any)?.title || "—"}</span> },
                     { key: "status", title: "Status", render: (v: unknown) => {
                         const s = typeof v === "string" ? v.toLowerCase() : "";
                         return (
@@ -256,7 +245,12 @@ export default function DashboardPage() {
                             </Badge>
                         );
                     }},
-                    { key: "created_at", title: "Date", render: (v: unknown) => <span className="text-surface-400 text-[10px] font-medium tracking-tight whitespace-nowrap">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "—"}</span> }
+                    { key: "created_at", title: "Date", render: (v: unknown) => <span className="text-surface-800 text-[10px] font-bold tracking-tight whitespace-nowrap">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "—"}</span> },
+                    { key: "id", title: "Action", render: (_: any, r: any) => (
+                        <button className="px-3 py-1 bg-white text-indigo-600 text-[10px] font-bold rounded-lg hover:bg-indigo-50 transition-all shadow-sm border border-indigo-100 transform active:scale-95">
+                            Details
+                        </button>
+                    )}
                     ]}
                     data={stats?.recent_applications || []}
                     onRowClick={(row) => router.push(`/jobseekers/${row.job_seeker_id}`)}
@@ -264,13 +258,15 @@ export default function DashboardPage() {
             </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
-            <div className="px-5 py-3 border-b border-surface-100 flex items-center justify-between bg-surface-50">
+        <div className="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-card">
+            <div className="px-4 py-3 border-b border-surface-100 border-t-2 border-t-emerald-500 flex items-center justify-between bg-white">
                 <div>
-                    <h3 className="text-sm font-semibold text-surface-900 tracking-tight">Recent Jobs</h3>
+                    <h3 className="text-[13px] font-bold text-surface-900 tracking-tight flex items-center gap-2">
+                        <Briefcase size={14} className="text-emerald-500" /> Recent Jobs
+                    </h3>
                 </div>
-                <Link href="/jobs" className="flex items-center gap-1.5 h-7 px-3 bg-white text-surface-700 border border-surface-200 rounded-md text-[10px] font-semibold hover:bg-surface-50 transition-all shadow-sm group">
-                    See all <ArrowUpRight size={12} className="text-surface-400 group-hover:text-primary transition-colors" />
+                <Link href="/jobs" className="flex items-center gap-1.5 h-7 px-3 bg-surface-50 text-surface-700 border border-surface-200 rounded-md text-[10px] font-bold hover:bg-surface-100 transition-all shadow-sm group">
+                    View All <ArrowUpRight size={11} className="text-surface-400 group-hover:text-primary transition-colors" />
                 </Link>
             </div>
             <div className="overflow-hidden">
@@ -278,7 +274,7 @@ export default function DashboardPage() {
                     compact
                     columns={[
                     { key: "title", title: "Job Title", render: (v: unknown) => (
-                        <span className="font-medium text-surface-950 text-[12.5px] truncate max-w-[180px] inline-block tracking-tight">{typeof v === "string" ? v : ""}</span>
+                        <span className="font-bold text-surface-950 text-[12.5px] tracking-tight">{typeof v === "string" ? v : ""}</span>
                     )},
                     { key: "employer", title: "Organization", render: (v: any) => (
                         <div className="flex items-center gap-2 max-w-[140px]">
@@ -287,12 +283,12 @@ export default function DashboardPage() {
                                     <img src={resolveMediaUrl(v.company_logo)} alt="" className="w-full h-full object-cover" />
                                 </div>
                             )}
-                            <span className="text-surface-500 font-medium text-[11px] truncate tracking-tight">
+                            <span className="text-surface-800 font-bold text-[11px] tracking-tight">
                                 {v?.company_name || "—"}
                             </span>
                         </div>
                     )},
-                    { key: "location", title: "Location", render: (v: unknown) => <span className="text-surface-400 font-medium text-[10px] tracking-tight truncate max-w-[80px] inline-block">{typeof v === "string" ? v : "—"}</span> },
+                    { key: "location", title: "Location", render: (v: unknown) => <span className="text-surface-800 font-bold text-[10px] tracking-tight">{typeof v === "string" ? v : "—"}</span> },
                     { key: "status", title: "Status", render: (v: unknown) => {
                         const s = typeof v === "string" ? v.toLowerCase() : "";
                         return (
@@ -304,7 +300,12 @@ export default function DashboardPage() {
                                 {s}
                             </Badge>
                         );
-                    }}
+                    }},
+                    { key: "id", title: "Action", render: (_: any, r: any) => (
+                        <button className="px-3 py-1 bg-white text-emerald-600 text-[10px] font-bold rounded-lg hover:bg-emerald-50 transition-all shadow-sm border border-emerald-100 transform active:scale-95">
+                            Edit
+                        </button>
+                    )}
                     ]}
                     data={stats?.recent_jobs || []}
                     onRowClick={(row) => router.push(`/jobs/edit/${row.id}`)}
@@ -318,25 +319,29 @@ export default function DashboardPage() {
 
 function StatWidget({ label, value, trend, icon, color }: any) {
   const themes: any = {
-    blue: { bg: "bg-blue-50", text: "text-blue-700", trendBg: "bg-blue-100", trendText: "text-blue-700", iconText: "text-blue-500" },
-    purple: { bg: "bg-purple-50", text: "text-purple-700", trendBg: "bg-purple-100", trendText: "text-purple-700", iconText: "text-purple-500" },
-    indigo: { bg: "bg-indigo-50", text: "text-indigo-700", trendBg: "bg-indigo-100", trendText: "text-indigo-700", iconText: "text-indigo-500" },
-    emerald: { bg: "bg-emerald-50", text: "text-emerald-700", trendBg: "bg-emerald-100", trendText: "text-emerald-700", iconText: "text-emerald-500" },
-    rose: { bg: "bg-rose-50", text: "text-rose-700", trendBg: "bg-rose-100", trendText: "text-rose-700", iconText: "text-rose-500" },
+    blue: { bg: "bg-white", accent: "text-blue-600", border: "border-blue-100", iconBg: "bg-blue-50" },
+    emerald: { bg: "bg-white", accent: "text-emerald-600", border: "border-emerald-100", iconBg: "bg-emerald-50" },
+    orange: { bg: "bg-white", accent: "text-orange-600", border: "border-orange-100", iconBg: "bg-orange-50" },
+    indigo: { bg: "bg-white", accent: "text-indigo-600", border: "border-indigo-100", iconBg: "bg-indigo-50" },
+    rose: { bg: "bg-white", accent: "text-rose-600", border: "border-rose-100", iconBg: "bg-rose-50" },
   };
   const theme = themes[color] || themes.blue;
 
   return (
-    <div className={clsx("p-4 rounded-xl shadow-sm hover:shadow-md group transition-all relative overflow-hidden", theme.bg)}>
-      <div className="flex items-center justify-between mb-2">
-        <p className={clsx("text-[11px] font-semibold uppercase tracking-wider", theme.text)}>{label}</p>
-        <div className={clsx("w-6 h-6 flex items-center justify-center transition-all duration-300 group-hover:scale-110", theme.iconText)}>
-          {React.cloneElement(icon as React.ReactElement<any>, { size: 16 })}
+    <div className={clsx(
+      "p-3.5 rounded-xl border transition-all duration-300 group relative overflow-hidden bg-white shadow-card", 
+      theme.border, "hover:shadow-lg hover:border-transparent"
+    )}>
+      <div className="flex items-center justify-between mb-3 relative z-10">
+        <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest">{label}</p>
+        <div className={clsx("w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110", theme.iconBg, theme.accent)}>
+          {React.cloneElement(icon as React.ReactElement<any>, { size: 14, strokeWidth: 2.5 })}
         </div>
       </div>
-      <div className="flex items-end justify-between">
-        <h4 className={clsx("text-2xl font-bold leading-none", theme.text)}>{value}</h4>
-        <div className={clsx("text-[9px] font-bold  px-1.5 py-0.5 rounded", theme.trendBg, theme.trendText)}>
+      
+      <div className="flex items-end justify-between relative z-10">
+        <h4 className="text-2xl font-black text-surface-900 leading-none tracking-tight">{value}</h4>
+        <div className={clsx("text-[9px] font-black px-1.5 py-0.5 rounded-md", theme.iconBg, theme.accent)}>
             {trend}
         </div>
       </div>

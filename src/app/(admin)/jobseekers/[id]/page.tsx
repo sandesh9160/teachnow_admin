@@ -19,10 +19,11 @@ import {
   XCircle,
   CheckCircle,
   ShieldCheck,
+  ShieldAlert,
   Trash2,
   User as UserIcon,
 } from "lucide-react";
-import { getJobSeeker, deleteJobSeeker, disableJobSeeker } from "@/services/admin.service";
+import { getJobSeeker, deleteJobSeeker, disableJobSeeker, updateJobSeeker } from "@/services/admin.service";
 import { JobSeeker } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
@@ -64,6 +65,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
         toast.success(nextStatus ? "Candidate account enabled" : "Candidate account disabled");
         return;
       }
+
       else if (action === "delete") {
         if (!confirm("Permanently delete this candidate? This cannot be undone.")) return;
         await deleteJobSeeker(seeker.id);
@@ -79,12 +81,12 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
     return (
       <div className="h-[50vh] flex flex-col items-center justify-center gap-3">
         <Loader2 className="w-5 h-5 animate-spin text-primary" />
-        <p className="text-[11px] font-bold text-surface-400 tracking-widest uppercase">Loading...</p>
+        <p className="text-[11px] font-semibold text-surface-400">Loading...</p>
       </div>
     );
   }
 
-  if (!seeker) return <div className="p-20 text-center text-surface-400 font-bold uppercase tracking-widest">Candidate not found</div>;
+  if (!seeker) return <div className="p-20 text-center text-surface-400 font-semibold">Candidate not found</div>;
 
   const fmt = (d?: string | null) => (d ? new Date(d).toLocaleDateString() : "—");
   const initials = seeker.user?.name?.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase() || "JS";
@@ -92,25 +94,26 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
   return (
     <div className="space-y-4 pb-12 antialiased animate-fade-in-up">
       <div className="flex items-center justify-between gap-4">
-        <Link href="/jobseekers" className="flex items-center gap-1.5 h-8 px-3 bg-white border border-surface-200 rounded-lg text-[11px] font-bold text-surface-600 hover:text-primary hover:bg-surface-50 transition-all shadow-sm active:scale-95">
+        <Link href="/jobseekers" className="flex items-center gap-1.5 h-8 px-3 bg-white border border-surface-200 rounded-lg text-[11px] font-semibold text-surface-600 hover:text-primary hover:bg-surface-50 transition-all shadow-sm active:scale-95">
           <ChevronLeft size={14} /> Back
         </Link>
         <div className="flex items-center gap-2">
+
           <button
             onClick={() => handleAction("toggle-status")}
             disabled={processing}
             className={clsx(
-              "flex items-center gap-1.5 h-8 px-3 text-[11px] font-bold rounded-lg border transition-all shadow-sm active:scale-95",
-              seeker.is_active ? "text-warning bg-warning/5 border-warning/10" : "text-success bg-success/5 border-success/10"
+              "flex items-center gap-1.5 h-8 px-4 text-[11px] font-semibold rounded-lg border transition-all shadow-sm active:scale-95",
+              seeker.is_active ? "text-amber-600 bg-amber-50 border-amber-100/50 hover:bg-amber-100" : "text-emerald-600 bg-emerald-50 border-emerald-100/50 hover:bg-emerald-100"
             )}
           >
-            {seeker.is_active ? <XCircle size={13} /> : <CheckCircle size={13} />}
+            {seeker.is_active ? <XCircle size={14} /> : <CheckCircle size={14} />}
             {seeker.is_active ? "Disable Account" : "Enable Account"}
           </button>
           <button
             onClick={() => handleAction("delete")}
             disabled={processing}
-            className="flex items-center justify-center w-8 h-8 bg-white border border-surface-200 text-surface-300 hover:text-danger hover:border-danger/30 rounded-lg transition-all shadow-sm active:scale-95"
+            className="flex items-center justify-center w-8 h-8 bg-white border border-surface-200 text-surface-400 hover:text-rose-600 hover:border-rose-100 rounded-lg transition-all shadow-sm active:scale-95"
           >
             <Trash2 size={14} />
           </button>
@@ -129,8 +132,8 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
           </div>
           <div className="relative z-10 flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-[17px] font-bold text-white tracking-tight">{seeker.user?.name}</h1>
-              <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border",
+              <h1 className="text-[17px] font-semibold text-white tracking-tight">{seeker.user?.name}</h1>
+              <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border",
                 seeker.is_active ? "bg-emerald-500/80 text-white border-emerald-400" : "bg-white/20 text-white border-white/30"
               )}>
                 {seeker.is_active ? "Active" : "Inactive"}
@@ -156,7 +159,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                 key={t}
                 suppressHydrationWarning
                 onClick={() => setActiveTab(t)}
-                className={clsx("px-4 py-3 text-[11px] font-bold border-b-2 transition-all whitespace-nowrap",
+                className={clsx("px-4 py-3 text-[11px] font-semibold border-b-2 transition-all whitespace-nowrap",
                   activeTab === t ? tabColors[i] : "border-transparent text-surface-400 hover:text-surface-700"
                 )}
               >
@@ -193,19 +196,14 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                     <Field label="Phone" value={seeker.phone} icon={Phone} />
                   </div>
                 </Section>
-                <Section title="System Status" icon={ShieldCheck} color="cyan">
-                  <div className="space-y-1">
-                    <StatusRow label="Account Access" value={!!seeker.is_active} activeLabel="Enabled" inactiveLabel="Disabled" />
-                    <StatusRow label="Platform Verification" value={!!(seeker as any).is_verified} activeLabel="Verified" inactiveLabel="Pending" />
-                  </div>
-                </Section>
+
                 <Section title="Skills" icon={Briefcase} color="rose">
                   <div className="flex flex-wrap gap-2">
                     {(seeker.skills || []).length > 0 ? (
                       seeker.skills?.map((s: any, i: number) => {
                         const name = s?.skill?.name || s?.name || (typeof s === "string" ? s : "Unknown");
                         return (
-                          <span key={i} className="px-3 py-1 rounded-lg text-[10px] font-bold bg-surface-50 border border-surface-200 text-surface-700">
+                          <span key={i} className="px-3 py-1 rounded-lg text-[10px] font-medium bg-surface-50 border border-surface-200 text-surface-700">
                             {name}
                           </span>
                         );
@@ -233,7 +231,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                         <a
                           href={resolveMediaUrl(resume.file_url || (resume as any).resume_file)}
                           target="_blank"
-                          className="h-8 px-3 rounded-lg border border-surface-200 text-[10px] font-bold text-surface-600 hover:text-primary hover:bg-surface-50 transition-all flex items-center gap-1.5"
+                          className="h-8 px-3 rounded-lg border border-surface-200 text-[10px] font-semibold text-surface-600 hover:text-primary hover:bg-surface-50 transition-all flex items-center gap-1.5"
                         >
                           <ExternalLink size={12} />
                           Open
@@ -278,8 +276,8 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
 function Pill({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div className={clsx("flex flex-col items-center px-3 py-1.5 rounded-lg border border-current/10 text-center", color)}>
-      <span className="text-[16px] font-bold leading-none">{value}</span>
-      <span className="text-[9px] font-bold opacity-70 mt-0.5">{label}</span>
+      <span className="text-[16px] font-semibold leading-none">{value}</span>
+      <span className="text-[9px] font-semibold opacity-70 mt-0.5">{label}</span>
     </div>
   );
 }
@@ -299,7 +297,7 @@ function Section({ title, icon: Icon, children, color = "default" }: { title: st
     <div className={clsx("border rounded-lg overflow-hidden", c.border)}>
       <div className={clsx("px-4 py-2.5 border-b flex items-center gap-2", c.header)}>
         <Icon size={12} className={c.icon} />
-        <h3 className={clsx("text-[11px] font-bold tracking-tight", c.icon)}>{title}</h3>
+        <h3 className={clsx("text-[11px] font-semibold", c.icon)}>{title}</h3>
       </div>
       <div className="p-4">{children}</div>
     </div>
@@ -309,7 +307,7 @@ function Section({ title, icon: Icon, children, color = "default" }: { title: st
 function Field({ label, value, mono, icon: Icon }: { label: string; value?: string | number | null; mono?: boolean; icon?: any }) {
   return (
     <div>
-      <p className="text-[9px] font-bold text-surface-400 uppercase tracking-wider mb-0.5">{label}</p>
+      <p className="text-[9px] font-semibold text-surface-400 uppercase mb-0.5">{label}</p>
       <div className="flex items-center gap-1.5">
         {Icon && <Icon size={12} className="text-surface-300 shrink-0" />}
         <p className={clsx("text-[12px] text-surface-800", mono ? "font-mono" : "font-medium")}>
@@ -320,11 +318,42 @@ function Field({ label, value, mono, icon: Icon }: { label: string; value?: stri
   );
 }
 
-function StatusRow({ label, value, activeLabel = "Active", inactiveLabel = "Inactive", variant = "success" }: { label: string; value: boolean; activeLabel?: string; inactiveLabel?: string; variant?: "success" | "danger" | "default" | "warning" }) {
+function StatusRow({ 
+    label, 
+    value, 
+    activeLabel = "Active", 
+    inactiveLabel = "Inactive", 
+    variant = "success",
+    onToggle,
+    loading
+}: { 
+    label: string; 
+    value: boolean; 
+    activeLabel?: string; 
+    inactiveLabel?: string; 
+    variant?: "success" | "danger" | "default" | "warning";
+    onToggle?: () => void;
+    loading?: boolean;
+}) {
   return (
-    <div className="flex items-center justify-between py-1">
+    <div className="flex items-center justify-between py-1.5">
       <span className="text-[11px] text-surface-600 font-medium">{label}</span>
-      <Badge variant={value ? variant : "default"} dot>{value ? activeLabel : inactiveLabel}</Badge>
+      <div className="flex items-center gap-2">
+        <Badge variant={value ? variant : "default"} dot>{value ? activeLabel : inactiveLabel}</Badge>
+        {onToggle && (
+            <button 
+                onClick={onToggle}
+                disabled={loading}
+                className={clsx(
+                    "text-[10px] font-semibold px-2 py-0.5 rounded-md border transition-all active:scale-95",
+                    value ? "text-amber-600 bg-amber-50 border-amber-100 hover:bg-amber-100" : "text-emerald-600 bg-emerald-50 border-emerald-100 hover:bg-emerald-100",
+                    loading && "opacity-50"
+                )}
+            >
+                {value ? "Disable" : "Enable"}
+            </button>
+        )}
+      </div>
     </div>
   );
 }

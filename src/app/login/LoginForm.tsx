@@ -21,7 +21,7 @@ export default function LoginForm() {
     if (searchParams.get("auth") === "required" && !toastShown.current) {
         toast.error("Authentication required. Please sign in.");
         toastShown.current = true;
-        router.replace("/login");
+        router.replace("/");
     }
   }, [searchParams, router]);
 
@@ -63,14 +63,15 @@ export default function LoginForm() {
               <label className="text-[12px] font-bold text-slate-500 tracking-wider ml-0.5 uppercase">Admin Username</label>
               <div className="relative group">
                 <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Username"
-                  className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium"
-                  disabled={loading}
-                />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Username"
+                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium"
+                    disabled={loading}
+                    suppressHydrationWarning={true}
+                  />
               </div>
             </div>
 
@@ -87,11 +88,13 @@ export default function LoginForm() {
                   placeholder="••••••••"
                   className="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium"
                   disabled={loading}
+                  suppressHydrationWarning={true}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500 transition-colors"
+                  suppressHydrationWarning={true}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -105,6 +108,7 @@ export default function LoginForm() {
                 "w-full py-2.5 rounded-lg bg-primary text-white text-[15px] font-bold hover:bg-primary-600 transition-all flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]",
                 loading && "opacity-70 pointer-events-none"
               )}
+              suppressHydrationWarning={true}
             >
               {loading ? (
                 <Loader2 size={18} className="animate-spin" />

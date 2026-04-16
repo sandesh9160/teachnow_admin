@@ -79,6 +79,8 @@ export async function dashboardServerFetch<T = any>(
         }
 
         console.log(`[DashboardServerFetch] ${method.toUpperCase()} /${cleanEndpoint} status: ${response.status}`);
+        if (options?.data) console.log(`[DashboardServerFetch Payload]:`, JSON.stringify(options.data, null, 2));
+        console.log(`[DashboardServerFetch Response]:`, JSON.stringify(response.data, null, 2));
         return response.data;
     } catch (error: any) {
         const errStatus = error?.response?.status;
