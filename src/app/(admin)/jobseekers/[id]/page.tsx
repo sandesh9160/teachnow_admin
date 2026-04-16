@@ -17,7 +17,7 @@ import {
   MapPin,
   Phone,
   XCircle,
-  CheckCircle,
+  CheckCircle2,
   ShieldCheck,
   ShieldAlert,
   Trash2,
@@ -45,9 +45,19 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
   const fetchDetails = async () => {
     try {
       setLoading(true);
+      console.log(`[JobSeekerDetails] Fetching ID: ${resolvedParams.id}`);
       const res = await getJobSeeker(Number(resolvedParams.id));
-      setSeeker(res.data);
-    } catch {
+      console.log(`[JobSeekerDetails] Full Response:`, res);
+      
+      const rawData = res.data || res;
+      // Normalize is_active if it comes in a field named 'status'
+      if (typeof rawData.is_active === 'undefined' && typeof rawData.status !== 'undefined') {
+        rawData.is_active = rawData.status;
+      }
+      
+      setSeeker(rawData);
+    } catch (err: any) {
+      console.error(`[JobSeekerDetails] Load Error:`, err);
       toast.error("Failed to load candidate details");
     } finally {
       setLoading(false);
@@ -55,25 +65,39 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
   };
 
   const handleAction = async (action: "toggle-status" | "delete") => {
-    if (!seeker) return;
+    if (!seeker || processing) return;
+    const now = Date.now();
+    console.log(`[handleAction] [${now}] Starting action: ${action} for seeker ID: ${seeker.id}`);
     try {
       setProcessing(true);
       if (action === "toggle-status") {
-        await disableJobSeeker(seeker.id);
-        const nextStatus = !seeker.is_active;
-        setSeeker(prev => prev ? { ...prev, is_active: nextStatus } : null);
+        const res = await disableJobSeeker(seeker.id) as any;
+        // Response may come as { data: { job_seeker_id, is_active } } or nested one level deeper.
+        const rawData = res?.data?.data ?? res?.data ?? res;
+        const nextIsActiveValue =
+          rawData?.is_active ?? rawData?.isActive ?? rawData?.status;
+        const nextStatus =
+          typeof nextIsActiveValue !== "undefined" ? !!nextIsActiveValue : !seeker.is_active;
+
+        setSeeker((prev) => (prev ? { ...prev, is_active: nextStatus } : null));
         toast.success(nextStatus ? "Candidate account enabled" : "Candidate account disabled");
-        return;
+
+        // Re-sync from server to prevent any re-mount/cache refresh from reverting the UI.
+        await fetchDetails();
       }
 
       else if (action === "delete") {
         if (!confirm("Permanently delete this candidate? This cannot be undone.")) return;
-        await deleteJobSeeker(seeker.id);
+        const res = await deleteJobSeeker(seeker.id);
+        console.log(`[handleAction] Delete Result:`, res);
         toast.success("Candidate deleted successfully");
         router.push("/jobseekers");
         return;
       }
-    } catch { toast.error("Action failed"); }
+    } catch (err: any) { 
+      console.error(`[handleAction] Error:`, err);
+      toast.error("Action failed"); 
+    }
     finally { setProcessing(false); }
   };
 
@@ -104,10 +128,10 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
             disabled={processing}
             className={clsx(
               "flex items-center gap-1.5 h-8 px-4 text-[11px] font-semibold rounded-lg border transition-all shadow-sm active:scale-95",
-              seeker.is_active ? "text-amber-600 bg-amber-50 border-amber-100/50 hover:bg-amber-100" : "text-emerald-600 bg-emerald-50 border-emerald-100/50 hover:bg-emerald-100"
+              seeker.is_active ? "text-warning bg-warning/5 border-warning/10" : "text-success bg-success/5 border-success/10"
             )}
           >
-            {seeker.is_active ? <XCircle size={14} /> : <CheckCircle size={14} />}
+            {seeker.is_active ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
             {seeker.is_active ? "Disable Account" : "Enable Account"}
           </button>
           <button
@@ -211,6 +235,21 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                     ) : (
                       <span className="text-[11px] text-surface-400 font-medium">No skills added.</span>
                     )}
+                  </div>
+                </Section>
+
+                <Section title="Platform Status" icon={ShieldCheck} color="cyan">
+                  <div className="space-y-2">
+                    <StatusRow 
+                      label="Account Access" 
+                      value={!!seeker.is_active} 
+                      activeLabel="Enabled" 
+                      inactiveLabel="Disabled" 
+                      variant="success"
+                      onToggle={() => handleAction("toggle-status")}
+                      loading={processing}
+                    />
+                    <StatusRow label="Email Verified" value={!!seeker.user?.email_verified_at} activeLabel="Verified" inactiveLabel="Pending" />
                   </div>
                 </Section>
               </div>

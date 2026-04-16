@@ -38,9 +38,12 @@ export default function RecruiterDetailPage({
   async function fetchDetails() {
     try {
       setLoading(true);
+      console.log(`[RecruiterDetails] Fetching ID: ${resolvedParams.id}`);
       const res = await getRecruiter(Number(resolvedParams.id));
+      console.log(`[RecruiterDetails] Loaded:`, res);
       setRecruiter(res);
-    } catch {
+    } catch (err: any) {
+      console.error(`[RecruiterDetails] Load Error:`, err);
       toast.error("Failed to load recruiter details");
     } finally {
       setLoading(false);
@@ -48,23 +51,33 @@ export default function RecruiterDetailPage({
   }
 
   const handleAction = async (action: "toggle-status" | "delete") => {
-    if (!recruiter) return;
+    if (!recruiter || processing) return;
+    const now = Date.now();
+    console.log(`[handleAction] [${now}] Starting action: ${action} for recruiter ID: ${recruiter.id}`);
     try {
       setProcessing(true);
       if (action === "toggle-status") {
-        const nextStatus = recruiter.is_active ? 0 : 1;
-        await disableRecruiter(recruiter.id);
-        setRecruiter(prev => prev ? { ...prev, is_active: !!nextStatus } : null);
+        const res = await disableRecruiter(recruiter.id) as any;
+        console.log(`[handleAction] Disable Result:`, res);
+        
+        // Use the status from response or toggle locally
+        const nextStatus = (res && typeof res.is_active !== 'undefined') ? !!res.is_active : !recruiter.is_active;
+        setRecruiter(prev => prev ? { ...prev, is_active: nextStatus } : null);
         toast.success(nextStatus ? "Recruiter account enabled" : "Recruiter account disabled");
         return;
       }
       else if (action === "delete") {
         if (!confirm("Permanently delete this recruiter? This cannot be undone.")) return;
-        await deleteRecruiter(recruiter.id);
+        const res = await deleteRecruiter(recruiter.id);
+        console.log(`[handleAction] Delete Result:`, res);
+        toast.success("Recruiter deleted successfully");
         router.push("/recruiters");
         return;
       }
-    } catch { toast.error("Action failed"); }
+    } catch (err: any) {
+      console.error(`[handleAction] Error:`, err);
+      toast.error("Action failed"); 
+    }
     finally { setProcessing(false); }
   };
 
@@ -177,7 +190,14 @@ export default function RecruiterDetailPage({
                 </Section>
                 <Section title="System Status" icon={Activity} color="indigo">
                   <div className="space-y-2">
-                    <StatusRow label="Account Access" value={!!recruiter.is_active} activeLabel="Enabled" inactiveLabel="Disabled" />
+                    <StatusRow 
+                      label="Account Access" 
+                      value={!!recruiter.is_active} 
+                      activeLabel="Enabled" 
+                      inactiveLabel="Disabled" 
+                      onToggle={() => handleAction("toggle-status")}
+                      loading={processing}
+                    />
                   </div>
                 </Section>
               </div>
@@ -267,11 +287,42 @@ function Field({ label, value, mono, icon: Icon }: { label: string; value?: stri
   );
 }
 
-function StatusRow({ label, value, activeLabel = "Active", inactiveLabel = "Inactive", variant = "success" }: { label: string; value: boolean; activeLabel?: string; inactiveLabel?: string; variant?: "success" | "danger" | "default" | "warning" }) {
+function StatusRow({ 
+    label, 
+    value, 
+    activeLabel = "Active", 
+    inactiveLabel = "Inactive", 
+    variant = "success",
+    onToggle,
+    loading
+}: { 
+    label: string; 
+    value: boolean; 
+    activeLabel?: string; 
+    inactiveLabel?: string; 
+    variant?: "success" | "danger" | "default" | "warning";
+    onToggle?: () => void;
+    loading?: boolean;
+}) {
   return (
-    <div className="flex items-center justify-between py-1">
+    <div className="flex items-center justify-between py-1.5">
       <span className="text-[11px] text-surface-600 font-medium">{label}</span>
-      <Badge variant={value ? variant : "default"} dot>{value ? activeLabel : inactiveLabel}</Badge>
+      <div className="flex items-center gap-2">
+        <Badge variant={value ? variant : "default"} dot>{value ? activeLabel : inactiveLabel}</Badge>
+        {onToggle && (
+            <button 
+                onClick={onToggle}
+                disabled={loading}
+                className={clsx(
+                    "text-[10px] font-semibold px-2 py-0.5 rounded-md border transition-all active:scale-95",
+                    value ? "text-amber-600 bg-amber-50 border-amber-100 hover:bg-amber-100" : "text-emerald-600 bg-emerald-50 border-emerald-100 hover:bg-emerald-100",
+                    loading && "opacity-50"
+                )}
+            >
+                {value ? "Disable" : "Enable"}
+            </button>
+        )}
+      </div>
     </div>
   );
 }

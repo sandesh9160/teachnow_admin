@@ -44,8 +44,9 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
   };
 
   const handleAction = async (action: "verify" | "feature" | "delete" | "toggle-status") => {
-    if (!employer) return;
-    console.log(`[handleAction] Starting action: ${action} for ID: ${employer.id}`);
+    if (!employer || processing) return;
+    const now = Date.now();
+    console.log(`[handleAction] [${now}] Starting action: ${action} for ID: ${employer.id}`);
     try {
       setProcessing(true);
       if (action === "verify") {

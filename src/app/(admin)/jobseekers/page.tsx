@@ -65,11 +65,29 @@ export default function JobSeekersPage() {
   const handleToggleStatus = async (id: number) => {
     try {
       setProcessingId(id);
-      await disableJobSeeker(id);
+      const res = await disableJobSeeker(id) as any;
+      const rawData = res?.data?.data ?? res?.data ?? res;
+      const nextIsActiveValue =
+        rawData?.is_active ?? rawData?.isActive ?? rawData?.status;
+
       setJobSeekers((prev) =>
-        prev.map((j) => (j.id === id ? { ...j, is_active: !j.is_active } : j))
+        prev.map((j) => {
+          if (j.id !== id) return j;
+          return {
+            ...j,
+            is_active:
+              typeof nextIsActiveValue !== "undefined"
+                ? nextIsActiveValue
+                : !j.is_active,
+          };
+        })
       );
-      toast.success("Candidate status updated");
+
+      const resolvedNext =
+        typeof nextIsActiveValue !== "undefined"
+          ? !!nextIsActiveValue
+          : !jobSeekers.find((j) => j.id === id)?.is_active;
+      toast.success(resolvedNext ? "Candidate enabled" : "Candidate disabled");
     } catch {
       toast.error("Failed to update candidate status");
     } finally {
