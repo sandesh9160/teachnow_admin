@@ -23,6 +23,7 @@ function toBooleanReadFlag(value: unknown, readAt?: string | null): boolean {
 export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [pagination, setPagination] = useState<{
     currentPage: number;
@@ -50,13 +51,17 @@ export function useNotifications() {
       try {
         isFetchingRef.current = true;
         if (!append) setLoading(true);
+        setError(null);
 
         const res = await dashboardServerFetch<ApiResponse<PaginatedResponse<Notification>>>(
           `/admin/notifications?page=${page}`,
           { method: "GET" }
         );
 
-        if (!res?.status) return;
+        if (!res?.status) {
+          setError(res?.message || "Failed to load notifications");
+          return;
+        }
 
         const resData = res.data;
         const incomingList = (resData?.data || []).map(item => ({
@@ -100,8 +105,9 @@ export function useNotifications() {
           lastPage: resData?.last_page || 1,
           total: resData?.total || 0,
         });
-      } catch (err) {
+      } catch (err: any) {
         console.error("[useNotifications] Fetch error:", err);
+        setError(err.message || "An unexpected error occurred");
       } finally {
         isFetchingRef.current = false;
         setLoading(false);
@@ -184,7 +190,9 @@ export function useNotifications() {
     notifications,
     unreadCount,
     loading,
+    error,
     pagination,
+    fetchNotifications,
     markAsRead,
     markAllAsRead,
     loadMore,

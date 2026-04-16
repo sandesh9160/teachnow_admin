@@ -46,8 +46,8 @@ export default function NotificationsPage() {
             <Loader2 className="w-6 h-6 text-indigo-400" />
         </div>
         <div className="text-center">
-          <p className="text-slate-900 font-bold text-xs uppercase tracking-tight">Syncing Activity</p>
-          <p className="text-slate-400 text-[9px] font-bold uppercase tracking-widest mt-0.5">Retrieving system alerts...</p>
+          <p className="text-slate-900 font-bold text-xs uppercase ">Syncing Activity</p>
+          <p className="text-slate-400 text-[9px] font-bold  tracking-widest mt-0.5">Retrieving system alerts...</p>
         </div>
       </div>
     );

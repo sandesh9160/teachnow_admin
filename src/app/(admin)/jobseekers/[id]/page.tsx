@@ -22,6 +22,7 @@ import {
   ShieldAlert,
   Trash2,
   User as UserIcon,
+  Power,
 } from "lucide-react";
 import { getJobSeeker, deleteJobSeeker, disableJobSeeker, updateJobSeeker } from "@/services/admin.service";
 import { JobSeeker } from "@/types";
