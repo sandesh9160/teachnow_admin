@@ -12,7 +12,7 @@ import {
 import { clsx } from "clsx";
 import DataTable from "@/components/tables/DataTable";
 import Badge from "@/components/ui/Badge";
-import { getEmployer, verifyEmployer, featureEmployer, deleteEmployer } from "@/services/admin.service";
+import { getEmployer, verifyEmployer, featureEmployer, deleteEmployer, updateEmployer } from "@/services/admin.service";
 import { Employer } from "@/types";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -26,7 +26,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
   const [processing, setProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState("Overview");
   
-  const tabs = ["Overview", "Users", "Jobs", "Documents", "SEO"];
+  const tabs = ["Overview", "Recruiters", "Jobs", "Documents", "SEO"];
 
   useEffect(() => { fetchDetails(); }, [resolvedParams.id]);
 
@@ -39,19 +39,33 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
     finally { setLoading(false); }
   };
 
-  const handleAction = async (action: "verify" | "feature" | "delete") => {
+  const handleAction = async (action: "verify" | "feature" | "delete" | "toggle-status") => {
     if (!employer) return;
     try {
       setProcessing(true);
       if (action === "verify") await verifyEmployer(employer.id);
       else if (action === "feature") await featureEmployer(employer.id);
+      else if (action === "toggle-status") {
+        const nextStatus = employer.is_active ? 0 : 1;
+        await updateEmployer(employer.id, { is_active: nextStatus });
+        setEmployer(prev => prev ? { ...prev, is_active: !!nextStatus } : null);
+        toast.success(nextStatus ? "Employer account enabled" : "Employer account disabled");
+        return;
+      }
       else if (action === "delete") {
         if (!confirm("Permanently delete this employer? This cannot be undone.")) return;
         await deleteEmployer(employer.id);
         router.push("/employers");
         return;
       }
-      toast.success(`Employer ${action}d successfully`);
+      
+      const messages = {
+        verify: "Employer verified successfully",
+        feature: "Employer feature status updated",
+        delete: "Employer deleted successfully"
+      };
+      
+      toast.success(messages[action as keyof typeof messages]);
       fetchDetails();
     } catch { toast.error("Action failed"); }
     finally { setProcessing(false); }
@@ -89,6 +103,14 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
             <Star size={13} className={employer.company_featured ? "fill-amber-500" : ""} />
             {employer.company_featured ? "Featured" : "Feature"}
           </button>
+          
+          <button onClick={() => handleAction("toggle-status")} disabled={processing}
+            className={clsx("flex items-center gap-1.5 h-8 px-3 text-[11px] font-bold rounded-lg border transition-all shadow-sm active:scale-95",
+                employer.is_active ? "bg-amber-50 border-amber-200 text-amber-600" : "bg-emerald-50 border-emerald-200 text-emerald-600"
+            )}>
+            <Clock size={13} />
+            {employer.is_active ? "Disable Account" : "Enable Account"}
+          </button>
           <button onClick={() => handleAction("delete")} disabled={processing}
             className="flex items-center justify-center w-8 h-8 bg-white border border-surface-200 text-surface-300 hover:text-danger hover:border-danger/30 rounded-lg transition-all shadow-sm active:scale-95">
             <Trash2 size={14} />
@@ -110,6 +132,13 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
           <div className="relative z-10 flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-[17px] font-bold text-white tracking-tight">{employer.company_name}</h1>
+              <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] font-black tracking-widest uppercase border transition-all",
+                employer.is_active 
+                  ? "bg-emerald-500/90 text-white border-emerald-400 shadow-sm" 
+                  : "bg-rose-500/90 text-white border-rose-400 shadow-sm"
+              )}>
+                {employer.is_active ? "Account Enabled" : "Account Disabled"}
+              </span>
               <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border",
                 employer.is_verified ? "bg-white/20 text-white border-white/30" : "bg-rose-500/80 text-white border-rose-400"
               )}>
@@ -130,7 +159,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
             </div>
           </div>
           <div className="hidden md:flex items-center gap-3 shrink-0 relative z-10">
-            <Pill label="Users" value={(employer as any).employer_users?.length || 0} color="text-white bg-white/20 border-white/20" />
+            <Pill label="Recruiters" value={(employer as any).employer_users?.length || 0} color="text-white bg-white/20 border-white/20" />
             <Pill label="Jobs" value={(employer as any).jobs?.length || 0} color="text-white bg-white/20 border-white/20" />
             <Pill label="Docs" value={(employer as any).documents?.length || 0} color="text-white bg-white/20 border-white/20" />
           </div>
@@ -164,20 +193,49 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                 </Section>
 
                 {/* Company Details */}
-                <Section title="Company Details" icon={Building2} color="purple">
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                    <Field label="Industry" value={(employer as any).industry} />
-                    <Field label="Institution Type" value={employer.institution_type} />
-                    <Field label="Role" value={(employer as any).role} />
-                    <Field label="Address" value={(employer as any).address} />
-                    <Field label="City" value={employer.city} />
-                    <Field label="Country" value={employer.country} />
-                    <Field label="Latitude" value={(employer as any).latitude} />
-                    <Field label="Longitude" value={(employer as any).longitude} />
-                    <Field label="Slug" value={employer.slug} mono />
-                    <Field label="Created" value={fmt(employer.created_at)} />
-                    <Field label="Last Updated" value={fmt(employer.updated_at)} />
-                    <Field label="Featured Until" value={fmt((employer as any).featured_until)} />
+                <Section title="Location & Registry" icon={Building2} color="purple">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                      <Field label="Industry" value={(employer as any).industry} />
+                      <Field label="Institution Type" value={employer.institution_type} />
+                      <Field label="Account Role" value={(employer as any).role} />
+                      <Field label="Full Address" value={(employer as any).address} />
+                      <Field label="City" value={employer.city} />
+                      <Field label="Country" value={employer.country} />
+                      <Field label="Slug" value={employer.slug} mono />
+                      <Field label="Featured Until" value={fmt((employer as any).featured_until)} />
+                    </div>
+
+                    <div className="pt-2">
+                      <p className="text-[9px] font-bold text-surface-400 uppercase tracking-wider mb-2">Location Map</p>
+                      <div className="w-full h-48 rounded-xl border border-surface-200 overflow-hidden bg-surface-50 relative group">
+                        {(employer as any).map_link || ((employer as any).latitude && (employer as any).longitude) ? (
+                          <iframe
+                            width="100%"
+                            height="100%"
+                            style={{ border: 0 }}
+                            loading="lazy"
+                            allowFullScreen
+                            referrerPolicy="no-referrer-when-downgrade"
+                            src={`https://www.google.com/maps?q=${encodeURIComponent((employer as any).address || employer.city + ", " + employer.country)}&output=embed`}
+                          />
+                        ) : (
+                          <div className="flex flex-col items-center justify-center h-full gap-2 text-surface-300">
+                            <MapPin size={24} strokeWidth={1.5} />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">No Location Data</span>
+                          </div>
+                        )}
+                        {(employer as any).map_link && (
+                          <a 
+                            href={(employer as any).map_link} 
+                            target="_blank" 
+                            className="absolute bottom-3 right-3 h-8 px-3 bg-white/90 backdrop-blur-sm border border-surface-200 rounded-lg text-[10px] font-black text-primary shadow-lg flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all hover:bg-white"
+                          >
+                            <ExternalLink size={12} /> Open Maps
+                          </a>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </Section>
               </div>
@@ -204,19 +262,20 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                 </Section>
 
                 {/* Status */}
-                <Section title="Status Flags" icon={ShieldCheck} color="cyan">
+                <Section title="Platform Status" icon={ShieldCheck} color="cyan">
                   <div className="space-y-2">
-                    <StatusRow label="Identity Verified" value={!!employer.is_verified} />
-                    <StatusRow label="Profile Verified" value={!!(employer as any).is_profile_verified} />
-                    <StatusRow label="Featured" value={!!employer.company_featured} />
+                    <StatusRow label="Account Access" value={!!employer.is_active} activeLabel="Enabled" inactiveLabel="Disabled" variant="success" />
+                    <StatusRow label="Identity Verified" value={!!employer.is_verified} activeLabel="Verified" inactiveLabel="Pending" />
+                    <StatusRow label="Profile Verified" value={!!(employer as any).is_profile_verified} activeLabel="Verified" inactiveLabel="Pending" />
+                    <StatusRow label="Featured Status" value={!!employer.company_featured} activeLabel="Featured" inactiveLabel="Standard" variant="warning" />
                   </div>
                 </Section>
               </div>
             </div>
           )}
 
-          {/* ─── Users Tab ───────────────────────────────────────── */}
-          {activeTab === "Users" && (
+          {/* ─── Recruiters Tab ──────────────────────────────────── */}
+          {activeTab === "Recruiters" && (
             <DataTable compact
               columns={[
                 { key: "name", title: "Name", render: (_: any, r: any) => (
@@ -352,11 +411,11 @@ function Field({ label, value, mono, icon: Icon }: { label: string; value?: stri
   );
 }
 
-function StatusRow({ label, value }: { label: string; value: boolean }) {
+function StatusRow({ label, value, activeLabel = "Active", inactiveLabel = "Inactive", variant = "success" }: { label: string; value: boolean; activeLabel?: string; inactiveLabel?: string; variant?: "success" | "danger" | "default" | "warning" }) {
   return (
     <div className="flex items-center justify-between py-1">
       <span className="text-[11px] text-surface-600 font-medium">{label}</span>
-      <Badge variant={value ? "success" : "default"} dot>{value ? "Yes" : "No"}</Badge>
+      <Badge variant={value ? variant : "default"} dot>{value ? activeLabel : inactiveLabel}</Badge>
     </div>
   );
 }

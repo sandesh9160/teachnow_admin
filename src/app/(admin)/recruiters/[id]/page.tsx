@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Briefcase, Building2, Calendar, ChevronLeft, Loader2, Mail,
-  Pencil, Phone, ShieldCheck, UserCheck, Activity, MapPin, Hash, Trash2, Power
+  Pencil, Phone, ShieldCheck, UserCheck, Activity, MapPin, Hash, Trash2,
+  XCircle, CheckCircle2
 } from "lucide-react";
 import { getRecruiter, deleteRecruiter, disableRecruiter } from "@/services/admin.service";
 import { Recruiter } from "@/types";
@@ -46,33 +47,25 @@ export default function RecruiterDetailPage({
     }
   }
 
-  const handleDelete = async () => {
-    if (!recruiter) return;
-    if (!confirm("Permanently delete this recruiter? This cannot be undone.")) return;
-    try {
-      setProcessing(true);
-      await deleteRecruiter(recruiter.id);
-      toast.success("Recruiter deleted successfully");
-      router.push("/recruiters");
-    } catch {
-      toast.error("Failed to delete recruiter");
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleToggleStatus = async () => {
+  const handleAction = async (action: "toggle-status" | "delete") => {
     if (!recruiter) return;
     try {
       setProcessing(true);
-      await disableRecruiter(recruiter.id);
-      toast.success("Recruiter status updated");
-      fetchDetails();
-    } catch {
-      toast.error("Failed to update status");
-    } finally {
-      setProcessing(false);
-    }
+      if (action === "toggle-status") {
+        const nextStatus = recruiter.is_active ? 0 : 1;
+        await disableRecruiter(recruiter.id);
+        setRecruiter(prev => prev ? { ...prev, is_active: !!nextStatus } : null);
+        toast.success(nextStatus ? "Recruiter account enabled" : "Recruiter account disabled");
+        return;
+      }
+      else if (action === "delete") {
+        if (!confirm("Permanently delete this recruiter? This cannot be undone.")) return;
+        await deleteRecruiter(recruiter.id);
+        router.push("/recruiters");
+        return;
+      }
+    } catch { toast.error("Action failed"); }
+    finally { setProcessing(false); }
   };
 
   if (loading) return (
@@ -100,14 +93,14 @@ export default function RecruiterDetailPage({
             className="flex items-center gap-1.5 h-8 px-3 bg-white border border-surface-200 text-surface-600 text-[11px] font-bold rounded-lg hover:text-primary hover:bg-surface-50 transition-all shadow-sm active:scale-95">
             <Pencil size={13} /> Edit
           </button>
-          <button onClick={handleToggleStatus} disabled={processing}
+          <button onClick={() => handleAction("toggle-status")} disabled={processing}
             className={clsx("flex items-center gap-1.5 h-8 px-3 text-[11px] font-bold rounded-lg border transition-all shadow-sm active:scale-95",
-              !recruiter.is_active ? "bg-emerald-50 border-emerald-200 text-emerald-600" : "bg-amber-50 border-amber-200 text-amber-600"
+              recruiter.is_active ? "text-warning bg-warning/5 border-warning/10" : "text-success bg-success/5 border-success/10"
             )}>
-            <Power size={13} />
-            {!recruiter.is_active ? "Enable Account" : "Disable Account"}
+            {recruiter.is_active ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
+            {recruiter.is_active ? "Disable Account" : "Enable Account"}
           </button>
-          <button onClick={handleDelete} disabled={processing}
+          <button onClick={() => handleAction("delete")} disabled={processing}
             className="flex items-center justify-center w-8 h-8 bg-white border border-surface-200 text-surface-300 hover:text-danger hover:border-danger/30 rounded-lg transition-all shadow-sm active:scale-95">
             <Trash2 size={14} />
           </button>
@@ -184,7 +177,7 @@ export default function RecruiterDetailPage({
                 </Section>
                 <Section title="System Status" icon={Activity} color="indigo">
                   <div className="space-y-2">
-                    <StatusRow label="Account Active" value={!!recruiter.is_active} />
+                    <StatusRow label="Account Access" value={!!recruiter.is_active} activeLabel="Enabled" inactiveLabel="Disabled" />
                   </div>
                 </Section>
               </div>
@@ -274,11 +267,11 @@ function Field({ label, value, mono, icon: Icon }: { label: string; value?: stri
   );
 }
 
-function StatusRow({ label, value }: { label: string; value: boolean }) {
+function StatusRow({ label, value, activeLabel = "Active", inactiveLabel = "Inactive", variant = "success" }: { label: string; value: boolean; activeLabel?: string; inactiveLabel?: string; variant?: "success" | "danger" | "default" | "warning" }) {
   return (
     <div className="flex items-center justify-between py-1">
       <span className="text-[11px] text-surface-600 font-medium">{label}</span>
-      <Badge variant={value ? "success" : "default"} dot>{value ? "Yes" : "No"}</Badge>
+      <Badge variant={value ? variant : "default"} dot>{value ? activeLabel : inactiveLabel}</Badge>
     </div>
   );
 }

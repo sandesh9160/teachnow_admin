@@ -16,7 +16,8 @@ import {
   Mail,
   MapPin,
   Phone,
-  Power,
+  XCircle,
+  CheckCircle,
   ShieldCheck,
   Trash2,
   User as UserIcon,
@@ -52,33 +53,26 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
     }
   };
 
-  const handleDelete = async () => {
-    if (!seeker) return;
-    if (!confirm("Permanently delete this candidate? This cannot be undone.")) return;
-    try {
-      setProcessing(true);
-      await deleteJobSeeker(seeker.id);
-      toast.success("Candidate deleted successfully");
-      router.push("/jobseekers");
-    } catch {
-      toast.error("Failed to delete candidate");
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  const handleToggleStatus = async () => {
+  const handleAction = async (action: "toggle-status" | "delete") => {
     if (!seeker) return;
     try {
       setProcessing(true);
-      await disableJobSeeker(seeker.id);
-      toast.success("Candidate status updated");
-      fetchDetails();
-    } catch {
-      toast.error("Failed to update status");
-    } finally {
-      setProcessing(false);
-    }
+      if (action === "toggle-status") {
+        await disableJobSeeker(seeker.id);
+        const nextStatus = !seeker.is_active;
+        setSeeker(prev => prev ? { ...prev, is_active: nextStatus } : null);
+        toast.success(nextStatus ? "Candidate account enabled" : "Candidate account disabled");
+        return;
+      }
+      else if (action === "delete") {
+        if (!confirm("Permanently delete this candidate? This cannot be undone.")) return;
+        await deleteJobSeeker(seeker.id);
+        toast.success("Candidate deleted successfully");
+        router.push("/jobseekers");
+        return;
+      }
+    } catch { toast.error("Action failed"); }
+    finally { setProcessing(false); }
   };
 
   if (loading) {
@@ -103,18 +97,18 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
         </Link>
         <div className="flex items-center gap-2">
           <button
-            onClick={handleToggleStatus}
+            onClick={() => handleAction("toggle-status")}
             disabled={processing}
             className={clsx(
               "flex items-center gap-1.5 h-8 px-3 text-[11px] font-bold rounded-lg border transition-all shadow-sm active:scale-95",
-              !seeker.is_active ? "bg-emerald-50 border-emerald-200 text-emerald-600" : "bg-amber-50 border-amber-200 text-amber-600"
+              seeker.is_active ? "text-warning bg-warning/5 border-warning/10" : "text-success bg-success/5 border-success/10"
             )}
           >
-            <Power size={13} />
-            {!seeker.is_active ? "Enable Account" : "Disable Account"}
+            {seeker.is_active ? <XCircle size={13} /> : <CheckCircle size={13} />}
+            {seeker.is_active ? "Disable Account" : "Enable Account"}
           </button>
           <button
-            onClick={handleDelete}
+            onClick={() => handleAction("delete")}
             disabled={processing}
             className="flex items-center justify-center w-8 h-8 bg-white border border-surface-200 text-surface-300 hover:text-danger hover:border-danger/30 rounded-lg transition-all shadow-sm active:scale-95"
           >
@@ -200,8 +194,9 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                   </div>
                 </Section>
                 <Section title="System Status" icon={ShieldCheck} color="cyan">
-                  <div className="space-y-2">
-                    <StatusRow label="Account Active" value={!!seeker.is_active} />
+                  <div className="space-y-1">
+                    <StatusRow label="Account Access" value={!!seeker.is_active} activeLabel="Enabled" inactiveLabel="Disabled" />
+                    <StatusRow label="Platform Verification" value={!!(seeker as any).is_verified} activeLabel="Verified" inactiveLabel="Pending" />
                   </div>
                 </Section>
                 <Section title="Skills" icon={Briefcase} color="rose">
@@ -325,11 +320,11 @@ function Field({ label, value, mono, icon: Icon }: { label: string; value?: stri
   );
 }
 
-function StatusRow({ label, value }: { label: string; value: boolean }) {
+function StatusRow({ label, value, activeLabel = "Active", inactiveLabel = "Inactive", variant = "success" }: { label: string; value: boolean; activeLabel?: string; inactiveLabel?: string; variant?: "success" | "danger" | "default" | "warning" }) {
   return (
     <div className="flex items-center justify-between py-1">
       <span className="text-[11px] text-surface-600 font-medium">{label}</span>
-      <Badge variant={value ? "success" : "default"} dot>{value ? "Yes" : "No"}</Badge>
+      <Badge variant={value ? variant : "default"} dot>{value ? activeLabel : inactiveLabel}</Badge>
     </div>
   );
 }

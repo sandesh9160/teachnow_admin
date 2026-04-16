@@ -109,7 +109,11 @@ export const getJobSeeker = (id: number) =>
   dashboardServerFetch<ApiResponse<JobSeeker>>(`/admin/jobseekers/${id}`);
 
 export const updateJobSeeker = (id: number, data: Partial<JobSeeker>) =>
-  dashboardServerFetch(`/admin/jobseekers/${id}`, { method: "PUT", data });
+  dashboardServerFetch(`/admin/jobseekers/${id}`, { 
+    method: "POST", 
+    data,
+    params: { _method: "PUT" }
+  });
 
 export const disableJobSeeker = (id: number) =>
   dashboardServerFetch(`/admin/jobseekers/${id}/disable`, { method: "PATCH" });
@@ -128,7 +132,11 @@ export const getRecruiter = async (id: number) => {
 };
 
 export const updateRecruiter = (id: number, data: Partial<Recruiter>) =>
-  dashboardServerFetch(`/admin/recruiters/${id}`, { method: "PUT", data });
+  dashboardServerFetch(`/admin/recruiters/${id}`, { 
+    method: "POST", 
+    data,
+    params: { _method: "PUT" }
+  });
 
 export const disableRecruiter = (id: number) =>
   dashboardServerFetch(`/admin/recruiters/${id}/disable`, { method: "PATCH" });
@@ -145,13 +153,17 @@ export const getEmployer = (id: number) =>
   dashboardServerFetch<ApiResponse<Employer>>(`/admin/employers/${id}`);
 
 export const updateEmployer = (id: number, data: Partial<Employer>) =>
-  dashboardServerFetch(`/admin/employers/${id}`, { method: "PUT", data });
+  dashboardServerFetch(`/admin/employers/${id}`, { 
+    method: "POST", 
+    data,
+    params: { _method: "PUT" }
+  });
 
 export const deleteEmployer = (id: number) =>
   dashboardServerFetch(`/admin/employers/${id}`, { method: "DELETE" });
 
-export const verifyEmployer = (id: number) =>
-  dashboardServerFetch(`/admin/employers/${id}/verify`, { method: "PATCH" });
+export const verifyEmployer = (id: number, status: string = 'approved') =>
+  dashboardServerFetch(`/admin/employers/${id}/verify`, { method: "PATCH", data: { status } });
 
 export const featureEmployer = (id: number) =>
   dashboardServerFetch(`/admin/employers/${id}/feature`, { method: "PATCH" });

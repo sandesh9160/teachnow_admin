@@ -107,7 +107,8 @@ export default function EmployersPage() {
 
   const filtered = employers.filter((e) => 
     e.company_name?.toLowerCase().includes(search.toLowerCase()) || 
-    e.email?.toLowerCase().includes(search.toLowerCase())
+    e.email?.toLowerCase().includes(search.toLowerCase()) ||
+    e.city?.toLowerCase().includes(search.toLowerCase())
   );
 
   const columns = [
@@ -154,9 +155,9 @@ export default function EmployersPage() {
     },
     { 
       key: "is_active", 
-      title: "Account",
+      title: "Account Status",
       render: (val: any) => (
-        <Badge variant={val ? "success" : "danger"} dot className="text-[10px] px-2 h-4.5 bg-transparent border-none">
+        <Badge variant={val ? "success" : "danger"} dot className="text-[10px] px-0 h-auto bg-transparent border-none">
           {val ? "Enabled" : "Disabled"}
         </Badge>
       )

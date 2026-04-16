@@ -133,9 +133,9 @@ export default function JobSeekersPage() {
             <div className="flex items-center gap-2">
                 <div className={clsx(
                     "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border",
-                    row.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-surface-50 text-surface-400 border-surface-100"
+                    row.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"
                 )}>
-                    {row.is_active ? "Verified" : "Pending"}
+                    {row.is_active ? "Account Active" : "Account Inactive"}
                 </div>
                 <span className="text-surface-400 font-bold text-[10.5px] whitespace-nowrap">
                     {new Date(row.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}

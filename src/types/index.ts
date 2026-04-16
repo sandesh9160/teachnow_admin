@@ -250,6 +250,7 @@ export interface JobSeeker {
   portfolio_website?: string | null;
   bio?: string | null;
   is_active?: number | boolean;
+  is_verified?: number | boolean;
   created_at: string;
   updated_at: string;
   user: {
@@ -268,6 +269,7 @@ export interface Recruiter {
   name: string;
   email: string;
   is_active: number | boolean;
+  is_verified?: number | boolean;
   created_at: string;
   updated_at: string;
   employer?: {
@@ -378,7 +380,7 @@ export interface PaginatedResponse<T> {
   total: number;
 }
 
-export type BadgeVariant = "success" | "warning" | "danger" | "info" | "default";
+export type BadgeVariant = "success" | "warning" | "danger" | "info" | "default" | "indigo" | "purple" | "rose" | "cyan";
 
 export interface TeachingResource {
   id: number;
