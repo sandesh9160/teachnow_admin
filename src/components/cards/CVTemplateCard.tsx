@@ -25,78 +25,91 @@ export default function CVTemplateCard({
     : null;
 
   return (
-    <div className="group rounded-2xl border border-slate-200 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-indigo-100 flex flex-col h-full">
-      {/* ─── Image Preview Section ─────────────────────────────────── */}
-      <div className="relative aspect-[3/4.2] overflow-hidden bg-slate-50 border-b border-slate-100">
+    <div className="group relative bg-white border border-slate-200/60 rounded-[24px] shadow-sm hover:shadow-2xl hover:shadow-indigo-500/10 hover:border-indigo-100/80 transition-all duration-500 flex flex-col overflow-hidden">
+      {/* ─── Preview Section ─────────────────────────────────── */}
+      <div className="relative aspect-[3/4] overflow-hidden bg-slate-50 border-b border-slate-100/50">
         {imageUrl ? (
           <img 
             src={imageUrl} 
             alt={template.name}
-            className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+            className="w-full h-full object-cover object-top transition-all duration-1000 group-hover:scale-110 group-hover:rotate-1"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-slate-200">
-            <Layout size={40} strokeWidth={1} />
-            <p className="text-[10px] font-semibold mt-2 uppercase tracking-tight">No Preview</p>
+          <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
+            <Layout size={32} strokeWidth={1} className="opacity-20 mb-2" />
+            <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">No Visualization</span>
           </div>
         )}
-        
-        {/* Overlays */}
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-           <div className="flex gap-2 w-full">
-              <button 
-                onClick={() => onEdit?.(template)}
-                className="flex-1 bg-white hover:bg-slate-50 text-indigo-600 text-[11px] font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 border border-indigo-100"
-              >
-                <Pencil size={13} /> Edit Layout
-              </button>
-           </div>
+
+        {/* Status Chip - Floating */}
+        <div className="absolute top-3 left-3 z-10">
+          <div className={clsx(
+            "px-2.5 py-1 rounded-full text-[9px] font-extrabold uppercase tracking-widest border backdrop-blur-md shadow-sm",
+            template.is_active 
+              ? "bg-emerald-500/90 text-white border-emerald-400" 
+              : "bg-white/80 text-slate-500 border-slate-200"
+          )}>
+            {template.is_active ? "Live" : "Draft"}
+          </div>
+        </div>
+
+        {/* Hover Action Overlay */}
+        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-3">
+           <button 
+             onClick={() => onEdit?.(template)}
+             className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 shadow-xl hover:scale-110 active:scale-95 transition-all"
+           >
+             <Pencil size={18} />
+           </button>
+           <span className="text-white text-[11px] font-bold uppercase tracking-widest drop-shadow-md">Modify Layout</span>
         </div>
       </div>
 
-      {/* ─── Information Section ─────────────────────────────────── */}
-      <div className="p-4 flex-1 flex flex-col">
-          <div className="flex items-start justify-between mb-4">
-             <div className="min-w-0">
-                <h3 className="text-[14px] font-semibold text-slate-900 leading-tight truncate group-hover:text-indigo-600 transition-colors">
-                  {template.name}
-                </h3>
-                <div className="flex items-center gap-1.5 mt-1">
-                   <p className="text-[10px] font-medium text-slate-400 capitalize">{template.key_values || "Design"}</p>
-                   <div className="w-0.5 h-0.5 rounded-full bg-slate-200" />
-                   <div className={clsx(
-                      "text-[9px] font-semibold",
-                      template.is_active ? "text-emerald-500" : "text-slate-400"
-                   )}>
-                      {template.is_active ? "Active" : "Hidden"}
-                   </div>
-                </div>
-             </div>
-             <div className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors">
-                <Eye size={14} />
-             </div>
+      {/* ─── Content Section ─────────────────────────────────── */}
+      <div className="p-4 flex flex-col gap-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-[14px] font-bold text-slate-900 truncate tracking-tight group-hover:text-indigo-600 transition-colors">
+              {template.name}
+            </h3>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded-md uppercase tracking-tighter shrink-0 ring-1 ring-indigo-100">
+                {template.key_values || "Modern"}
+              </span>
+              <div className="w-1 h-1 rounded-full bg-slate-200" />
+              <span className="text-[10px] font-medium text-slate-400 truncate">
+                Updated {new Date(template.updated_at || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+              </span>
+            </div>
           </div>
+          <button 
+            className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all shrink-0"
+            title="Preview Details"
+          >
+            <Eye size={14} />
+          </button>
+        </div>
 
-          <div className="mt-auto pt-3 border-t border-slate-50 flex items-center justify-between">
-             <button 
-                onClick={() => onToggleStatus?.(template)}
-                className={clsx(
-                  "text-[10px] font-bold px-4 py-1.5 rounded-lg transition-all border shadow-sm",
-                  template.is_active 
-                    ? "bg-amber-50 text-amber-600 border-amber-100/50 hover:bg-amber-100" 
-                    : "bg-emerald-50 text-emerald-600 border-emerald-100/50 hover:bg-emerald-100"
-                )}
-             >
-                {template.is_active ? "Offline" : "Go Live"}
-             </button>
-             <button 
-                onClick={() => onDelete?.(template)}
-                className="bg-rose-50 text-rose-500 hover:bg-rose-100 p-2 rounded-lg transition-all border border-rose-100/50"
-                title="Remove Template"
-             >
-                <Trash2 size={13} />
-             </button>
-          </div>
+        <div className="flex items-center gap-2 mt-1 pt-3 border-t border-slate-50">
+           <button 
+              onClick={() => onToggleStatus?.(template)}
+              className={clsx(
+                "flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[11px] font-bold transition-all border",
+                template.is_active 
+                  ? "bg-amber-50/50 text-amber-600 border-amber-100 hover:bg-amber-100" 
+                  : "bg-emerald-50/50 text-emerald-600 border-emerald-100 hover:bg-emerald-100"
+              )}
+           >
+              <Sparkles size={12} />
+              {template.is_active ? "Take Offline" : "Publish Live"}
+           </button>
+           <button 
+              onClick={() => onDelete?.(template)}
+              className="w-9 h-9 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-300 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all select-none"
+           >
+              <Trash2 size={14} />
+           </button>
+        </div>
       </div>
     </div>
   );
