@@ -113,60 +113,50 @@ export default function ManagePlansPage() {
   const activeCount = (plans || []).filter(p => p.is_active).length;
 
   return (
-    <div className="space-y-4 pb-8 antialiased max-w-7xl mx-auto">
-      {/* ─── Premium Header ────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-1 border-b border-slate-50">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-             <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center text-white shadow-md shadow-violet-600/10">
-                <CreditCard size={14} />
-             </div>
-             <h4 className="text-[11px] font-bold text-violet-600 tracking-tight">Monetization Hub</h4>
-          </div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Manage Subscription Plans</h1>
+    <div className="max-w-6xl mx-auto space-y-4 pb-12 antialiased animate-fade-in-up">
+      {/* Modern Administrative Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-1">
+        <div className="space-y-0.5">
+          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Manage Plans</h1>
+          <p className="text-[12px] text-slate-500 font-medium tracking-tight">Configure subscription plans for institutes</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex flex-col items-end mr-3">
-              <span className="text-[10px] font-medium text-slate-400">Current Inventory</span>
-              <span className="text-[13px] font-bold text-slate-900">{activeCount} / {(plans || []).length} Active</span>
-          </div>
-          <button 
+        <div className="flex items-center gap-5">
+           <div className="text-right">
+              <span className="text-[12px] font-bold text-slate-400 block tracking-tight">{activeCount} active plans</span>
+           </div>
+           <button 
             onClick={handleCreatePlan}
-            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white px-5 py-2 rounded-xl text-[12px] font-bold shadow-md shadow-violet-600/10 transition-all active:scale-95 group"
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-[12px] font-bold transition-all active:scale-95 group"
           >
-            <Plus size={16} /> 
-            Create Plan
+            <Plus size={14} /> 
+            Create New Plan
           </button>
         </div>
       </div>
 
-      {/* ─── Flexible Statistics ──────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <StatWidget 
-            label="Ecosystem Reach" 
-            value={(plans || []).reduce((acc, p) => acc + (p.subscribers || 0), 0).toLocaleString()} 
-            icon={<Sparkles size={18} />}
-            desc="Global subscribers"
-            color="indigo"
-        />
-        <StatWidget 
-            label="Revenue Projection" 
-            value={`₹${(plans || []).reduce((acc, p) => acc + (Number(p.offer_price || p.price || 0) * (p.subscribers || 0)), 0).toLocaleString()}`} 
-            icon={<TrendingUp size={18} />}
-            desc="Monthly yield"
-            color="emerald"
-        />
-        <StatWidget 
-            label="Platform Health" 
-            value={(plans || []).filter(p => !p.is_active).length > 0 ? "Normal" : "Optimal"} 
-            icon={<ShieldCheck size={18} />}
-            desc="System status"
-            color="amber"
-        />
+      {/* Reference Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-1">
+            <p className="text-[11px] font-semibold text-slate-400">Total Subscribers</p>
+            <p className="text-2xl font-bold text-slate-900 tracking-tight">
+               {(plans || []).reduce((acc, p) => acc + (p.subscribers || 0), 0).toLocaleString()}
+            </p>
+        </div>
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-1 relative overflow-hidden">
+            <p className="text-[11px] font-semibold text-slate-400">Monthly Revenue</p>
+            <p className="text-2xl font-bold text-emerald-600 tracking-tight">
+               ₹{(plans || []).reduce((acc, p) => acc + (Number(p.offer_price || p.price || 0) * (p.subscribers || 0)), 0).toLocaleString()}
+            </p>
+        </div>
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-1">
+            <p className="text-[11px] font-semibold text-slate-400">Active Plans</p>
+            <p className="text-2xl font-bold text-slate-900 tracking-tight">{activeCount}</p>
+        </div>
       </div>
 
-      {/* ─── Plan Inventory ────────────────────────────────────────── */}
+
+      {/* Plan Inventory */}
       {(!plans || plans.length === 0) ? (
         <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] p-20 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
@@ -201,27 +191,4 @@ export default function ManagePlansPage() {
   );
 }
 
-function StatWidget({ label, value, icon, desc, color }: { label: string, value: string, icon: React.ReactNode, desc: string, color: "indigo" | "emerald" | "amber" }) {
-  const themes = {
-    indigo: "from-indigo-500/10 to-blue-500/5 text-indigo-600 border-indigo-100",
-    emerald: "from-emerald-500/10 to-teal-500/5 text-emerald-600 border-emerald-100",
-    amber: "from-amber-500/10 to-orange-500/5 text-amber-600 border-amber-100"
-  };
 
-  return (
-    <div className="bg-white p-3.5 rounded-[1rem] border border-slate-100 shadow-sm relative overflow-hidden group hover:shadow transition-all">
-      <div className="flex items-center gap-3 relative z-10">
-          <div className={clsx("w-8 h-8 rounded-xl flex items-center justify-center border shadow-sm shrink-0", themes[color])}>
-            {React.cloneElement(icon as React.ReactElement<any>, { size: 14 })}
-          </div>
-          <div className="min-w-0">
-            <p className="text-[10px] font-medium text-slate-400 mb-0.5">{label}</p>
-            <div className="flex items-baseline gap-2">
-                <p className="text-[16px] font-bold text-slate-900 leading-none">{value}</p>
-                <p className="text-[9px] font-medium text-slate-400 truncate">{desc}</p>
-            </div>
-          </div>
-      </div>
-    </div>
-  );
-}
