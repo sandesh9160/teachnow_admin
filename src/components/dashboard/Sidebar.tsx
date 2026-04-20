@@ -47,62 +47,39 @@ interface SidebarProps {
 
 const navGroups: { label: string; color: string; headerIcon: any; items: SidebarItem[] }[] = [
   {
-    label: "MAIN",
-    color: "text-blue-500",
-    headerIcon: LayoutDashboard,
+    label: "Main",
+    color: "text-slate-400",
+    headerIcon: null,
     items: [
       { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-      { title: "Verification", href: "/verification", icon: FileCheck },
-      { title: "Notifications", href: "/notifications", icon: Bell, badge: "unread" },
+      { title: "Document Verification", href: "/verification", icon: FileCheck },
     ]
   },
   {
-    label: "MANAGEMENT",
-    color: "text-indigo-500",
-    headerIcon: ShieldCheck,
+    label: "Management",
+    color: "text-slate-400",
+    headerIcon: null,
     items: [
       { title: "Jobs", href: "/jobs", icon: Briefcase },
       { title: "Job Seekers", href: "/jobseekers", icon: Users },
       { title: "Recruiters", href: "/recruiters", icon: UserCheck },
-      { title: "Employers", href: "/employers", icon: Building2 },
+      { title: "Employers (Institutes)", href: "/employers", icon: Building2 },
     ]
   },
   {
-    label: "PLATFORM",
-    color: "text-purple-500",
-    headerIcon: Layers,
+    label: "Platform",
+    color: "text-slate-400",
+    headerIcon: null,
     items: [
-      { title: "Plans", href: "/plans", icon: CreditCard },
+      { title: "Manage Plans", href: "/plans", icon: CreditCard },
       { title: "Master Data", href: "/master-data", icon: Database },
-      { title: "Testimonials", href: "/testimonials", icon: Quote },
+      { title: "Reviews", href: "/reviews", icon: Star },
     ]
   },
   {
-    label: "CONTENT",
-    color: "text-emerald-500",
-    headerIcon: FileText,
-    items: [
-      { 
-        title: "Content Pages", 
-        href: "/content", 
-        icon: Layout,
-        children: [
-          { title: "About Us", href: "/content/about" },
-          { title: "Contact Us", href: "/content/contact" },
-          { title: "FAQs", href: "/content/faqs" },
-          { title: "Privacy Policy", href: "/content/privacy" },
-          { title: "Terms & Conditions", href: "/content/terms" },
-          { title: "Teaching Resources", href: "/resources" },
-          { title: "Blogs", href: "/content/blogs" },
-          { title: "Email Templates", href: "/email/templates" },
-        ]
-      },
-    ]
-  },
-  {
-    label: "ARCHIVE",
-    color: "text-rose-500",
-    headerIcon: History,
+    label: "Deleted",
+    color: "text-slate-400",
+    headerIcon: null,
     items: [
       { 
         title: "Deleted Items", 
@@ -121,9 +98,9 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
     ]
   },
   {
-    label: "CMS & SEO",
-    color: "text-cyan-500",
-    headerIcon: Layout,
+    label: "CMS",
+    color: "text-slate-400",
+    headerIcon: null,
     items: [
       { 
         title: "CMS Sections", 
@@ -137,32 +114,13 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
           { title: "Footer Columns", href: "/cms/footer-sections" },
           { title: "Footer Links", href: "/cms/footer-links" },
           { title: "Company Title & Logo", href: "/cms/branding" },
+          { title: "About Us", href: "/content/about" },
+          { title: "Contact Us", href: "/content/contact" },
+          { title: "FAQs", href: "/content/faqs" },
         ]
       },
-      { title: "SEO Settings", href: "/seo", icon: Search },
     ]
   },
-  {
-    label: "Communications & System",
-    color: "text-amber-500",
-    headerIcon: Mail,
-    items: [
-      { title: "Email Management", href: "/email", icon: Mail, children: [
-        { title: "Templates", href: "/email/templates" }
-      ]},
-      { title: "Cron Jobs", href: "/cron-jobs", icon: Timer },
-      { title: "System Settings", href: "/settings", icon: Settings },
-    ]
-  },
-  {
-    label: "Resources & Assets",
-    color: "text-teal-500",
-    headerIcon: BookOpen,
-    items: [
-      { title: "CV Templates", href: "/cv-templates", icon: FileText },
-      { title: "Teaching Resources", href: "/resources", icon: BookOpen },
-    ]
-  }
 ];
 
 export default function Sidebar({
@@ -269,15 +227,13 @@ export default function Sidebar({
           )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-1.5 no-scrollbar">
+        <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1.5 no-scrollbar">
           {navGroups.map((group, groupIndex) => {
-            const GroupIcon = group.headerIcon;
             return (
-            <div key={groupIndex} className="space-y-1 pb-4">
+            <div key={groupIndex} className="space-y-0.5 pb-4">
               {!collapsed && (
-                <div className="px-4 flex items-center gap-2 mb-3">
-                    {GroupIcon && <GroupIcon size={12} className={clsx("opacity-40", group.color)} />}
-                    <p className="text-[10px] font-bold text-surface-400 uppercase tracking-[0.15em]">
+                <div className="px-3 flex items-center gap-2 mb-2 pt-1">
+                    <p className="text-[10px] font-semibold text-slate-400 tracking-wider">
                         {group.label}
                     </p>
                 </div>
@@ -293,56 +249,48 @@ export default function Sidebar({
                         <div
                           className={clsx(
                             "flex items-center justify-between transition-all duration-200 group relative",
-                            collapsed ? "justify-center px-0 py-3 rounded-xl mb-1" : "px-3 py-2 rounded-xl mb-0.5",
+                            collapsed ? "justify-center px-0 py-2.5 rounded-xl mb-1" : "px-3 py-2 rounded-xl mb-0.5",
                             active && !hasChildren
-                              ? "bg-primary/[0.06] ring-1 ring-primary/10"
-                              : "text-surface-500 hover:bg-surface-50"
+                              ? "bg-blue-50/60 ring-1 ring-blue-100/50 text-blue-600 shadow-sm"
+                              : "text-slate-500 hover:bg-slate-50"
                           )}
                         >
                           {!hasChildren ? (
-                            <Link href={item.href} className="flex items-center gap-3.5 w-full">
+                            <Link href={item.href} className="flex items-center gap-3 w-full">
                                <div className="relative">
-                                 <Icon size={19} className={clsx("transition-transform group-hover:scale-110", active ? "text-primary" : clsx(group.color, "opacity-60 group-hover:opacity-100"))} strokeWidth={active ? 2.5 : 2} />
-                                 {item.badge === "unread" && unreadCount > 0 && collapsed && (
-                                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full ring-2 ring-white" />
-                                 )}
+                                 <Icon size={18} className={clsx("transition-transform group-hover:scale-110", active ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} strokeWidth={active ? 2 : 1.5} />
                                </div>
                                {!collapsed && (
                                  <div className="flex items-center justify-between flex-1">
-                                   <span className={clsx("text-[13px] font-semibold tracking-tight", active ? "text-primary" : "text-surface-600 group-hover:text-surface-900")}>{item.title}</span>
-                                   {item.badge === "unread" && unreadCount > 0 && (
-                                       <span className="bg-primary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center shadow-sm">
-                                           {unreadCount > 9 ? "9+" : unreadCount}
-                                       </span>
-                                   )}
+                                   <span className={clsx("text-[13px] font-semibold tracking-tight", active ? "text-blue-600" : "text-slate-500 group-hover:text-slate-900")}>{item.title}</span>
                                  </div>
                                )}
                             </Link>
                           ) : (
                             <button 
-                                type="button"
-                                suppressHydrationWarning
-                                onClick={(e) => toggleDropdown(item.title, e)}
-                                className="flex items-center justify-between w-full cursor-pointer bg-transparent border-none outline-none appearance-none"
+                                 type="button"
+                                 suppressHydrationWarning
+                                 onClick={(e) => toggleDropdown(item.title, e)}
+                                 className="flex items-center justify-between w-full cursor-pointer bg-transparent border-none outline-none appearance-none"
                             >
-                               <div className="flex items-center gap-3.5">
-                                  <Icon size={19} className={clsx("transition-transform group-hover:scale-110", active ? "text-primary" : clsx(group.color, "opacity-60 group-hover:opacity-100"))} strokeWidth={active ? 2.5 : 2} />
-                                  {!collapsed && <span className="text-[13px] font-semibold text-surface-600 group-hover:text-surface-900 tracking-tight">{item.title}</span>}
+                               <div className="flex items-center gap-3">
+                                  <Icon size={18} className={clsx("transition-transform group-hover:scale-110", isOpen ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} strokeWidth={isOpen ? 2 : 1.5} />
+                                  {!collapsed && <span className={clsx("text-[13px] font-semibold tracking-tight", isOpen ? "text-blue-600" : "text-slate-500 group-hover:text-slate-900")}>{item.title}</span>}
                                </div>
-                               {!collapsed && <ChevronDown size={14} className={clsx("text-surface-300 transition-transform duration-300 group-hover:text-surface-600", isOpen && "rotate-180")} />}
+                               {!collapsed && <ChevronDown size={14} className={clsx("text-slate-300 transition-transform duration-300 group-hover:text-slate-600", isOpen && "rotate-180")} />}
                             </button>
                           )}
 
                       {collapsed && (
-                         <div className="absolute left-full ml-3 px-3 py-2 bg-surface-900 text-white text-[11px] font-bold rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-[100] tracking-wider">
+                         <div className="absolute left-full ml-3 px-3 py-2 bg-slate-900 text-white text-[10px] font-semibold rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-[100] tracking-wider">
                            {item.title}
                          </div>
                       )}
                     </div>
 
                     {!collapsed && hasChildren && isOpen && (
-                        <div className="mt-1 relative ml-6 pl-4 border-l-2 border-surface-100">
-                           <div className="space-y-1 pt-1 pb-1">
+                        <div className="mt-1 relative ml-6 pl-4 border-l-[1.5px] border-slate-100">
+                           <div className="space-y-1.5 pt-1 pb-1">
                                {item.children?.map((child) => {
                                    const childActive = isActive(child.href);
                                    return (
@@ -350,11 +298,11 @@ export default function Sidebar({
                                         key={child.href} 
                                         href={child.href}
                                         className={clsx(
-                                            "flex items-center py-2 text-[13px] transition-all",
-                                            childActive ? "text-primary font-bold" : "text-surface-500 hover:text-primary font-medium"
+                                            "flex items-center py-1.5 text-[12px] transition-all",
+                                            childActive ? "text-blue-600 font-semibold" : "text-slate-400 hover:text-blue-600 font-medium"
                                         )}
                                        >
-                                          {childActive && <div className="w-1 h-1 rounded-full bg-primary mr-2" />}
+                                          {childActive && <div className="w-1 h-1 rounded-full bg-blue-600 mr-2" />}
                                           {child.title}
                                        </Link>
                                    );
@@ -370,18 +318,18 @@ export default function Sidebar({
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-surface-100">
+        <div className="px-4 py-4 border-t border-slate-100">
           <button
             onClick={handleLogout}
             suppressHydrationWarning
             className={clsx(
-              "w-full flex items-center gap-3.5 rounded-xl px-4 py-3 transition-all duration-200 group active:scale-95",
-              "text-surface-500 hover:text-danger hover:bg-danger/5 font-bold text-[13px]",
+              "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 group active:scale-95",
+              "text-slate-500 hover:text-blue-600 hover:bg-blue-50/50 font-semibold text-[13px]",
               collapsed && "justify-center px-0"
             )}
           >
-            <LogOut size={20} className="text-surface-400 group-hover:text-danger transition-colors" />
-            {!collapsed && <span className="tracking-tight">Sign Out</span>}
+            <LogOut size={18} className="text-slate-400 group-hover:text-blue-600 transition-colors" />
+            {!collapsed && <span className="tracking-tight">Logout</span>}
           </button>
         </div>
       </aside>

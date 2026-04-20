@@ -112,379 +112,299 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
 
   const fmt = (d?: string | null) => d ? new Date(d).toLocaleDateString() : "—";
 
+  const initials = employer.company_name?.charAt(0).toUpperCase() || "E";
+
   return (
-    <div className="space-y-4 pb-12 antialiased animate-fade-in-up">
-      {/* ─── Top Action Bar ─────────────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-4">
-        <Link href="/employers" className="flex items-center gap-1.5 h-8 px-3 bg-white border border-surface-200 rounded-lg text-[11px] font-medium text-surface-600 hover:text-primary hover:bg-surface-50 transition-all shadow-sm active:scale-95">
-          <ChevronLeft size={14} /> Back
-        </Link>
-        <div className="flex items-center gap-2">
-          {!employer.is_verified && (
-            <button onClick={() => handleAction("verify")} disabled={processing}
-              className="flex items-center gap-1.5 h-8 px-3 bg-emerald-600 text-white text-[11px] font-semibold rounded-lg hover:bg-emerald-700 transition-all shadow-sm active:scale-95">
-              <CheckCircle2 size={13} /> Verify Organization
-            </button>
-          )}
-          
-          <button onClick={() => handleAction("delete")} disabled={processing}
-            className="flex items-center justify-center w-8 h-8 bg-white border border-surface-200 text-surface-400 hover:text-rose-600 hover:border-rose-100 rounded-lg transition-all shadow-sm active:scale-95">
-            <Trash2 size={14} />
-          </button>
-        </div>
-      </div>
+    <div className="max-w-6xl mx-auto space-y-6 pb-20 antialiased animate-fade-in-up px-4">
+      {/* ─── Breadcrumb Navigation ─────────────────────────────────── */}
+      <nav className="flex items-center gap-2 text-[12px] font-semibold text-slate-500">
+          <Link href="/employers" className="hover:text-primary transition-colors flex items-center gap-1">
+             <ChevronLeft size={14} /> Organizations
+          </Link>
+          <span className="text-slate-300">/</span>
+          <span className="text-slate-900">{employer.company_name}</span>
+      </nav>
 
-      {/* ─── Profile Card ────────────────────────────────────────────── */}
-      <div className="bg-white border border-surface-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="relative p-6 flex items-center gap-4 border-b border-indigo-700 bg-indigo-600 overflow-hidden">
-          {/* Subtle pattern overlay */}
-          <div className="absolute inset-0 opacity-10" style={{backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "30px 30px"}} />
-          <div className="relative z-10 w-14 h-14 rounded-lg bg-white/20 border-2 border-white/30 shadow-lg flex items-center justify-center shrink-0 overflow-hidden">
-            {employer.company_logo 
-              ? <img src={resolveMediaUrl(employer.company_logo)} alt="" className="w-full h-full object-contain" />
-              : <Building2 size={26} className="text-white" />
-            }
-          </div>
-          <div className="relative z-10 flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-[17px] font-semibold text-white tracking-tight">{employer.company_name}</h1>
-
-              <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium border transition-all",
-                employer.is_verified ? "bg-white/20 text-white border-white/30" : "bg-rose-500/80 text-white border-rose-400"
-              )}>
-                {employer.is_verified ? <ShieldCheck size={10} /> : <ShieldAlert size={10} />}
-                {employer.is_verified ? "Verified" : "Unverified"}
-              </span>
-              
-              <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium border transition-all",
-                (employer.is_featured || (employer as any).company_featured) ? "bg-amber-400/90 text-white border-amber-300 shadow-sm" : "bg-white/10 text-white/60 border-white/10"
-              )}>
-                <Star size={10} className={(employer.is_featured || (employer as any).company_featured) ? "fill-white" : ""} />
-                {(employer.is_featured || (employer as any).company_featured) ? "Featured" : "Standard"}
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
-              <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><Tag size={11} /> {employer.institution_type || "—"}</span>
-              <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><MapPin size={11} /> {[employer.city, employer.country].filter(Boolean).join(", ") || "—"}</span>
-              <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><Calendar size={11} /> Joined {fmt(employer.created_at)}</span>
-              <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><Hash size={11} /> {employer.slug || "—"}</span>
-            </div>
-          </div>
-          <div className="hidden md:flex items-center gap-3 shrink-0 relative z-10">
-            <Pill label="Recruiters" value={(employer as any).employer_users?.length || 0} color="text-white bg-white/20 border-white/20" />
-            <Pill label="Jobs" value={(employer as any).jobs?.length || 0} color="text-white bg-white/20 border-white/20" />
-            <Pill label="Docs" value={(employer as any).documents?.length || 0} color="text-white bg-white/20 border-white/20" />
-          </div>
-        </div>
-
-        {/* ─── Tabs ───────────────────────────────────────────────────── */}
-        <div className="flex items-center gap-0 px-4 bg-surface-50/50 border-b border-surface-100 overflow-x-auto no-scrollbar">
-          {tabs.map((t, i) => {
-            const tabColors = ["border-indigo-500 text-indigo-600", "border-purple-500 text-purple-600", "border-emerald-500 text-emerald-600", "border-cyan-500 text-cyan-600", "border-rose-500 text-rose-600"];
-            return (
-            <button key={t} suppressHydrationWarning onClick={() => setActiveTab(t)}
-              className={clsx("px-4 py-3 text-[11px] font-semibold border-b-2 transition-all whitespace-nowrap",
-                activeTab === t ? tabColors[i] : "border-transparent text-surface-400 hover:text-surface-700"
-              )}>
-              {t}
-            </button>
-            );
-          })}
-        </div>
-
-        <div className="p-5">
-          {/* ─── Overview Tab ────────────────────────────────────── */}
-          {activeTab === "Overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2 space-y-4">
-                {/* Description */}
-                <Section title="About" icon={Info} color="indigo">
-                  <p className="text-[13px] text-surface-600 leading-relaxed">
-                    {(employer as any).company_description || (employer as any).about_company || "No description provided."}
-                  </p>
-                </Section>
-
-                {/* Company Details */}
-                <Section title="Location & Registry" icon={Building2} color="purple">
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                      <Field label="Industry" value={(employer as any).industry} />
-                      <Field label="Institution Type" value={employer.institution_type} />
-                      <Field label="Account Role" value={(employer as any).role} />
-                      <Field label="Full Address" value={(employer as any).address} />
-                      <Field label="City" value={employer.city} />
-                      <Field label="Country" value={employer.country} />
-                      <Field label="Slug" value={employer.slug} mono />
-                      <Field label="Featured Until" value={fmt((employer as any).featured_until)} />
-                    </div>
-
-                    <div className="pt-2">
-                      <p className="text-[9px] font-semibold text-surface-400 uppercase tracking-wider mb-2">Location Map</p>
-                      <div className="w-full h-48 rounded-xl border border-surface-200 overflow-hidden bg-surface-50 relative group">
-                        {(employer as any).map_link || ((employer as any).address) ? (
-                          <iframe
-                            width="100%"
-                            height="100%"
-                            style={{ border: 0 }}
-                            loading="lazy"
-                            allowFullScreen
-                            referrerPolicy="no-referrer-when-downgrade"
-                            src={
-                              (employer as any).map_link?.includes("https://") 
-                                ? (employer as any).map_link 
-                                : `https://www.google.com/maps?q=${encodeURIComponent((employer as any).map_link || (employer as any).address || employer.city + ", " + employer.country)}&output=embed`
-                            }
-                          />
-                        ) : (
-                          <div className="flex flex-col items-center justify-center h-full gap-2 text-surface-300">
-                            <MapPin size={24} strokeWidth={1.5} />
-                            <span className="text-[10px] font-semibold uppercase tracking-widest">No Location Data</span>
-                          </div>
-                        )}
+      {/* ─── Header Card ────────────────────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-5">
+              <div className="w-16 h-16 rounded-2xl bg-indigo-600 border border-slate-100 flex items-center justify-center text-white text-xl font-bold shadow-sm shrink-0 overflow-hidden">
+                {employer.company_logo ? (
+                  <img src={resolveMediaUrl(employer.company_logo)} alt="" className="w-full h-full object-contain p-2 bg-white" />
+                ) : (
+                  <span>{initials}</span>
+                )}
+              </div>
+              <div className="space-y-1">
+                  <div className="flex items-center gap-3">
+                      <h1 className="text-xl font-bold text-slate-900 tracking-tight">{employer.company_name}</h1>
+                      <div className={clsx(
+                          "px-2.5 py-0.5 rounded-full text-[10px] font-bold border lowercase",
+                          employer.is_verified ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
+                      )}>
+                        <span className="lowercase">{employer.is_verified ? "verified" : "pending"}</span>
                       </div>
-                    </div>
                   </div>
-                </Section>
+                  <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-500">
+                      <Tag size={14} className="text-slate-400" />
+                      <span>{employer.institution_type || "Institution"}</span>
+                  </div>
               </div>
+          </div>
 
-              <div className="space-y-4">
-                {/* Contact */}
-                <Section title="Contact" icon={Mail} color="emerald">
-                    <div className="space-y-3">
-                      <Field label="Email" value={employer.email} icon={Mail} />
-                      <Field label="Phone" value={(employer as any).phone} icon={Phone} />
-                      {(employer as any).website && (
-                        <a href={(employer as any).website.startsWith("http") ? (employer as any).website : `https://${(employer as any).website}`} 
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 w-full h-8 px-3 border border-surface-200 rounded-lg text-[11px] font-medium text-surface-700 hover:text-primary hover:border-primary/30 transition-all bg-surface-50 mt-1">
-                          <Globe size={12} /> {(employer as any).website} <ArrowUpRight size={10} className="ml-auto text-surface-300" />
-                        </a>
-                      )}
-                      {(employer as any).map_link && (
-                        <a href={(employer as any).map_link.includes("http") ? (employer as any).map_link : `https://www.google.com/maps?q=${encodeURIComponent((employer as any).map_link)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 w-full h-8 px-3 border border-surface-200 rounded-lg text-[11px] font-medium text-surface-700 hover:text-primary hover:border-primary/30 transition-all bg-surface-50">
-                          <MapPin size={12} /> View on Maps <ArrowUpRight size={10} className="ml-auto text-surface-300" />
-                        </a>
-                      )}
-                    </div>
-                </Section>
+          <div className="flex items-center gap-2.5">
+             <button 
+                onClick={() => handleAction("feature")}
+                disabled={processing}
+                className={clsx(
+                    "flex items-center gap-2 px-4 py-2 text-[13px] font-semibold rounded-xl transition-all shadow-sm active:scale-95 border",
+                    (employer.is_featured || (employer as any).company_featured) ? "bg-amber-50 border-amber-100 text-amber-600 hover:bg-amber-100" : "bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100"
+                )}
+             >
+                <Star size={16} className={(employer.is_featured || (employer as any).company_featured) ? "fill-amber-500" : ""} /> 
+                {(employer.is_featured || (employer as any).company_featured) ? "Featured" : "Standard"}
+             </button>
+             {!employer.is_verified && (
+                <button 
+                  onClick={() => handleAction("verify")}
+                  disabled={processing}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 text-emerald-600 text-[13px] font-semibold rounded-xl hover:bg-emerald-100 transition-all shadow-sm active:scale-95"
+                >
+                  <ShieldCheck size={16} /> Verify
+                </button>
+             )}
+             <button 
+                onClick={() => handleAction("delete")}
+                disabled={processing}
+                className="p-2.5 bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-100 rounded-xl transition-all shadow-sm active:scale-95"
+             >
+                <Trash2 size={16} />
+             </button>
+          </div>
+      </div>
 
-                {/* Status */}
-                <Section title="Platform Status" icon={ShieldCheck} color="cyan">
-                  <div className="mb-4">
-                    <button
-                      disabled={processing}
-                      onClick={() => handleAction("feature")}
-                      className={clsx(
-                        "w-full flex items-center justify-center gap-2.5 py-3 rounded-2xl text-[12px] font-bold transition-all border shadow-sm active:scale-[0.98] group",
-                        (employer.is_featured || (employer as any).company_featured)
-                          ? "bg-amber-50 text-amber-700 border-amber-200/50 hover:bg-amber-100/80 hover:border-amber-300" 
-                          : "bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-600/20"
-                      )}
-                    >
-                      <Star 
-                        size={16} 
-                        className={clsx(
-                          "transition-all duration-300",
-                          (employer.is_featured || (employer as any).company_featured) ? "fill-amber-500 text-amber-500 rotate-[72deg]" : "text-indigo-100 group-hover:scale-110"
-                        )} 
-                      />
-                      {(employer.is_featured || (employer as any).company_featured) ? "Remove Featured Status" : "Mark as Featured Partner"}
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    <StatusRow 
-                        label="Identity Verified" 
-                        value={!!employer.is_verified} 
-                        activeLabel="Verified" 
-                        inactiveLabel="Unverified"
-                        onToggle={!employer.is_verified ? () => handleAction("verify") : undefined}
-                        loading={processing}
-                    />
-                    <StatusRow label="Featured Status" value={!!(employer.is_featured || (employer as any).company_featured)} activeLabel="Featured" inactiveLabel="Standard" variant="warning" />
-                    <StatusRow 
-                        label="Profile Data" 
-                        value={!!((employer as any).company_description || (employer as any).about_company)} 
-                        activeLabel="Complete" 
-                        inactiveLabel="Incomplete" 
-                    />
-                  </div>
-                </Section>
+      {/* ─── Metrics Row ────────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {[
+              { label: "Recruiters", value: (employer as any).employer_users?.length || 0, icon: Users, color: "text-indigo-600" },
+              { label: "Jobs Posted", value: (employer as any).jobs?.length || 0, icon: Briefcase, color: "text-blue-600" },
+              { label: "Documents", value: (employer as any).documents?.length || 0, icon: FileText, color: "text-emerald-600" },
+              { label: "Registered On", value: fmt(employer.created_at), icon: Calendar, color: "text-cyan-600" }
+          ].map((m, i) => (
+              <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                  <p className="text-[11px] font-semibold text-slate-500">{m.label}</p>
+                  <p className={clsx("text-[15px] font-semibold text-slate-900", m.color)}>{m.value}</p>
               </div>
-            </div>
-          )}
+          ))}
+      </div>
 
-          {/* ─── Recruiters Tab ──────────────────────────────────── */}
-          {activeTab === "Recruiters" && (
-            <DataTable compact
-              columns={[
-                { key: "name", title: "Name", render: (_: any, r: any) => (
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-md bg-indigo-50 text-indigo-600 flex items-center justify-center text-[10px] font-bold border border-indigo-100">
-                      {r.name?.charAt(0) || "U"}
+      {/* ─── Tabbed Navigation ─────────────────────────────────────── */}
+      <div className="flex items-center gap-8 border-b border-slate-100 px-2 overflow-x-auto no-scrollbar">
+         {tabs.map(t => (
+             <button 
+                key={t} 
+                onClick={() => setActiveTab(t)}
+                className={clsx(
+                    "pb-3 text-[13px] font-semibold border-b-2 transition-all whitespace-nowrap",
+                    activeTab === t ? "text-primary border-primary" : "text-slate-600 border-transparent hover:text-slate-900"
+                )}
+             >
+                {t}
+             </button>
+         ))}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
+          {activeTab === "Overview" && (
+              <>
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                        <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
+                            <Info size={16} className="text-primary" /> Organization Summary
+                        </h3>
+                        <p className="text-[14px] text-slate-900 font-medium leading-relaxed">
+                            {(employer as any).company_description || (employer as any).about_company || "No description provided."}
+                        </p>
                     </div>
-                    <span className="font-semibold text-surface-900 text-[12px]">{r.name}</span>
-                  </div>
-                )},
-                { key: "email", title: "Email", render: (_: any, r: any) => <span className="text-[11px] text-surface-500">{r.email}</span> },
-                { key: "is_active", title: "Status", render: (v: any) => <Badge variant={v ? "success" : "danger"} dot>{v ? "Active" : "Disabled"}</Badge> },
-                { key: "created_at", title: "Joined", render: (v: any) => <span className="text-[10px] text-surface-400">{fmt(v)}</span> },
-              ]}
-              data={(employer as any).employer_users || []}
-              emptyMessage="No users found."
-            />
-          )}
 
-          {/* ─── Jobs Tab ────────────────────────────────────────── */}
-          {activeTab === "Jobs" && (
-            <DataTable compact
-              columns={[
-                { key: "title", title: "Job Title", render: (v: any, r: any) => (
-                  <div>
-                    <p className="font-semibold text-surface-900 text-[12px]">{v}</p>
-                    <p className="text-[10px] text-surface-400">#{r.id} · {r.job_type?.replace("_", " ")}</p>
-                  </div>
-                )},
-                { key: "location", title: "Location", render: (v: any) => <span className="text-[11px] text-surface-500 flex items-center gap-1"><MapPin size={10} />{v}</span> },
-                { key: "salary_min", title: "Salary Range", render: (_: any, r: any) => (
-                  <span className="text-[11px] text-surface-600 font-medium">
-                    ₹{Number(r.salary_min).toLocaleString()} – ₹{Number(r.salary_max).toLocaleString()}
-                  </span>
-                )},
-                { key: "status", title: "Status", render: (v: any) => <Badge variant={v === "approved" ? "success" : v === "pending" ? "warning" : "danger"} dot>{v}</Badge> },
-                { key: "job_status", title: "Open", render: (v: any) => <Badge variant={v === "open" ? "info" : "default"} dot>{v}</Badge> },
-                { key: "created_at", title: "Posted", render: (v: any) => <span className="text-[10px] text-surface-400">{fmt(v)}</span> },
-              ]}
-              data={(employer as any).jobs || []}
-              emptyMessage="No jobs posted."
-              onRowClick={(row) => router.push(`/jobs/${row.id}`)}
-            />
-          )}
-
-          {/* ─── Documents Tab ───────────────────────────────────── */}
-          {activeTab === "Documents" && (
-            <DataTable compact
-              columns={[
-                { key: "document_name", title: "File Name", render: (v: any) => (
-                  <div className="flex items-center gap-2">
-                    <FileText size={13} className="text-surface-300 shrink-0" />
-                    <span className="font-medium text-surface-900 text-[12px] truncate max-w-[200px]">{v}</span>
-                  </div>
-                )},
-                { key: "document_type", title: "Type", render: (v: any) => <span className="text-[10px] text-surface-500 font-medium">{v?.replace(/_/g, " ")}</span> },
-                { key: "status", title: "Status", render: (v: any) => <Badge variant={v === "approved" ? "success" : "warning"} dot>{v}</Badge> },
-                { key: "is_verified", title: "Verified", render: (v: any) => <Badge variant={v ? "success" : "danger"} dot>{v ? "Yes" : "No"}</Badge> },
-                { key: "created_at", title: "Uploaded", render: (v: any) => <span className="text-[10px] text-surface-400">{fmt(v)}</span> },
-                { key: "document_file", title: "", render: (v: any) => (
-                  <a href={resolveMediaUrl(v)} target="_blank"
-                    className="flex items-center gap-1 h-6 px-2 bg-surface-50 border border-surface-200 rounded text-[10px] font-bold text-surface-600 hover:text-primary transition-all">
-                    <Download size={10} /> View
-                  </a>
-                )},
-              ]}
-              data={(employer as any).documents || []}
-              emptyMessage="No documents uploaded."
-            />
-          )}
-
-          {/* ─── SEO Tab ─────────────────────────────────────────── */}
-          {activeTab === "SEO" && (
-            <div className="max-w-2xl space-y-4">
-              <Section title="SEO Metadata" icon={Tag} color="rose">
-                <div className="space-y-3">
-                  <Field label="Meta Title" value={(employer as any).meta_title} mono />
-                  <Field label="Meta Description" value={(employer as any).meta_description} />
-                  <Field label="Meta Keywords" value={(employer as any).meta_keywords} />
-                  <Field label="Slug" value={employer.slug} mono />
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+                        <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
+                            <Building2 size={16} className="text-indigo-500" /> Administrative Registry
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
+                            <Field label="Industry Sector" value={(employer as any).industry} />
+                            <Field label="Institution Type" value={employer.institution_type} icon={Tag} />
+                            <Field label="Account Role" value={(employer as any).role} icon={ShieldCheck} />
+                            <Field label="Official Address" value={(employer as any).address} icon={MapPin} />
+                            <Field label="City" value={employer.city} />
+                            <Field label="Country" value={employer.country} />
+                        </div>
+                    </div>
                 </div>
-              </Section>
+
+                <div className="lg:col-span-1 space-y-6">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+                       <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
+                           <Mail size={16} className="text-indigo-500" /> Digital Contact
+                       </h3>
+                       <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
+                                  <Mail size={14} />
+                              </div>
+                              <div className="min-w-0">
+                                  <p className="text-[11px] font-semibold text-slate-500">Email Address</p>
+                                  <p className="text-[13px] font-semibold text-slate-900 truncate">{employer.email}</p>
+                              </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                  <Phone size={14} />
+                              </div>
+                              <div className="min-w-0">
+                                  <p className="text-[11px] font-semibold text-slate-500">Official Phone</p>
+                                  <p className="text-[13px] font-semibold text-slate-900">{(employer as any).phone || "—"}</p>
+                              </div>
+                          </div>
+                          {(employer as any).website && (
+                             <a href={(employer as any).website.startsWith("http") ? (employer as any).website : `https://${(employer as any).website}`} target="_blank"
+                                className="flex items-center gap-2 mt-2 px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold text-slate-700 hover:text-indigo-600 transition-all">
+                                <Globe size={14} /> Official Site <ExternalLink size={12} className="ml-auto opacity-40" />
+                             </a>
+                          )}
+                       </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                             <h3 className="text-[13px] font-bold text-slate-900 flex items-center gap-2">
+                                <MapPin size={14} className="text-indigo-500" /> Verified Location
+                             </h3>
+                        </div>
+                        <div className="w-full h-48 relative">
+                            {(employer as any).map_link || ((employer as any).address) ? (
+                              <iframe
+                                width="100%"
+                                height="100%"
+                                style={{ border: 0 }}
+                                loading="lazy"
+                                allowFullScreen
+                                src={`https://www.google.com/maps?q=${encodeURIComponent((employer as any).map_link || (employer as any).address || employer.city + ", " + employer.country)}&output=embed`}
+                              />
+                            ) : (
+                                <div className="h-full flex items-center justify-center text-slate-300 italic text-[12px]">No data found.</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+              </>
+          )}
+
+          {activeTab === "Recruiters" && (
+             <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <DataTable compact
+                  columns={[
+                    { key: "name", title: "Recruiter", render: (_: any, r: any) => (
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold border border-indigo-100">
+                          {r.name?.charAt(0) || "U"}
+                        </div>
+                        <span className="font-bold text-slate-900">{r.name}</span>
+                      </div>
+                    )},
+                    { key: "email", title: "Contact", render: (_: any, r: any) => <span className="font-semibold text-slate-500">{r.email}</span> },
+                    { key: "is_active", title: "Status", render: (v: any) => <Badge variant={v ? "success" : "danger"} dot>{v ? "Active" : "Disabled"}</Badge> },
+                    { key: "created_at", title: "Joined", render: (v: any) => <span className="text-[11px] font-bold text-slate-400">{fmt(v)}</span> },
+                  ]}
+                  data={(employer as any).employer_users || []}
+                  emptyMessage="No recruiters listed."
+                />
+             </div>
+          )}
+
+          {activeTab === "Jobs" && (
+             <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <DataTable compact
+                  columns={[
+                    { key: "title", title: "Opportunity", render: (v: any, r: any) => (
+                      <div>
+                        <p className="font-bold text-slate-900 leading-tight">{v}</p>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">#{r.id} · {r.job_type?.replace("_", " ")}</p>
+                      </div>
+                    )},
+                    { key: "location", title: "Location", render: (v: any) => <span className="text-slate-500 font-semibold flex items-center gap-1"><MapPin size={11} />{v}</span> },
+                    { key: "salary_min", title: "Compensation", render: (_: any, r: any) => (
+                      <span className="text-slate-800 font-bold">
+                        ₹{Number(r.salary_min).toLocaleString()} – ₹{Number(r.salary_max).toLocaleString()}
+                      </span>
+                    )},
+                    { key: "status", title: "Audit", render: (v: any) => <Badge variant={v === "approved" ? "success" : v === "pending" ? "warning" : "danger"} dot>{v}</Badge> },
+                    { key: "job_status", title: "Status", render: (v: any) => <Badge variant={v === "open" ? "info" : "default"} dot>{v}</Badge> },
+                    { key: "created_at", title: "Posted", render: (v: any) => <span className="text-[11px] font-bold text-slate-400">{fmt(v)}</span> },
+                  ]}
+                  data={(employer as any).jobs || []}
+                  emptyMessage="No active job records."
+                  onRowClick={(row) => router.push(`/jobs/${row.id}`)}
+                />
+             </div>
+          )}
+
+          {activeTab === "Documents" && (
+             <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <DataTable compact
+                  columns={[
+                    { key: "document_name", title: "Reference", render: (v: any) => (
+                      <div className="flex items-center gap-2">
+                        <FileText size={14} className="text-slate-300" />
+                        <span className="font-bold text-slate-900 truncate max-w-[200px]">{v}</span>
+                      </div>
+                    )},
+                    { key: "document_type", title: "Classification", render: (v: any) => <span className="font-bold text-slate-500 uppercase text-[10px]">{v?.replace(/_/g, " ")}</span> },
+                    { key: "status", title: "Moderation", render: (v: any) => <Badge variant={v === "approved" ? "success" : "warning"} dot>{v}</Badge> },
+                    { key: "is_verified", title: "Verified", render: (v: any) => <Badge variant={v ? "success" : "danger"} dot>{v ? "Authorized" : "Unauthorized"}</Badge> },
+                    { key: "created_at", title: "Upload Date", render: (v: any) => <span className="text-[11px] font-bold text-slate-400">{fmt(v)}</span> },
+                    { key: "document_file", title: "", render: (v: any) => (
+                      <a href={resolveMediaUrl(v)} target="_blank"
+                        className="flex items-center gap-1 h-7 px-3 bg-indigo-50 border border-indigo-100 rounded-lg text-[10px] font-bold text-indigo-600 hover:bg-indigo-100 transition-all active:scale-95 shadow-sm">
+                        <Download size={12} /> View
+                      </a>
+                    )},
+                  ]}
+                  data={(employer as any).documents || []}
+                  emptyMessage="No organizational documents."
+                />
+             </div>
+          )}
+
+          {activeTab === "SEO" && (
+            <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+                    <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
+                        <Tag size={16} className="text-indigo-500" /> SEO Metadata Control
+                    </h3>
+                    <div className="space-y-6">
+                      <Field label="Search Title" value={(employer as any).meta_title} />
+                      <Field label="Description Meta" value={(employer as any).meta_description} />
+                      <Field label="Discovery Keywords" value={(employer as any).meta_keywords} />
+                      <Field label="Slug URL" value={employer.slug} />
+                    </div>
+                </div>
             </div>
           )}
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, value, icon: Icon }: { label: string; value?: React.ReactNode | string | number | null; icon?: any }) {
+  return (
+    <div className="space-y-1.5">
+      <p className="text-[11px] font-semibold text-slate-500">{label}</p>
+      <div className="flex items-center gap-2 min-h-[20px]">
+        {Icon && <Icon size={14} className="text-slate-400 shrink-0" />}
+        <div className="text-[14px] text-slate-900 font-semibold truncate leading-tight flex items-center">
+          {value || <span className="text-slate-400 font-medium">—</span>}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function Pill({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className={clsx("flex flex-col items-center px-3 py-1.5 rounded-lg border border-current/10 text-center", color)}>
-      <span className="text-[16px] font-bold leading-none">{value}</span>
-      <span className="text-[9px] font-bold opacity-70 mt-0.5">{label}</span>
-    </div>
-  );
-}
-
-const sectionColors: Record<string, { icon: string; header: string; border: string }> = {
-  indigo:  { icon: "text-indigo-500",  header: "bg-indigo-50/60 border-indigo-100",  border: "border-indigo-200/60" },
-  purple:  { icon: "text-purple-500",  header: "bg-purple-50/60 border-purple-100",  border: "border-purple-200/60" },
-  emerald: { icon: "text-emerald-500", header: "bg-emerald-50/60 border-emerald-100", border: "border-emerald-200/60" },
-  cyan:    { icon: "text-cyan-500",    header: "bg-cyan-50/60 border-cyan-100",       border: "border-cyan-200/60" },
-  rose:    { icon: "text-rose-500",    header: "bg-rose-50/60 border-rose-100",       border: "border-rose-200/60" },
-  default: { icon: "text-surface-400", header: "bg-surface-50 border-surface-100",   border: "border-surface-200" },
-};
-
-function Section({ title, icon: Icon, children, color = "default" }: { title: string; icon: any; children: React.ReactNode; color?: string }) {
-  const c = sectionColors[color] || sectionColors.default;
-  return (
-    <div className={clsx("border rounded-lg overflow-hidden", c.border)}>
-      <div className={clsx("px-4 py-2.5 border-b flex items-center gap-2", c.header)}>
-        <Icon size={12} className={c.icon} />
-        <h3 className={clsx("text-[11px] font-bold tracking-tight", c.icon)}>{title}</h3>
-      </div>
-      <div className="p-4">{children}</div>
-    </div>
-  );
-}
-
-function Field({ label, value, mono, icon: Icon }: { label: string; value?: string | number | null; mono?: boolean; icon?: any }) {
-  return (
-    <div>
-      <p className="text-[9px] font-bold text-surface-400 uppercase tracking-wider mb-0.5">{label}</p>
-      <div className="flex items-center gap-1.5">
-        {Icon && <Icon size={12} className="text-surface-300 shrink-0" />}
-        <p className={clsx("text-[12px] text-surface-800", mono ? "font-mono" : "font-medium")}>
-          {value || <span className="text-surface-300">—</span>}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function StatusRow({ 
-    label, 
-    value, 
-    activeLabel = "Active", 
-    inactiveLabel = "Inactive", 
-    variant = "success",
-    onToggle,
-    loading
-}: { 
-    label: string; 
-    value: boolean; 
-    activeLabel?: string; 
-    inactiveLabel?: string; 
-    variant?: "success" | "danger" | "default" | "warning";
-    onToggle?: () => void;
-    loading?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between py-1">
-      <span className="text-[11px] text-surface-600 font-medium">{label}</span>
-      <div className="flex items-center gap-2">
-        <Badge variant={value ? variant : "default"} dot>{value ? activeLabel : inactiveLabel}</Badge>
-        {onToggle && (
-            <button 
-                onClick={onToggle}
-                disabled={loading}
-                className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 hover:bg-emerald-100 transition-all active:scale-95 disabled:opacity-50"
-            >
-                Verify
-            </button>
-        )}
       </div>
     </div>
   );

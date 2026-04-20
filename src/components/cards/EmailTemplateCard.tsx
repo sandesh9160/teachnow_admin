@@ -26,7 +26,7 @@ export default function EmailTemplateCard({ template, onEdit }: EmailTemplateCar
               <Mail size={18} />
             </div>
             <div className="min-w-0">
-              <h3 className="text-[13px] font-bold text-slate-900 leading-tight truncate group-hover:text-indigo-600 transition-colors" title={template.name}>
+              <h3 className="text-[13px] font-bold text-slate-900  group-hover:text-indigo-600 transition-colors" title={template.name}>
                 {template.name}
               </h3>
               <div className="flex items-center mt-1">

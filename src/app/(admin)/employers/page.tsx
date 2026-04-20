@@ -21,7 +21,8 @@ import {
   Trash2,
   Globe,
   Activity,
-  ArrowUpRight
+  ArrowUpRight,
+  Loader2
 } from "lucide-react";
 import { getEmployers, verifyEmployer, featureEmployer, deleteEmployer, updateEmployerSEO, updateEmployer } from "@/services/admin.service";
 import { Employer } from "@/types";
@@ -190,80 +191,170 @@ export default function EmployersPage() {
   ];
 
   return (
-    <div className="space-y-4 pb-10 antialiased animate-fade-in-up">
-      {/* ─── Header Banner ────────────────────────────────────────────── */}
-      <div className="relative bg-indigo-600 rounded-xl p-6 overflow-hidden shadow-lg shadow-indigo-500/20">
-        <div className="absolute inset-0 opacity-10" style={{backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "30px 30px"}} />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center shrink-0 shadow-lg">
-              <Building2 size={22} strokeWidth={2.5} className="text-white" />
-            </div>
-            <div>
-              <span className="text-[10px] font-semibold text-indigo-200 uppercase">Partner Management</span>
-              <h1 className="text-[20px] font-semibold text-white mt-0.5">Employers</h1>
-              <p className="text-[12px] text-indigo-200 font-medium mt-0.5">Manage all educational centers and recruitment partners</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
+    <div className="max-w-7xl mx-auto space-y-5 pb-16 antialiased animate-fade-in-up">
+      {/* ─── Header Section ────────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 px-1">
+        <div className="space-y-0.5">
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Employer Directory</h1>
+            <p className="text-[13px] text-slate-500 font-medium">Manage educational centers and recruitment partners.</p>
+        </div>
+        <div className="flex items-center gap-2.5">
             <button 
-              suppressHydrationWarning
-              onClick={fetchEmployers}
-              className="p-2.5 bg-white/20 border border-white/30 rounded-lg text-white hover:bg-white/30 transition-all active:scale-95"
+                onClick={fetchEmployers}
+                className="h-10 px-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all font-semibold text-[13px] active:scale-95 shadow-sm"
             >
-              <RotateCcw size={16} className={clsx(loading && "animate-spin")} />
+                <RotateCcw size={15} className={clsx(loading && "animate-spin")} /> Refresh
             </button>
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-white text-indigo-700 text-[11px] font-semibold hover:bg-indigo-50 transition-all active:scale-95 shadow-md">
-              <Download size={15} /> Export list
+            <button className="h-10 px-5 flex items-center gap-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-all font-bold text-[13px] active:scale-95 shadow-lg shadow-slate-200">
+                <Download size={15} /> Export
             </button>
-          </div>
         </div>
       </div>
 
-      {/* ─── Stats Overview ──────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <StatMini label="All employers" value={employers.length} color="indigo" icon={<Building2 size={16} />} />
-          <StatMini label="Verified" value={employers.filter(e => e.is_verified).length} color="emerald" icon={<CheckCircle2 size={16} />} />
-          <StatMini label="Featured" value={employers.filter(e => e.is_featured || (e as any).company_featured).length} color="amber" icon={<Star size={16} />} />
-          <StatMini label="Pending review" value={employers.filter(e => !e.is_verified).length} color="rose" icon={<Activity size={16} />} />
+      {/* ─── Statistics Grid ───────────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+            { label: "Active", value: employers.length, icon: Building2, color: "text-indigo-600", bg: "bg-indigo-50" },
+            { label: "Verified", value: employers.filter(e => e.is_verified).length, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+            { label: "Featured", value: employers.filter(e => e.is_featured).length, icon: Star, color: "text-amber-600", bg: "bg-amber-50" },
+            { label: "Pending", value: employers.filter(e => !e.is_verified).length, icon: Activity, color: "text-rose-600", bg: "bg-rose-50" }
+        ].map((stat, i) => (
+            <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 hover:border-slate-300 transition-all group">
+                <div className="flex items-center justify-between">
+                    <div className={clsx("w-9 h-9 rounded-xl flex items-center justify-center", stat.bg, stat.color)}>
+                        <stat.icon size={18} strokeWidth={2.5} />
+                    </div>
+                </div>
+                <div>
+                   <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest leading-none">{stat.label}</p>
+                   <h3 className="text-xl font-bold text-slate-900 mt-1.5">{stat.value}</h3>
+                </div>
+            </div>
+        ))}
       </div>
 
-      {/* ─── Search & Filter Landscape ──────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 group">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors" />
-          <input 
+      {/* ─── Search Bar ────────────────────────────── */}
+      <div className="relative group">
+        <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+        <input 
             type="text" 
-            placeholder="Search by name, email or city..." 
+            placeholder="Search by name, email or location..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-surface-200 rounded-xl text-[13px] font-medium text-surface-700 placeholder:text-surface-300 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/50 transition-all tracking-tight" 
-          />
-        </div>
-        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-surface-200 text-surface-700 text-[11px] font-semibold hover:bg-surface-50 hover:text-indigo-600 transition-all shadow-sm active:scale-95 group shrink-0">
-          <Filter size={14} className="group-hover:rotate-180 transition-transform duration-500 group-hover:text-indigo-500" /> 
-          Registry Filters
-        </button>
+            className="w-full pl-11 pr-5 py-3 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all font-semibold" 
+        />
       </div>
 
-      {/* ─── Data Registry Table ────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-surface-200 shadow-card overflow-hidden border-t-2 border-t-indigo-500">
-        <div className="px-6 py-4 border-b border-surface-50 bg-surface-50/30 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-surface-900">Partner Registry</h3>
-            <div className="text-[11px] font-medium text-surface-400 uppercase leading-none">
-                System Active
-            </div>
-        </div>
-        <div className="overflow-hidden">
-            <DataTable 
-                compact
-                columns={columns} 
-                data={filtered} 
-                loading={loading}
-                onRowClick={(row) => router.push(`/employers/${row.id}`)}
-                emptyMessage="No partners found in this list."
-            />
-        </div>
+      {/* ─── Registry Table ─────────────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative z-10">
+          <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[900px]">
+                  <thead>
+                      <tr className="border-b border-slate-100 bg-slate-50/50">
+                          <th className="px-6 py-4 text-[12px] font-bold text-slate-900 tracking-tight">Organization</th>
+                          <th className="px-6 py-4 text-[12px] font-bold text-slate-900 tracking-tight">Location</th>
+                          <th className="px-6 py-4 text-[12px] font-bold text-slate-900 tracking-tight text-center">Status</th>
+                          <th className="px-6 py-4 text-[12px] font-bold text-slate-900 tracking-tight text-right">Joined</th>
+                          <th className="px-6 py-4 text-[12px] font-bold text-slate-900 tracking-tight text-center">Actions</th>
+                      </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                      {!loading && filtered.map((row: Employer, i: number) => (
+                          <tr key={i} className="group hover:bg-slate-50/50 transition-all duration-200 cursor-pointer" onClick={() => router.push(`/employers/${row.id}`)}>
+                              <td className="px-6 py-4">
+                                  <div className="flex items-center gap-3.5">
+                                      <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-[12px] shrink-0 group-hover:scale-105 transition-transform overflow-hidden">
+                                          {row.company_logo ? (
+                                              <img src={resolveMediaUrl(row.company_logo)} alt="" className="w-full h-full object-cover" />
+                                          ) : row.company_name?.charAt(0).toUpperCase()}
+                                      </div>
+                                      <div className="min-w-0">
+                                          <div className="flex items-center gap-1.5">
+                                            <p className="text-[13px] font-bold text-slate-900 leading-tight group-hover:text-primary transition-colors">{row.company_name}</p>
+                                            {row.is_featured && <Star size={10} className="text-amber-400 fill-amber-400" />}
+                                          </div>
+                                          <p className="text-[11px] text-slate-500 font-semibold mt-0.5 tracking-tight uppercase tracking-widest">{row.institution_type || 'Institution'}</p>
+                                      </div>
+                                  </div>
+                              </td>
+
+                              <td className="px-6 py-4">
+                                  <div className="flex items-center gap-1.5">
+                                      <MapPin size={12} className="text-slate-400" />
+                                      <span className="text-[12px] font-bold text-slate-900 truncate">{row.city || '—'}</span>
+                                  </div>
+                              </td>
+
+                              <td className="px-6 py-4 text-center">
+                                  <div className="inline-flex">
+                                      <div className={clsx(
+                                          "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border lowercase",
+                                          row.is_verified ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
+                                      )}>
+                                          <span className="lowercase">{row.is_verified ? "verified" : "pending"}</span>
+                                      </div>
+                                  </div>
+                              </td>
+
+                              <td className="px-6 py-4 text-right text-[12px] text-slate-600 font-semibold" suppressHydrationWarning>
+                                  {new Date(row.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </td>
+
+                              <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                                  <div className="flex items-center justify-center gap-1.5">
+                                      {!row.is_verified && (
+                                        <button 
+                                            onClick={() => handleAction(row.id, "verify")}
+                                            disabled={processingId === row.id}
+                                            title="Verify organization"
+                                            className="p-1.5 bg-emerald-50 border border-emerald-100 text-emerald-600 hover:bg-emerald-100 rounded-lg transition-all active:scale-90 shadow-sm"
+                                        >
+                                            <CheckCircle2 size={15} />
+                                        </button>
+                                      )}
+                                      <button 
+                                            onClick={() => setSeoModal({ isOpen: true, employer: row })}
+                                            title="SEO Optimization"
+                                            className="p-1.5 bg-slate-50 border border-slate-100 text-slate-400 hover:bg-slate-100 hover:text-indigo-600 rounded-lg transition-all active:scale-95 shadow-sm"
+                                      >
+                                            <Globe size={15} />
+                                      </button>
+                                      <button 
+                                          onClick={() => router.push(`/employers/${row.id}`)}
+                                          title="View profile"
+                                          className="p-1.5 bg-indigo-50 border border-indigo-100 text-indigo-500 hover:bg-indigo-100 rounded-lg transition-all active:scale-95 shadow-sm"
+                                      >
+                                          <Eye size={15} />
+                                      </button>
+                                      <button 
+                                          onClick={() => handleAction(row.id, "delete")}
+                                          disabled={processingId === row.id}
+                                          title="Delete organization"
+                                          className="p-1.5 bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-100 rounded-lg transition-all active:scale-95 shadow-sm"
+                                      >
+                                          <Trash2 size={15} />
+                                      </button>
+                                  </div>
+                              </td>
+                          </tr>
+                      ))}
+                  </tbody>
+              </table>
+
+              {loading && (
+                  <div className="py-24 flex flex-col items-center justify-center">
+                      <Loader2 className="animate-spin text-primary/40 mb-3" size={32} />
+                      <span className="text-[13px] font-semibold text-slate-400">Loading organizations...</span>
+                  </div>
+              )}
+
+              {!loading && filtered.length === 0 && (
+                  <div className="py-24 flex flex-col items-center justify-center opacity-50">
+                      <Building2 size={40} className="text-slate-300 mb-3" />
+                      <span className="text-[14px] font-semibold text-slate-400">No organizations found</span>
+                  </div>
+              )}
+          </div>
       </div>
 
       <SEOEditModal 
@@ -275,7 +366,7 @@ export default function EmployersPage() {
           meta_description: (seoModal.employer as any)?.meta_description || "",
           meta_keywords: (seoModal.employer as any)?.meta_keywords || "",
         }}
-        title={`SEO Control: ${seoModal.employer?.company_name}`}
+        title={`SEO Optimization: ${seoModal.employer?.company_name}`}
       />
     </div>
   );

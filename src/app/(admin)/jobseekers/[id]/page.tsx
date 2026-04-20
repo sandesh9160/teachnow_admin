@@ -123,284 +123,244 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
   const initials = seeker.user?.name?.split(" ").filter(Boolean).map((part) => part[0]).join("").slice(0, 2).toUpperCase() || "JS";
 
   return (
-    <div className="space-y-4 pb-12 antialiased animate-fade-in-up">
-      <div className="flex items-center justify-between gap-4">
-        <Link href="/jobseekers" className="flex items-center gap-1.5 h-8 px-3 bg-white border border-surface-200 rounded-lg text-[11px] font-semibold text-surface-600 hover:text-primary hover:bg-surface-50 transition-all shadow-sm active:scale-95">
-          <ChevronLeft size={14} /> Back
-        </Link>
-        <div className="flex items-center gap-2">
+    <div className="max-w-5xl mx-auto space-y-6 pb-20 antialiased animate-fade-in-up px-4">
+      {/* Breadcrumb Navigation */}
+      <nav className="flex items-center gap-2 text-[12px] font-semibold text-slate-500">
+          <Link href="/jobseekers" className="hover:text-primary transition-colors flex items-center gap-1">
+             <ChevronLeft size={14} /> Jobseekers
+          </Link>
+          <span className="text-slate-300">/</span>
+          <span className="text-slate-900">{seeker.user?.name}</span>
+      </nav>
 
-          <button
-            onClick={() => handleAction("delete")}
-            disabled={processing}
-            className="flex items-center justify-center w-8 h-8 bg-white border border-surface-200 text-surface-400 hover:text-rose-600 hover:border-rose-100 rounded-lg transition-all shadow-sm active:scale-95"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
+      {/* Primary Header Card */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-5">
+              <div className="w-16 h-16 rounded-2xl bg-blue-600 border border-slate-100 flex items-center justify-center text-white text-xl font-bold shadow-sm shrink-0 overflow-hidden">
+                {seeker.profile_photo ? (
+                  <img src={resolveMediaUrl(seeker.profile_photo)} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span>{initials}</span>
+                )}
+              </div>
+              <div className="space-y-1">
+                  <div className="flex items-center gap-3">
+                      <h1 className="text-xl font-bold text-slate-900 tracking-tight">{seeker.user?.name}</h1>
+                      <div className={clsx(
+                          "px-2.5 py-0.5 rounded-full text-[10px] font-bold border",
+                          seeker.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
+                      )}>
+                        <span className="lowercase">{seeker.is_active ? "active" : "inactive"}</span>
+                      </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-500">
+                      <Briefcase size={14} className="text-slate-400" />
+                      <span>{seeker.title || "Educator"}</span>
+                  </div>
+              </div>
+          </div>
+
+          <div className="flex items-center gap-2.5">
+             <button className="flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[13px] font-semibold rounded-xl hover:bg-indigo-100 transition-all shadow-sm active:scale-95">
+                <FileCheck size={16} /> Edit Profile
+             </button>
+             <button 
+                onClick={() => handleAction("toggle-status")}
+                disabled={processing}
+                className={clsx(
+                    "flex items-center gap-2 px-4 py-2 text-[13px] font-semibold rounded-xl transition-all shadow-sm active:scale-95 border",
+                    seeker.is_active ? "bg-amber-50 border-amber-100 text-amber-600 hover:bg-amber-100" : "bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100"
+                )}
+             >
+                <Power size={16} /> 
+                {seeker.is_active ? "Disable Account" : "Enable Account"}
+             </button>
+             <button 
+                onClick={() => handleAction("delete")}
+                disabled={processing}
+                className="p-2.5 bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-100 rounded-xl transition-all shadow-sm active:scale-95"
+             >
+                <Trash2 size={16} />
+             </button>
+          </div>
+      </div>      {/* Secondary Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {[
+              { label: "Applications", value: seeker.job_applications?.length || 0, icon: Clock, color: "text-indigo-600" },
+              { label: "Experience", value: `${seeker.experience_years || 0} Years`, icon: Briefcase, color: "text-blue-600" },
+              { label: "Account Status", value: seeker.is_active ? "Active" : "Inactive", icon: CheckCircle2, color: seeker.is_active ? "text-emerald-600" : "text-slate-600" },
+              { label: "Registered On", value: fmt(seeker.created_at), icon: Calendar, color: "text-cyan-600" }
+          ].map((m, i) => (
+              <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                  <p className="text-[11px] font-semibold text-slate-500">{m.label}</p>
+                  <p className={clsx("text-[15px] font-semibold text-slate-900", m.color)}>{m.value}</p>
+              </div>
+          ))}
       </div>
 
-      <div className="bg-white border border-surface-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="relative p-6 flex items-center gap-4 border-b border-indigo-700 bg-indigo-600 overflow-hidden">
-          <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)", backgroundSize: "30px 30px" }} />
-          <div className="relative z-10 w-14 h-14 rounded-lg bg-white/20 border-2 border-white/30 shadow-lg flex items-center justify-center shrink-0 overflow-hidden">
-            {seeker.profile_photo ? (
-              <img src={resolveMediaUrl(seeker.profile_photo)} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="flex items-center justify-center text-xl font-bold text-white tracking-widest">{initials}</div>
-            )}
-          </div>
-          <div className="relative z-10 flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-[17px] font-semibold text-white tracking-tight">{seeker.user?.name}</h1>
-              <span className={clsx("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border",
-                seeker.is_active ? "bg-emerald-500/80 text-white border-emerald-400" : "bg-white/20 text-white border-white/30"
-              )}>
-                {seeker.is_active ? "Active" : "Inactive"}
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
-              <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><Mail size={11} /> {seeker.user?.email || "—"}</span>
-              <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><Phone size={11} /> {seeker.phone || "—"}</span>
-              <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><Calendar size={11} /> Joined {fmt(seeker.created_at)}</span>
-              <span className="text-[11px] text-indigo-200 font-medium flex items-center gap-1"><Hash size={11} /> #{seeker.id}</span>
-            </div>
-          </div>
-          <div className="hidden md:flex items-center gap-3 shrink-0 relative z-10">
-            <Pill label="Applications" value={seeker.job_applications?.length || 0} color="text-white bg-white/20 border-white/20" />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-0 px-4 bg-surface-50/50 border-b border-surface-100 overflow-x-auto no-scrollbar">
-          {(["Overview", "Documents", "Activity"] as const).map((t, i) => {
-            const tabColors = ["border-indigo-500 text-indigo-600", "border-cyan-500 text-cyan-600", "border-emerald-500 text-emerald-600"];
-            return (
-              <button
-                key={t}
-                suppressHydrationWarning
-                onClick={() => setActiveTab(t)}
-                className={clsx("px-4 py-3 text-[11px] font-semibold border-b-2 transition-all whitespace-nowrap",
-                  activeTab === t ? tabColors[i] : "border-transparent text-surface-400 hover:text-surface-700"
+      {/* Navigation Tabs */}
+      <div className="flex items-center gap-8 border-b border-slate-100 px-2">
+         {(["Profile", "Documents", "Activity"] as const).map(t => (
+             <button 
+                key={t} 
+                onClick={() => setActiveTab(t === "Profile" ? "Overview" : t as any)}
+                className={clsx(
+                    "pb-3 text-[13px] font-semibold border-b-2 transition-all",
+                    (activeTab === "Overview" && t === "Profile") || activeTab === t ? "text-primary border-primary" : "text-slate-600 border-transparent hover:text-slate-900"
                 )}
-              >
+             >
                 {t}
-              </button>
-            );
-          })}
-        </div>
+             </button>
+         ))}
+      </div>
 
-        <div className="p-5">
+      {/* Detailed Content Content Area */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
           {activeTab === "Overview" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="space-y-4">
-                <Section title="Candidate Details" icon={UserIcon} color="indigo">
-                  <div className="space-y-3">
-                    <Field label="Full Name" value={seeker.user?.name} />
-                    <Field label="Title" value={seeker.title || "—"} />
-                    <Field label="Location" value={seeker.location || "—"} icon={MapPin} />
-                    <Field label="Experience" value={`${seeker.experience_years || 0} years`} />
-                    <Field label="Availability" value={seeker.availability || "—"} />
-                  </div>
-                </Section>
-                <Section title="Profile Summary" icon={FileText} color="purple">
-                  <p className="text-[13px] text-surface-600 leading-relaxed">
-                    {seeker.bio || "No professional summary added yet."}
-                  </p>
-                </Section>
-              </div>
+              <>
+                 <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+                        <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
+                            <FileText size={16} className="text-primary" /> Profile Summary
+                        </h3>
+                        <p className="text-[14px] text-slate-900 font-semibold leading-relaxed">
+                            {seeker.bio || "Candidate has not added a profile summary yet."}
+                        </p>
+                    </div>
 
-              <div className="space-y-4">
-                <Section title="Contact Information" icon={Mail} color="emerald">
-                  <div className="space-y-3">
-                    <Field label="Email" value={seeker.user?.email} icon={Mail} />
-                    <Field label="Phone" value={seeker.phone} icon={Phone} />
-                  </div>
-                </Section>
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+                        <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
+                            <UserIcon size={16} className="text-indigo-500" /> Candidate Details
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
+                            <Field label="Years of Experience" value={seeker.experience_years ? <span className="px-2.5 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100">{seeker.experience_years} Years</span> : "Not Specified"} />
+                            <Field label="Current Location" value={seeker.location || "Remote"} icon={MapPin} />
+                            <Field label="Work Availability" value={seeker.availability || "Immediate"} />
+                            <Field label="Account ID" value={`#${seeker.id}`} />
+                        </div>
+                    </div>
+                </div>
 
-                <Section title="Skills" icon={Briefcase} color="rose">
-                  <div className="flex flex-wrap gap-2">
-                    {(seeker.skills || []).length > 0 ? (
-                      seeker.skills?.map((s: any, i: number) => {
-                        const name = s?.skill?.name || s?.name || (typeof s === "string" ? s : "Unknown");
-                        return (
-                          <span key={i} className="px-3 py-1 rounded-lg text-[10px] font-medium bg-surface-50 border border-surface-200 text-surface-700">
-                            {name}
-                          </span>
-                        );
-                      })
-                    ) : (
-                      <span className="text-[11px] text-surface-400 font-medium">No skills added.</span>
-                    )}
-                  </div>
-                </Section>
+                <div className="lg:col-span-1 space-y-6">
+                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+                       <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
+                           <Mail size={16} className="text-indigo-500" /> Contact Details
+                       </h3>
+                       <div className="space-y-4">
+                          <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
+                                  <Mail size={14} />
+                              </div>
+                              <div className="min-w-0">
+                                  <p className="text-[11px] font-semibold text-slate-500">Email Address</p>
+                                  <p className="text-[13px] font-semibold text-slate-900 truncate">{seeker.user?.email}</p>
+                              </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                  <Phone size={14} />
+                              </div>
+                              <div className="min-w-0">
+                                  <p className="text-[11px] font-semibold text-slate-500">Phone Number</p>
+                                  <p className="text-[13px] font-semibold text-slate-900">{seeker.phone || "—"}</p>
+                              </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center text-cyan-600">
+                                  <Calendar size={14} />
+                              </div>
+                              <div className="min-w-0">
+                                  <p className="text-[11px] font-semibold text-slate-500">Registered Date</p>
+                                  <p className="text-[13px] font-semibold text-slate-900">{fmt(seeker.created_at)}</p>
+                              </div>
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+              </>
 
-                <Section title="Platform Status" icon={ShieldCheck} color="cyan">
-                  <div className="mb-4">
-                    <button
-                      disabled={processing}
-                      onClick={() => handleAction("toggle-status")}
-                      className={clsx(
-                        "w-full flex items-center justify-center gap-2.5 py-3 rounded-2xl text-[12px] font-bold transition-all border shadow-sm active:scale-[0.98] group",
-                        seeker.is_active 
-                          ? "bg-amber-50 text-amber-700 border-amber-200/50 hover:bg-amber-100/80 hover:border-amber-300" 
-                          : "bg-emerald-600 text-white border-emerald-500 hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-600/20"
-                      )}
-                    >
-                      {seeker.is_active ? <XCircle size={16} className="text-amber-500 group-hover:rotate-90 transition-transform duration-300" /> : <Power size={16} className="text-emerald-100 group-hover:scale-110 transition-transform" />}
-                      {seeker.is_active ? "Suspend Candidate Access" : "Activate Candidate Account"}
-                    </button>
-                  </div>
-                  <div className="space-y-2">
-                    <StatusRow 
-                      label="Account Access" 
-                      value={!!seeker.is_active} 
-                      activeLabel="Enabled" 
-                      inactiveLabel="Disabled" 
-                      variant="success"
-                    />
-                    <StatusRow label="Email Verified" value={!!seeker.user?.email_verified_at} activeLabel="Verified" inactiveLabel="Pending" />
-                  </div>
-                </Section>
-              </div>
-            </div>
           )}
 
           {activeTab === "Documents" && (
-            <div className="space-y-4">
-              <Section title="Resume Files" icon={FileCheck} color="cyan">
-                {(seeker.resumes || []).length > 0 ? (
-                  <div className="space-y-2">
-                    {seeker.resumes?.map((resume) => (
-                      <div key={resume.id} className="p-3 rounded-lg border border-surface-200 bg-white flex items-center justify-between">
-                        <div>
-                          <p className="text-[12px] font-semibold text-surface-900">{resume.file_name}</p>
-                          <p className="text-[10px] text-surface-400">{resume.is_default ? "Default resume" : "Resume"}</p>
+             <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+                 <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
+                     <FileCheck size={16} className="text-indigo-500" /> Resume List
+                 </h3>
+                 {(seeker.resumes || []).length > 0 ? (
+                    <div className="space-y-3">
+                      {seeker.resumes?.map((resume) => (
+                        <div key={resume.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex items-center justify-between group">
+                          <div className="flex items-center gap-3">
+                             <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-colors">
+                                <FileText size={18} />
+                             </div>
+                             <div>
+                               <p className="text-[13px] font-semibold text-slate-900">{resume.file_name}</p>
+                               <p className="text-[11px] text-slate-500 font-medium">{resume.is_default ? "Default document" : "Supplementary"}</p>
+                             </div>
+                          </div>
+                          <a
+                            href={resolveMediaUrl(resume.file_url || (resume as any).resume_file)}
+                            target="_blank"
+                            className="h-9 px-4 rounded-xl border border-indigo-100 bg-indigo-50 text-[12px] font-semibold text-indigo-600 hover:bg-indigo-100 transition-all flex items-center gap-2 shadow-sm"
+                          >
+                            <ExternalLink size={14} /> View
+                          </a>
                         </div>
-                        <a
-                          href={resolveMediaUrl(resume.file_url || (resume as any).resume_file)}
-                          target="_blank"
-                          className="h-8 px-3 rounded-lg border border-surface-200 text-[10px] font-semibold text-surface-600 hover:text-primary hover:bg-surface-50 transition-all flex items-center gap-1.5"
-                        >
-                          <ExternalLink size={12} />
-                          Open
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-[11px] text-surface-400 font-medium">No documents uploaded.</p>
-                )}
-              </Section>
-            </div>
+                      ))}
+                    </div>
+                 ) : (
+                    <p className="text-[13px] text-slate-400 italic font-medium">No files uploaded.</p>
+                 )}
+             </div>
           )}
 
           {activeTab === "Activity" && (
-            <div className="space-y-4">
-              <Section title="Application Activity" icon={Clock} color="emerald">
-                {(seeker.job_applications || []).length > 0 ? (
-                  <div className="space-y-2">
-                    {seeker.job_applications?.map((app: any) => (
-                      <div key={app.id} className="p-3 rounded-lg border border-surface-200 bg-white flex items-center justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="text-[12px] font-semibold text-surface-900 truncate">{app.job?.title || "Untitled Job"}</p>
-                          <p className="text-[10px] text-surface-400">{fmt(app.created_at)}</p>
+             <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+                 <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
+                     <Clock size={16} className="text-indigo-500" /> Recent Applications
+                 </h3>
+                 {(seeker.job_applications || []).length > 0 ? (
+                    <div className="space-y-3">
+                      {seeker.job_applications?.map((app: any) => (
+                        <div key={app.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex items-center justify-between group">
+                          <div className="flex items-center gap-3">
+                             <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-emerald-600 transition-colors">
+                                <Briefcase size={18} />
+                             </div>
+                             <div>
+                               <p className="text-[13px] font-semibold text-slate-900">{app.job?.title || "Job Application"}</p>
+                               <p className="text-[11px] text-slate-500 font-medium">Applied {fmt(app.created_at)}</p>
+                             </div>
+                          </div>
+                          <div className={clsx(
+                             "px-3 py-1 rounded-full text-[10px] font-semibold border lowercase",
+                             app.status === "shortlisted" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-white text-slate-400 border-slate-200"
+                          )}>
+                             {app.status || "applied"}
+                          </div>
                         </div>
-                        <Badge variant={app.status === "shortlisted" ? "success" : "default"} dot>{app.status || "applied"}</Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-[11px] text-surface-400 font-medium">No activity found.</p>
-                )}
-              </Section>
-            </div>
+                      ))}
+                    </div>
+                 ) : (
+                    <p className="text-[13px] text-slate-400 italic font-medium">No application records found.</p>
+                 )}
+             </div>
           )}
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, value, icon: Icon }: { label: string; value?: React.ReactNode | string | number | null; icon?: any }) {
+  return (
+    <div className="space-y-1.5">
+      <p className="text-[11px] font-semibold text-slate-500">{label}</p>
+      <div className="flex items-center gap-2 min-h-[20px]">
+        {Icon && <Icon size={14} className="text-slate-400 shrink-0" />}
+        <div className="text-[14px] text-slate-900 font-semibold truncate leading-tight flex items-center">
+          {value || <span className="text-slate-400 font-medium">—</span>}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function Pill({ label, value, color }: { label: string; value: number; color: string }) {
-  return (
-    <div className={clsx("flex flex-col items-center px-3 py-1.5 rounded-lg border border-current/10 text-center", color)}>
-      <span className="text-[16px] font-semibold leading-none">{value}</span>
-      <span className="text-[9px] font-semibold opacity-70 mt-0.5">{label}</span>
-    </div>
-  );
-}
-
-const sectionColors: Record<string, { icon: string; header: string; border: string }> = {
-  indigo: { icon: "text-indigo-500", header: "bg-indigo-50/60 border-indigo-100", border: "border-indigo-200/60" },
-  purple: { icon: "text-purple-500", header: "bg-purple-50/60 border-purple-100", border: "border-purple-200/60" },
-  emerald: { icon: "text-emerald-500", header: "bg-emerald-50/60 border-emerald-100", border: "border-emerald-200/60" },
-  cyan: { icon: "text-cyan-500", header: "bg-cyan-50/60 border-cyan-100", border: "border-cyan-200/60" },
-  rose: { icon: "text-rose-500", header: "bg-rose-50/60 border-rose-100", border: "border-rose-200/60" },
-  default: { icon: "text-surface-400", header: "bg-surface-50 border-surface-100", border: "border-surface-200" },
-};
-
-function Section({ title, icon: Icon, children, color = "default" }: { title: string; icon: any; children: React.ReactNode; color?: string }) {
-  const c = sectionColors[color] || sectionColors.default;
-  return (
-    <div className={clsx("border rounded-lg overflow-hidden", c.border)}>
-      <div className={clsx("px-4 py-2.5 border-b flex items-center gap-2", c.header)}>
-        <Icon size={12} className={c.icon} />
-        <h3 className={clsx("text-[11px] font-semibold", c.icon)}>{title}</h3>
-      </div>
-      <div className="p-4">{children}</div>
-    </div>
-  );
-}
-
-function Field({ label, value, mono, icon: Icon }: { label: string; value?: string | number | null; mono?: boolean; icon?: any }) {
-  return (
-    <div>
-      <p className="text-[9px] font-semibold text-surface-400 uppercase mb-0.5">{label}</p>
-      <div className="flex items-center gap-1.5">
-        {Icon && <Icon size={12} className="text-surface-300 shrink-0" />}
-        <p className={clsx("text-[12px] text-surface-800", mono ? "font-mono" : "font-medium")}>
-          {value || <span className="text-surface-300">—</span>}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function StatusRow({ 
-    label, 
-    value, 
-    activeLabel = "Active", 
-    inactiveLabel = "Inactive", 
-    variant = "success",
-    onToggle,
-    loading
-}: { 
-    label: string; 
-    value: boolean; 
-    activeLabel?: string; 
-    inactiveLabel?: string; 
-    variant?: "success" | "danger" | "default" | "warning";
-    onToggle?: () => void;
-    loading?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between py-1.5">
-      <span className="text-[11px] text-surface-600 font-medium">{label}</span>
-      <div className="flex items-center gap-2">
-        <Badge variant={value ? variant : "default"} dot>{value ? activeLabel : inactiveLabel}</Badge>
-        {onToggle && (
-            <button 
-                onClick={onToggle}
-                disabled={loading}
-                className={clsx(
-                    "text-[10px] font-semibold px-2 py-0.5 rounded-md border transition-all active:scale-95",
-                    value ? "text-amber-600 bg-amber-50 border-amber-100 hover:bg-amber-100" : "text-emerald-600 bg-emerald-50 border-emerald-100 hover:bg-emerald-100",
-                    loading && "opacity-50"
-                )}
-            >
-                {value ? "Disable" : "Enable"}
-            </button>
-        )}
       </div>
     </div>
   );

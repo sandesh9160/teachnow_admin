@@ -28,36 +28,36 @@ export default function Topbar({ onMenuToggle, collapsed }: TopbarProps) {
   return (
     <header
       className={clsx(
-        "fixed top-0 right-0 h-20 z-30 transition-all duration-300",
-        "bg-white/90 backdrop-blur-xl border-gradient-b",
+        "fixed top-0 right-0 h-16 z-30 transition-all duration-300",
+        "bg-white border-b border-slate-100/80",
         collapsed ? "left-[70px]" : "left-[240px]",
         "max-lg:left-0"
       )}
     >
-      <div className="flex items-center justify-between h-full px-8">
+      <div className="flex items-center justify-between h-full px-6">
         {/* Left: Menu toggle + Search */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <button
             suppressHydrationWarning
             onClick={onMenuToggle}
-            className="lg:hidden p-2 rounded-xl text-surface-500 hover:bg-surface-100 transition-colors"
+            className="lg:hidden p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors"
           >
-            <Menu size={22} />
+            <Menu size={20} />
           </button>
 
           <div className="relative hidden md:block group">
             <Search
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary transition-colors"
+              size={16}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors"
             />
             <input
               type="text"
-              placeholder="Search platform..."
+              placeholder="Search employers, jobs, seekers..."
               className={clsx(
-                "w-80 pl-12 pr-4 py-2.5 rounded-xl text-[13px] font-medium animate-in",
-                "bg-surface-50 border border-surface-200",
-                "text-surface-700 placeholder:text-surface-400",
-                "focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/50",
+                "w-[420px] pl-10 pr-4 py-2 rounded-xl text-[13px] font-medium animate-in",
+                "bg-slate-50 border border-slate-200/50",
+                "text-slate-700 placeholder:text-slate-400",
+                "focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/40",
                 "transition-all duration-300"
               )}
             />
@@ -65,36 +65,36 @@ export default function Topbar({ onMenuToggle, collapsed }: TopbarProps) {
         </div>
 
         {/* Right: Notifications + Profile */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {/* Notifications */}
-          <div className="p-1 rounded-xl bg-surface-50 border border-surface-200">
+          <div className="flex items-center">
              <NotificationBell />
           </div>
 
-          <div className="h-8 w-px bg-surface-100 mx-1" />
+          <div className="h-6 w-px bg-slate-100 mx-1" />
 
           {/* Profile */}
           <div className="relative">
             <button
               suppressHydrationWarning
               onClick={() => setShowProfile(!showProfile)}
-              className="flex items-center gap-3 p-1 rounded-xl hover:bg-surface-50 transition-all active:scale-95 group"
+              className="flex items-center gap-2.5 p-1 rounded-xl hover:bg-slate-50 transition-all active:scale-95 group"
             >
-              <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
-                <span className="text-white text-xs font-black">
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20 transition-transform group-hover:scale-105">
+                <span className="text-white text-[10px] font-black">
                   {user?.f_name?.charAt(0)?.toUpperCase() || "A"}
                 </span>
               </div>
               <div className="hidden lg:block text-left">
-                <p className="text-[13px] font-bold text-surface-900 leading-none">
-                  {user?.f_name || "Admin User"}
+                <p className="text-[12px] font-bold text-slate-900 leading-none">
+                  Admin User
                 </p>
-                <p className="text-[11px] text-surface-400 font-semibold mt-1">Super Admin</p>
+                <p className="text-[10px] text-slate-400 font-medium mt-1">Super Admin</p>
               </div>
               <ChevronDown
-                size={14}
+                size={12}
                 className={clsx(
-                  "text-surface-300 transition-transform duration-300 hidden lg:block group-hover:text-primary",
+                  "text-slate-300 transition-transform duration-300 hidden lg:block group-hover:text-primary",
                   showProfile && "rotate-180"
                 )}
               />

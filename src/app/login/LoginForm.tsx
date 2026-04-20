@@ -45,30 +45,28 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center p-4 antialiased">
-      <div className="w-full max-w-[360px] space-y-5 animate-fade-in-up">
+    <div className="min-h-screen bg-gradient-mesh flex flex-col items-center justify-center p-6 antialiased">
+      <div className="w-full max-w-[340px] space-y-6 animate-fade-in-up">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-orange-50 text-orange-600 mb-1 border-4 border-white shadow-sm">
-            <ShieldCheck size={24} strokeWidth={1.5} />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Admin Portal</h1>
-          <p className="text-[14px] text-slate-500 font-medium">Secure access for administrators</p>
+        <div className="text-center space-y-1">
+          <h1 className="text-2xl font-display font-bold text-slate-900 tracking-tight">Admin Portal</h1>
+          <p className="text-[14px] text-slate-600 font-medium">Please sign in to your accounts</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-[20px] border border-slate-100 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-slate-100">
+        <div className="bg-white rounded-2xl p-6 shadow-card relative overflow-hidden group">
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-[12px] font-bold text-slate-500 tracking-wider ml-0.5 uppercase">Admin Username</label>
-              <div className="relative group">
-                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+              <label className="text-[13px] font-bold text-slate-900 ml-0.5">Admin Email</label>
+              <div className="relative group/input">
+                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/input:text-primary transition-colors" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Username"
-                    className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium"
+                    placeholder="Enter your email"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-100 rounded-xl text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary focus:bg-white transition-all font-medium"
                     disabled={loading}
                     suppressHydrationWarning={true}
                   />
@@ -76,17 +74,20 @@ export default function LoginForm() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-[12px] font-bold text-slate-500 tracking-wider ml-0.5 uppercase">Admin Password</label>
+              <div className="flex items-center justify-between mb-0.5">
+                <label className="text-[13px] font-bold text-slate-900 ml-0.5">Password</label>
+                <Link href="/forgot-password" className="text-[12px] font-bold text-primary hover:underline">
+                  Forgot password?
+                </Link>
               </div>
-              <div className="relative group">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+              <div className="relative group/input">
+                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/input:text-primary transition-colors" />
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-200 rounded-lg text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all font-medium"
+                  className="w-full pl-10 pr-10 py-2.5 bg-slate-50/50 border border-slate-100 rounded-xl text-[14px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary focus:bg-white transition-all font-medium"
                   disabled={loading}
                   suppressHydrationWarning={true}
                 />
@@ -105,7 +106,7 @@ export default function LoginForm() {
               type="submit"
               disabled={loading}
               className={clsx(
-                "w-full py-2.5 rounded-lg bg-primary text-white text-[15px] font-bold hover:bg-primary-600 transition-all flex items-center justify-center gap-2 shadow-sm active:scale-[0.98]",
+                "w-full py-2.5 rounded-xl bg-primary text-white text-[14px] font-bold hover:bg-primary-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-[0.98] mt-2",
                 loading && "opacity-70 pointer-events-none"
               )}
               suppressHydrationWarning={true}
@@ -114,32 +115,26 @@ export default function LoginForm() {
                 <Loader2 size={18} className="animate-spin" />
               ) : (
                 <>
-                  Sign In <span className="text-lg">→</span>
+                  Sign In <span className="text-base">→</span>
                 </>
               )}
             </button>
           </form>
 
           {/* Security Box */}
-          <div className="mt-5 p-3 bg-slate-50/80 rounded-lg border border-dotted border-slate-200 flex items-start gap-3">
-            <div className="w-7 h-7 rounded-full bg-white border border-orange-100 flex items-center justify-center text-orange-600 shrink-0">
-              <ShieldCheck size={14} />
+          <div className="mt-5 p-3 bg-slate-50/80 rounded-xl border border-slate-100 flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-primary shrink-0 shadow-sm">
+              <ShieldCheck size={12} strokeWidth={2.5} />
             </div>
             <div className="space-y-0.5">
-              <p className="text-[12px] font-bold text-slate-800">Internal Security Protocol</p>
-              <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
-                Secure administrative portal access. Unauthorized entry attempts are logged.
+              <p className="text-[11px] font-bold text-slate-900">Secure Admin Access</p>
+              <p className="text-[10px] text-slate-600 font-medium leading-relaxed">
+                Only authorized administrators may enter. 
               </p>
             </div>
           </div>
         </div>
 
-        {/* Support Link */}
-        <div className="text-center pt-2">
-            <Link href="/forgot-password" data-auth-link className="text-[13px] font-bold text-slate-400 hover:text-primary transition-colors cursor-pointer capitalize">
-              Lost password? Contact Support
-            </Link>
-        </div>
       </div>
     </div>
   );
