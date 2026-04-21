@@ -11,25 +11,28 @@ import {
   ExternalLink,
   FileCheck,
   FileText,
-  Hash,
-  Loader2,
   Mail,
   MapPin,
   Phone,
   XCircle,
   CheckCircle2,
-  ShieldCheck,
-  ShieldAlert,
   Trash2,
   User as UserIcon,
   Power,
+  Globe,
+  Heart,
+  Award,
+  Link as LinkIcon,
+  Zap,
+  Building,
+  Loader2
 } from "lucide-react";
 import { getJobSeeker, deleteJobSeeker, disableJobSeeker, updateJobSeeker } from "@/services/admin.service";
 import { JobSeeker } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 import { resolveMediaUrl } from "@/lib/media";
-import Badge from "@/components/ui/Badge";
+// import Badge from "@/components/ui/Badge";
 
 export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -52,14 +55,10 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
       console.log(`[JobSeekerDetails] Full Response:`, res);
       
       const rawData: any = res.data || res;
-      // Normalize is_active if it exists in nested user or status field
-      if (typeof rawData.is_active === "undefined") {
-        if (typeof rawData.user?.is_active !== "undefined") {
-          rawData.is_active = rawData.user.is_active;
-        } else if (typeof rawData.status !== "undefined") {
-          rawData.is_active = rawData.status;
-        }
-      }
+      const val = rawData.is_active ?? rawData.user?.is_active ?? rawData.status;
+      rawData.is_active = (typeof val === 'string') 
+        ? (val.toLowerCase() === 'active' || val === '1') 
+        : !!val;
       
       setSeeker(rawData);
     } catch (err: any) {
@@ -83,8 +82,10 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
         console.log(`[handleAction] Raw Data:`, rawData);
         const nextIsActiveValue =
           rawData?.is_active ?? rawData?.user?.is_active ?? rawData?.isActive ?? rawData?.status;
-        const nextStatus =
-          typeof nextIsActiveValue !== "undefined" ? !!nextIsActiveValue : !seeker.is_active;
+        
+        const nextStatus = (typeof nextIsActiveValue === 'string')
+          ? (nextIsActiveValue.toLowerCase() === 'active' || nextIsActiveValue === '1')
+          : (typeof nextIsActiveValue !== "undefined" ? !!nextIsActiveValue : !seeker.is_active);
 
         setSeeker((prev) => (prev ? { ...prev, is_active: nextStatus } : null));
         toast.success(nextStatus ? "Candidate account enabled" : "Candidate account disabled");
@@ -150,7 +151,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
                           "px-2.5 py-0.5 rounded-full text-[10px] font-bold border",
                           seeker.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
                       )}>
-                        <span className="lowercase">{seeker.is_active ? "active" : "inactive"}</span>
+                         <span className="lowercase">{seeker.is_active ? "active" : "disabled"}</span>
                       </div>
                   </div>
                   <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-500">
@@ -184,29 +185,34 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
              </button>
           </div>
       </div>      {/* Secondary Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-              { label: "Applications", value: seeker.job_applications?.length || 0, icon: Clock, color: "text-indigo-600" },
-              { label: "Experience", value: `${seeker.experience_years || 0} Years`, icon: Briefcase, color: "text-blue-600" },
-              { label: "Account Status", value: seeker.is_active ? "Active" : "Inactive", icon: CheckCircle2, color: seeker.is_active ? "text-emerald-600" : "text-slate-600" },
-              { label: "Registered On", value: fmt(seeker.created_at), icon: Calendar, color: "text-cyan-600" }
+              { label: "Experience", value: `${seeker.experience_years || 0} Years`, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
+              { label: "Availability", value: seeker.availability?.replace('_', ' ') || "Looking", icon: Zap, color: "text-amber-600", bg: "bg-amber-50" },
+              { label: "Applications", value: seeker.job_applications?.length || 0, icon: FileText, color: "text-indigo-600", bg: "bg-indigo-50" },
+              { label: "Registered On", value: fmt(seeker.created_at), icon: Calendar, color: "text-cyan-600", bg: "bg-cyan-50" }
           ].map((m, i) => (
-              <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-1">
-                  <p className="text-[11px] font-semibold text-slate-500">{m.label}</p>
-                  <p className={clsx("text-[15px] font-semibold text-slate-900", m.color)}>{m.value}</p>
+              <div key={i} className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center gap-4 group transition-all hover:bg-slate-50/20">
+                  <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform", m.bg, m.color)}>
+                     <m.icon size={18} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold text-slate-900 group-hover:text-slate-600 transition-colors tracking-wide leading-none mb-1.5">{m.label}</p>
+                    <p className="text-[14px] font-bold text-slate-900 group-hover:text-primary transition-colors capitalize truncate leading-tight">{m.value}</p>
+                  </div>
               </div>
           ))}
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-8 border-b border-slate-100 px-2">
-         {(["Profile", "Documents", "Activity"] as const).map(t => (
+      <div className="flex items-center gap-8 border-b border-slate-100 px-2 overflow-x-auto scrollbar-hide">
+         {(["Profile", "Resume", "Activity"] as const).map(t => (
              <button 
                 key={t} 
-                onClick={() => setActiveTab(t === "Profile" ? "Overview" : t as any)}
+                onClick={() => setActiveTab(t === "Profile" ? "Overview" : (t === "Resume" ? "Documents" : t) as any)}
                 className={clsx(
-                    "pb-3 text-[13px] font-semibold border-b-2 transition-all",
-                    (activeTab === "Overview" && t === "Profile") || activeTab === t ? "text-primary border-primary" : "text-slate-600 border-transparent hover:text-slate-900"
+                    "pb-4 pt-1 text-[13px] font-semibold border-b-2 transition-all whitespace-nowrap",
+                    (activeTab === "Overview" && t === "Profile") || (activeTab === "Documents" && t === "Resume") || activeTab === t ? "text-primary border-primary" : "text-slate-900 border-transparent hover:text-slate-600"
                 )}
              >
                 {t}
@@ -219,132 +225,169 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
           {activeTab === "Overview" && (
               <>
                  <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
-                        <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
-                            <FileText size={16} className="text-primary" /> Profile Summary
-                        </h3>
-                        <p className="text-[14px] text-slate-900 font-semibold leading-relaxed">
+                    <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-6 space-y-5">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                             <FileText size={16} />
+                          </div>
+                          <h3 className="text-[15px] font-bold text-slate-900 tracking-tight">Professional Bio</h3>
+                        </div>
+                        <p className="text-[14px] text-slate-700 font-medium leading-relaxed bg-slate-50/50 p-4 rounded-xl border border-slate-100">
                             {seeker.bio || "Candidate has not added a profile summary yet."}
                         </p>
-                    </div>
-
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
-                        <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
-                            <UserIcon size={16} className="text-indigo-500" /> Candidate Details
-                        </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
-                            <Field label="Years of Experience" value={seeker.experience_years ? <span className="px-2.5 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100">{seeker.experience_years} Years</span> : "Not Specified"} />
-                            <Field label="Current Location" value={seeker.location || "Remote"} icon={MapPin} />
-                            <Field label="Work Availability" value={seeker.availability || "Immediate"} />
-                            <Field label="Account ID" value={`#${seeker.id}`} />
-                        </div>
                     </div>
                 </div>
 
                 <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
-                       <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
-                           <Mail size={16} className="text-indigo-500" /> Contact Details
-                       </h3>
+                    {/* Contact Information */}
+                    <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-5 space-y-5">
+                       <p className="text-[11px] font-bold text-indigo-500 tracking-wide pl-1">Communication</p>
+                       <div className="space-y-3">
+                          <div className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group">
+                              <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500 group-hover:scale-105 transition-transform">
+                                  <Mail size={16} />
+                              </div>
+                              <div className="min-w-0">
+                                  <p className="text-[10px] font-semibold text-slate-900 tracking-wide leading-none mb-1">Email Address</p>
+                                  <p className="text-[13px] font-semibold text-slate-900 truncate group-hover:text-primary transition-colors">{seeker.user?.email}</p>
+                              </div>
+                          </div>
+                          <div className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group">
+                              <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 group-hover:scale-105 transition-transform">
+                                  <Phone size={16} />
+                              </div>
+                              <div className="min-w-0">
+                                  <p className="text-[10px] font-semibold text-slate-900 tracking-wide leading-none mb-1">Phone Number</p>
+                                  <p className="text-[13px] font-semibold text-slate-900 group-hover:text-primary transition-colors">{seeker.phone || "—"}</p>
+                              </div>
+                          </div>
+                          {(seeker as any).portfolio_website && (
+                             <a href={(seeker as any).portfolio_website} target="_blank" className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group">
+                                <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform">
+                                    <Globe size={16} />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] font-semibold text-slate-900 tracking-wide leading-none mb-1">Portfolio</p>
+                                    <p className="text-[13px] font-semibold text-slate-900 truncate group-hover:text-primary transition-colors">View Website</p>
+                                </div>
+                             </a>
+                          )}
+                       </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-5 space-y-5">
+                       <p className="text-[11px] font-bold text-indigo-500 tracking-wide pl-1">Candidate Details</p>
                        <div className="space-y-4">
-                          <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500">
-                                  <Mail size={14} />
-                              </div>
-                              <div className="min-w-0">
-                                  <p className="text-[11px] font-semibold text-slate-500">Email Address</p>
-                                  <p className="text-[13px] font-semibold text-slate-900 truncate">{seeker.user?.email}</p>
-                              </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
-                                  <Phone size={14} />
-                              </div>
-                              <div className="min-w-0">
-                                  <p className="text-[11px] font-semibold text-slate-500">Phone Number</p>
-                                  <p className="text-[13px] font-semibold text-slate-900">{seeker.phone || "—"}</p>
-                              </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-lg bg-cyan-50 flex items-center justify-center text-cyan-600">
-                                  <Calendar size={14} />
-                              </div>
-                              <div className="min-w-0">
-                                  <p className="text-[11px] font-semibold text-slate-500">Registered Date</p>
-                                  <p className="text-[13px] font-semibold text-slate-900">{fmt(seeker.created_at)}</p>
-                              </div>
-                          </div>
+                            <Field label="Experience" value={seeker.experience_years ? `${seeker.experience_years} Years` : "Not Specified"} icon={Briefcase} />
+                            <Field label="Location" value={seeker.location || "Remote"} icon={MapPin} />
+                            <Field label="Availability" value={seeker.availability?.replace('_', ' ') || "Immediate"} icon={Zap} />
+                            <Field label="Gender" value={seeker.gender || "Not Specified"} icon={Heart} />
+                            <Field label="Notice Period" value={seeker.notice_period ? `${seeker.notice_period} Days` : "Not Specified"} icon={Clock} />
+                            <Field label="Date of Birth" value={fmt(seeker.dob)} icon={Calendar} />
                        </div>
                     </div>
                  </div>
               </>
-
           )}
 
           {activeTab === "Documents" && (
-             <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
-                 <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
-                     <FileCheck size={16} className="text-indigo-500" /> Resume List
-                 </h3>
-                 {(seeker.resumes || []).length > 0 ? (
-                    <div className="space-y-3">
-                      {seeker.resumes?.map((resume) => (
-                        <div key={resume.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex items-center justify-between group">
-                          <div className="flex items-center gap-3">
-                             <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 transition-colors">
-                                <FileText size={18} />
-                             </div>
-                             <div>
-                               <p className="text-[13px] font-semibold text-slate-900">{resume.file_name}</p>
-                               <p className="text-[11px] text-slate-500 font-medium">{resume.is_default ? "Default document" : "Supplementary"}</p>
-                             </div>
-                          </div>
-                          <a
-                            href={resolveMediaUrl(resume.file_url || (resume as any).resume_file)}
-                            target="_blank"
-                            className="h-9 px-4 rounded-xl border border-indigo-100 bg-indigo-50 text-[12px] font-semibold text-indigo-600 hover:bg-indigo-100 transition-all flex items-center gap-2 shadow-sm"
-                          >
-                            <ExternalLink size={14} /> View
-                          </a>
-                        </div>
-                      ))}
+             <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-6 space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                         <FileCheck size={16} />
+                      </div>
+                      <h3 className="text-[15px] font-bold text-slate-900 tracking-tight">Professional Resumes</h3>
                     </div>
-                 ) : (
-                    <p className="text-[13px] text-slate-400 italic font-medium">No files uploaded.</p>
-                 )}
+                    {(seeker.resumes || []).length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {seeker.resumes?.map((resume) => (
+                            <div key={resume.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex flex-col gap-4 group hover:border-primary/20 hover:bg-white transition-all shadow-sm">
+                              <div className="flex items-center gap-3">
+                                 <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 group-hover:scale-105 transition-all shadow-sm">
+                                    <FileText size={20} />
+                                 </div>
+                                 <div className="min-w-0">
+                                   <p className="text-[13px] font-bold text-slate-900 truncate leading-tight mb-1">{resume.file_name}</p>
+                                   <p className={clsx(
+                                      "text-[10px] font-bold tracking-wider",
+                                      resume.is_default ? "text-emerald-600" : "text-slate-400"
+                                   )}>{resume.is_default ? "Primary Document" : "Supplementary"}</p>
+                                 </div>
+                              </div>
+                              <a
+                                href={resolveMediaUrl(resume.file_url || (resume as any).resume_file)}
+                                target="_blank"
+                                className="w-full h-10 rounded-xl border border-indigo-100 bg-white text-[12px] font-bold text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95"
+                              >
+                                <ExternalLink size={14} /> View Document
+                              </a>
+                            </div>
+                          ))}
+                        </div>
+                    ) : (
+                        <div className="p-12 text-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50">
+                           <FileCheck size={32} className="mx-auto text-slate-300 mb-3" />
+                           <p className="text-[13px] text-slate-400 font-bold">No documents uploaded yet</p>
+                        </div>
+                    )}
+                </div>
              </div>
           )}
 
           {activeTab === "Activity" && (
-             <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
-                 <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
-                     <Clock size={16} className="text-indigo-500" /> Recent Applications
-                 </h3>
-                 {(seeker.job_applications || []).length > 0 ? (
-                    <div className="space-y-3">
-                      {seeker.job_applications?.map((app: any) => (
-                        <div key={app.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex items-center justify-between group">
-                          <div className="flex items-center gap-3">
-                             <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-emerald-600 transition-colors">
-                                <Briefcase size={18} />
-                             </div>
-                             <div>
-                               <p className="text-[13px] font-semibold text-slate-900">{app.job?.title || "Job Application"}</p>
-                               <p className="text-[11px] text-slate-500 font-medium">Applied {fmt(app.created_at)}</p>
-                             </div>
-                          </div>
-                          <div className={clsx(
-                             "px-3 py-1 rounded-full text-[10px] font-semibold border lowercase",
-                             app.status === "shortlisted" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-white text-slate-400 border-slate-200"
-                          )}>
-                             {app.status || "applied"}
-                          </div>
-                        </div>
-                      ))}
+             <div className="lg:col-span-2 space-y-6">
+                <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-6 space-y-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                         <Clock size={16} />
+                      </div>
+                      <h3 className="text-[15px] font-bold text-slate-900 tracking-tight">Recent Application History</h3>
                     </div>
-                 ) : (
-                    <p className="text-[13px] text-slate-400 italic font-medium">No application records found.</p>
-                 )}
+                    {(seeker.job_applications || []).length > 0 ? (
+                        <div className="space-y-3">
+                          {seeker.job_applications?.map((app: any) => (
+                            <div key={app.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group hover:border-emerald-200 hover:bg-white transition-all">
+                              <div className="flex items-center gap-4">
+                                 <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-emerald-600 group-hover:scale-105 transition-all shadow-sm overflow-hidden">
+                                     {app.job?.employer?.company_logo ? (
+                                        <img src={resolveMediaUrl(app.job.employer.company_logo)} className="w-full h-full object-cover" />
+                                     ) : (
+                                        <Building size={20} />
+                                     )}
+                                 </div>
+                                 <div>
+                                   <p className="text-[14px] font-bold text-slate-900 leading-tight mb-1">{app.job?.title || "Job Application"}</p>
+                                   <div className="flex items-center gap-2 text-[11px] font-bold text-slate-500 tracking-wide">
+                                      <span className="text-emerald-600">{app.job?.employer?.company_name || "Enterprise"}</span>
+                                      <span className="opacity-40">•</span>
+                                      <span>Applied {fmt(app.created_at)}</span>
+                                   </div>
+                                 </div>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                 <div className={clsx(
+                                    "px-3 py-1 rounded-full text-[10px] font-bold tracking-wider border",
+                                    app.status === "shortlisted" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : 
+                                    app.status === "rejected" ? "bg-rose-50 text-rose-500 border-rose-100" :
+                                    "bg-white text-slate-400 border-slate-200"
+                                 )}>
+                                    {app.status || "applied"}
+                                 </div>
+                                 <Link href={`/jobs/${app.job_id}`} className="p-2 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary hover:border-primary/20 transition-all">
+                                    <ExternalLink size={14} />
+                                 </Link>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                    ) : (
+                        <div className="p-12 text-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50">
+                           <Briefcase size={32} className="mx-auto text-slate-300 mb-3" />
+                           <p className="text-[13px] text-slate-400 font-bold">No application history found</p>
+                        </div>
+                    )}
+                </div>
              </div>
           )}
       </div>
@@ -354,12 +397,16 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
 
 function Field({ label, value, icon: Icon }: { label: string; value?: React.ReactNode | string | number | null; icon?: any }) {
   return (
-    <div className="space-y-1.5">
-      <p className="text-[11px] font-semibold text-slate-500">{label}</p>
-      <div className="flex items-center gap-2 min-h-[20px]">
-        {Icon && <Icon size={14} className="text-slate-400 shrink-0" />}
-        <div className="text-[14px] text-slate-900 font-semibold truncate leading-tight flex items-center">
-          {value || <span className="text-slate-400 font-medium">—</span>}
+    <div className="space-y-2">
+      <p className="text-[11px] font-semibold text-slate-900 tracking-wide leading-none">{label}</p>
+      <div className="flex items-center gap-2.5 min-h-[24px]">
+        {Icon && (
+          <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+            <Icon size={14} />
+          </div>
+        )}
+        <div className="text-[14px] text-slate-900 font-semibold leading-tight flex items-center">
+          {value || <span className="text-slate-900/40 font-medium">Not Provided</span>}
         </div>
       </div>
     </div>

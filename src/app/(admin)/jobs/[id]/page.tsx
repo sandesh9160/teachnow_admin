@@ -21,10 +21,13 @@ import {
   Loader2,
   Bookmark,
   Clock,
-  Layout as LayoutIcon,
-  History as HistoryIcon,
+  Zap,
+  TrendingUp,
+  CheckCircle,
+  FileText,
+  Target,
   ShieldCheck,
-  Zap
+  History
 } from "lucide-react";
 import { getJob, approveJob, rejectJob, featureJob, deleteJob, updateJobSEO, updateJob } from "@/services/admin.service";
 import { Job } from "@/types";
@@ -123,7 +126,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   if (!job) return <div className="p-12 text-center text-slate-400 font-medium border border-dashed border-slate-200 rounded-2xl">Job listing not found.</div>;
 
   return (
-    <div className="max-w-5xl mx-auto space-y-5 pb-10 antialiased">
+    <div className="w-full space-y-5 pb-10 antialiased">
       {/* ─── Compact Breadcrumb & Actions ──────────────────────────────── */}
       <div className="flex items-center justify-between">
         <Link 
@@ -173,7 +176,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         </div>
       </div>
 
-      <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         {/* ─── Header Section ─────────────────────────────────────────── */}
         <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 border-b border-slate-100 bg-slate-50/30">
            <div className="flex items-center gap-5">
@@ -241,111 +244,114 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         {/* ─── Main Content ───────────────────────────────────────────── */}
         <div className="p-6">
            {activeTab === "Overview" && (
-               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                  <div className="lg:col-span-3 space-y-6">
-                     {/* Full Description */}
-                     <section className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
-                        <div className="flex items-center gap-2.5 mb-4">
-                           <AlignLeft size={16} className="text-primary" />
-                           <h3 className="text-[13px] font-bold text-slate-900 tracking-tight">
-                               Job Insights & Requirements
-                           </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
+                  {/* Left Column: Role Details & Questions */}
+                  <div className="space-y-6">
+                    {/* About the Role */}
+                    <section className="bg-white p-6 rounded-xl border border-slate-100/60 shadow-sm">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                          <FileText size={18} />
                         </div>
-                        <div 
-                          className="prose prose-slate prose-sm max-w-none text-slate-700 font-medium description-content leading-relaxed"
-                          dangerouslySetInnerHTML={{ __html: job.description }}
-                        />
-                     </section>
+                        <h3 className="text-[15px] font-bold text-slate-900 tracking-tight">About the Role</h3>
+                      </div>
+                      <div 
+                        className="prose prose-slate prose-sm max-w-none text-slate-700 font-medium leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: job.description }}
+                      />
+                    </section>
 
-                     {/* Key Metrics Grid */}
-                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {[
-                           { label: "Salary Package", value: `₹${Number(job.salary_min).toLocaleString()} - ₹${Number(job.salary_max).toLocaleString()}`, icon: IndianRupee, color: "text-emerald-600", bg: "bg-emerald-50" },
-                           { label: "Positions", value: `${job.vacancies} Vacancies`, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-                           { label: "Experience", value: job.experience_type?.replace('_', ' ') || "Any", icon: HistoryIcon, color: "text-amber-600", bg: "bg-amber-50" }
-                        ].map((stat, i) => (
-                          <div key={i} className="p-4 bg-white border border-slate-100 rounded-2xl flex items-center gap-4 shadow-sm hover:border-slate-200 transition-all group">
-                             <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform shadow-sm", stat.bg, stat.color)}>
-                                <stat.icon size={18} />
-                             </div>
-                             <div className="min-w-0">
-                                <p className="text-[11px] font-semibold text-slate-500 leading-none mb-1.5">{stat.label}</p>
-                                <p className="text-[14px] font-bold text-slate-900 capitalize truncate">{stat.value}</p>
-                             </div>
+                    {/* Candidate Questions */}
+                    {(job as any).questions && (job as any).questions.length > 0 && (
+                      <section className="bg-white p-6 rounded-xl border border-slate-100/60 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                          <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                            <Target size={18} />
                           </div>
-                        ))}
-                     </div>
-
-                     {/* Secondary Info */}
-                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {[
-                            { label: "Category", value: job.category?.name || "Other", icon: LayoutIcon, color: "text-indigo-500" },
-                            { label: "Service Type", value: job.job_type?.replace('_', ' ') || "Full-time", icon: Bookmark, color: "text-rose-500" },
-                            { label: "Closure Date", value: job.expires_at ? new Date(job.expires_at).toLocaleDateString() : "Rolling", icon: Clock, color: "text-amber-500" }
-                        ].map((item, i) => (
-                            <div key={i} className="flex flex-col gap-1.5 p-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50/50 transition-colors">
-                                <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1.5 uppercase tracking-wider"><item.icon size={12} className={item.color}/> {item.label}</span>
-                                <span className="text-[13px] font-bold text-slate-900 capitalize" suppressHydrationWarning>{item.value}</span>
-                            </div>
-                        ))}
-                     </div>
-                  </div>
-
-                  {/* Sidebar Status Info */}
-                  <div className="space-y-4">
-                     <div className={clsx(
-                         "p-5 rounded-[24px] text-white shadow-xl relative overflow-hidden transition-all",
-                         job.job_status === 'open' ? "bg-primary shadow-primary/20" : "bg-slate-800 shadow-slate-900/20"
-                     )}>
-                        <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-8 -mt-8" />
-                        <div className="flex items-center gap-2 mb-2 opacity-90">
-                           <Zap size={14} className="fill-white" />
-                           <h3 className="text-[11px] font-semibold tracking-wide">Market Status</h3>
-                        </div>
-                        <p className="text-xl font-bold tracking-tight capitalize leading-tight">{job.job_status}</p>
-                        <div className="mt-6 pt-4 border-t border-white/20 flex items-center justify-between">
-                           <span className="text-[11px] font-medium opacity-80">Admin Lock</span>
-                           <span className={clsx(
-                               "text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 leading-none",
-                               job.is_active ? "text-white" : "text-rose-200"
-                           )}>
-                             {job.is_active ? "Live" : "Inactive"}
-                           </span>
-                        </div>
-                     </div>
-
-                     <div className="p-5 bg-white border border-slate-200 rounded-[24px] shadow-sm space-y-4">
-                        <div className="flex items-center gap-2.5 text-slate-900">
-                           <ShieldCheck size={16} className="text-emerald-500" />
-                           <h3 className="text-[12px] font-bold tracking-tight">Moderation Sync</h3>
+                          <h3 className="text-[15px] font-bold text-slate-900 tracking-tight">Candidate Questions</h3>
                         </div>
                         <div className="space-y-3">
-                           <div className="flex items-center justify-between text-[12px] font-medium pb-2.5 border-b border-slate-100">
-                              <span className="text-slate-500">Registry Entry</span>
-                              <span className="text-slate-900 font-bold opacity-60"># {job.id}</span>
+                          {(job as any).questions.map((q: any, i: number) => (
+                            <div key={i} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl border border-slate-100 group">
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-[11px] font-bold text-slate-400 group-hover:text-primary transition-colors shrink-0 border border-slate-200">{i + 1}</span>
+                                <p className="text-[12px] font-semibold text-slate-700 leading-snug">{q.question}</p>
+                              </div>
+                              <div className="flex flex-col items-end gap-0.5 shrink-0 ml-4">
+                                <span className="text-[9px] text-slate-400 font-medium h-3 leading-none uppercase">Expected Answer</span>
+                                <span className="text-[11px] font-bold text-primary group-hover:text-primary transition-colors lowercase h-4 leading-none">{q.recruiter_answer}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+                    )}
+                  </div>
+
+                  {/* Right Column: Statistics & Actions */}
+                  <div className="space-y-4">
+                    {/* Meta Cards Registry */}
+                    {[
+                      { icon: <Briefcase size={16} />, label: "Subject", value: job.category?.name || "Physics Teaching", theme: "bg-blue-50 text-blue-600" },
+                      { icon: <Users size={16} />, label: "Openings", value: `${job.vacancies} Positions`, theme: "bg-indigo-50 text-indigo-600" },
+                      { icon: <IndianRupee size={16} />, label: "Monthly Salary", value: `\u20B9${Number(job.salary_min).toLocaleString()} - \u20B9${Number(job.salary_max).toLocaleString()}`, theme: "bg-emerald-50 text-emerald-600" },
+                      { icon: <History size={16} />, label: "Experience Required", value: `${job.experience_required}y (${job.experience_type?.replace('_', ' ') || "Experienced"})`, theme: "bg-purple-50 text-purple-600" },
+                      { icon: <TrendingUp size={16} />, label: "Home Page Featuring", value: job.admin_featured ? "Featured" : "Standard", theme: "bg-blue-50 text-blue-600" },
+                      job.admin_featured && { 
+                        icon: <Clock size={16} />, 
+                        label: "Featured Deadline", 
+                        value: (job.featured_until && job.featured_until !== "0000-00-00 00:00:00") 
+                          ? new Date(job.featured_until).toLocaleDateString() 
+                          : (job.expires_at ? new Date(job.expires_at).toLocaleDateString() : "No Deadline"), 
+                        theme: "bg-rose-50 text-rose-600" 
+                      },
+                      { icon: <ShieldCheck size={16} />, label: "Admin Home Status", value: job.admin_featured ? "Primary" : "Regular", theme: "bg-slate-50 text-slate-600" }
+                    ].filter(Boolean).map((card: any, i: number) => (
+                      <div key={i} className="p-3.5 bg-white border border-slate-100 rounded-xl shadow-sm flex items-center gap-3.5 group hover:border-slate-200 transition-all hover:bg-slate-50/20">
+                        <div className={clsx("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform", card.theme)}>
+                          {card.icon}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-semibold text-slate-400 group-hover:text-slate-500 transition-colors leading-none mb-1.5">{card.label}</p>
+                          <p className="text-[13px] font-bold text-slate-900 group-hover:text-primary transition-colors truncate capitalize leading-tight">{card.value}</p>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 space-y-4 shadow-sm">
+                        <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest pl-1">Key Dates</p>
+                        <div className="space-y-2.5">
+                           <div className="flex items-center justify-between p-2 rounded-lg hover:bg-white transition-all group">
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 group-hover:bg-indigo-100 transition-colors"><Calendar size={13} /></div>
+                                <span className="text-[11px] font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">Posted on</span>
+                              </div>
+                              <span className="text-[12px] font-bold text-slate-700">{new Date(job.created_at).toLocaleDateString()}</span>
                            </div>
-                           <div className="flex items-center justify-between text-[12px] font-medium">
-                              <span className="text-slate-500">Priority Level</span>
-                              {job.admin_featured ? (
-                                  <span className="text-amber-700 font-bold flex items-center gap-1.5 bg-amber-50 px-2.5 py-0.5 rounded-full">Featured <Star size={11} className="fill-current" /></span>
-                              ) : (
-                                  <span className="text-slate-500">Standard</span>
-                              )}
+                           <div className="flex items-center justify-between p-2 rounded-lg hover:bg-white transition-all group font-serif">
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center text-rose-500 group-hover:bg-rose-100 transition-colors"><Clock size={13} /></div>
+                                <span className="text-[11px] font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">Apply Before</span>
+                              </div>
+                              <span className="text-[12px] font-bold text-slate-700">
+                                {job.application_deadline && job.application_deadline !== "0000-00-00" ? new Date(job.application_deadline).toLocaleDateString() : (job.expires_at ? new Date(job.expires_at).toLocaleDateString() : 'Rolling')}
+                              </span>
+                           </div>
+                           <div className="flex items-center justify-between p-2 rounded-lg hover:bg-white transition-all group">
+                              <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-100 transition-colors"><CheckCircle size={13} /></div>
+                                <span className="text-[11px] font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">Post Status</span>
+                              </div>
+                              <span className="text-[12px] font-bold text-slate-700 capitalize">{job.status}</span>
                            </div>
                         </div>
-                     </div>
-
-                     <div className="p-5 bg-slate-50 border border-slate-200 rounded-[24px]">
-                        <p className="text-[11px] font-medium text-slate-500 leading-relaxed italic">
-                           Ensure company credentials are verified against the registry before manual approval or featured promotion.
-                        </p>
-                     </div>
+                    </div>
                   </div>
-               </div>
-           )}
+                </div>
+            )}
 
            {activeTab === "SEO Settings" && (
-               <form onSubmit={handleSaveSeo} className="max-w-2xl space-y-5 bg-slate-50/50 p-6 rounded-[24px] border border-slate-100">
+               <form onSubmit={handleSaveSeo} className="max-w-2xl space-y-5 bg-slate-50/50 p-6 rounded-xl border border-slate-100">
                   <div className="space-y-2">
                     <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2">
                       <Tag size={14} className="text-primary" /> Meta Title

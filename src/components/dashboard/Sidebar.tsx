@@ -199,7 +199,7 @@ export default function Sidebar({
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between h-20 px-6 border-b border-surface-100">
+        <div className="flex items-center justify-between h-16 px-5 border-b border-surface-100">
           {!collapsed ? (
             <div className="flex items-center justify-between w-full">
                 <Link href="/dashboard" className="flex items-center gap-3 active:scale-95 transition-transform">
@@ -227,12 +227,12 @@ export default function Sidebar({
           )}
         </div>
 
-        <nav className="flex-1 overflow-y-auto px-4 py-4 space-y-1.5 no-scrollbar">
+        <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1 no-scrollbar">
           {navGroups.map((group, groupIndex) => {
             return (
-            <div key={groupIndex} className="space-y-0.5 pb-4">
+            <div key={groupIndex} className="space-y-0.5 pb-2">
               {!collapsed && (
-                <div className="px-3 flex items-center gap-2 mb-2 pt-1">
+                <div className="px-3 flex items-center gap-2 mb-1 pt-0.5">
                     <p className="text-[10px] font-semibold text-slate-400 tracking-wider">
                         {group.label}
                     </p>
@@ -249,7 +249,7 @@ export default function Sidebar({
                         <div
                           className={clsx(
                             "flex items-center justify-between transition-all duration-200 group relative",
-                            collapsed ? "justify-center px-0 py-2.5 rounded-xl mb-1" : "px-3 py-2 rounded-xl mb-0.5",
+                            collapsed ? "justify-center px-0 py-2 rounded-xl mb-0.5" : "px-3 py-1.5 rounded-xl mb-0.5",
                             active && !hasChildren
                               ? "bg-blue-50/60 ring-1 ring-blue-100/50 text-blue-600 shadow-sm"
                               : "text-slate-500 hover:bg-slate-50"
@@ -289,8 +289,8 @@ export default function Sidebar({
                     </div>
 
                     {!collapsed && hasChildren && isOpen && (
-                        <div className="mt-1 relative ml-6 pl-4 border-l-[1.5px] border-slate-100">
-                           <div className="space-y-1.5 pt-1 pb-1">
+                        <div className="mt-0.5 relative ml-6 pl-4 border-l-[1.5px] border-slate-100">
+                           <div className="space-y-0.5 pt-0.5 pb-0.5">
                                {item.children?.map((child) => {
                                    const childActive = isActive(child.href);
                                    return (
@@ -298,7 +298,7 @@ export default function Sidebar({
                                         key={child.href} 
                                         href={child.href}
                                         className={clsx(
-                                            "flex items-center py-1.5 text-[12px] transition-all",
+                                            "flex items-center py-1 text-[12px] transition-all",
                                             childActive ? "text-blue-600 font-semibold" : "text-slate-400 hover:text-blue-600 font-medium"
                                         )}
                                        >
@@ -318,12 +318,12 @@ export default function Sidebar({
         </nav>
 
         {/* Footer */}
-        <div className="px-4 py-4 border-t border-slate-100">
+        <div className="px-3 py-3 border-t border-slate-100">
           <button
             onClick={handleLogout}
             suppressHydrationWarning
             className={clsx(
-              "w-full flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 group active:scale-95",
+              "w-full flex items-center gap-3 rounded-xl px-3 py-2 transition-all duration-200 group active:scale-95",
               "text-slate-500 hover:text-blue-600 hover:bg-blue-50/50 font-semibold text-[13px]",
               collapsed && "justify-center px-0"
             )}

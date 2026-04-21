@@ -69,7 +69,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6 pb-20 antialiased animate-fade-in-up">
+    <div className="space-y-4 pb-10 antialiased animate-fade-in-up">
       {/* Header with high density */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -83,7 +83,7 @@ export default function DashboardPage() {
             </button>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         <StatWidget label="Total Jobs" value={stats?.total_jobs || 0} icon={<Briefcase />} color="emerald" />
         <StatWidget label="Job Seekers" value={stats?.total_job_seekers || 0} icon={<Users />} color="blue" />
         <StatWidget label="Recruiters" value={stats?.total_recruiters || 0} icon={<UserCheck />} color="cyan" />
@@ -91,10 +91,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Main Sections moved up for maximum density */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-2">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-2">
         {/* Recent Applications */}
-        <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-card">
-            <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-white">
+        <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-card">
+            <div className="px-4 py-3 border-b border-slate-50 flex items-center justify-between bg-white">
                 <h3 className="text-base font-semibold text-slate-900 tracking-tight">Recent Applications</h3>
                 <Link href="/jobseekers" className="text-sm font-semibold text-primary hover:underline flex items-center gap-1 transition-all group">
                     View All <ArrowUpRight size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -110,9 +110,9 @@ export default function DashboardPage() {
                     const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Apr 18, 2026";
                     
                     return (
-                        <div key={i} className="px-5 py-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer group" onClick={() => router.push(`/jobseekers/${r.job_seeker_id}`)}>
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-400 border border-slate-100 overflow-hidden shrink-0">
+                        <div key={i} className="px-4 py-3 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer group" onClick={() => router.push(`/jobseekers/${r.job_seeker_id}`)}>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-400 border border-slate-100 overflow-hidden shrink-0">
                                     {photo ? (
                                         <img src={resolveMediaUrl(photo)} alt="" className="w-full h-full object-cover" />
                                     ) : (
@@ -144,9 +144,9 @@ export default function DashboardPage() {
             </div>
         </div>
 
-        {/* Recent Jobs */}
-        <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
-            <div className="px-5 py-6 border-b border-slate-50 flex items-center justify-between bg-white">
+        {/* Recent Jobs Registry */}
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+            <div className="px-4 py-3 border-b border-slate-50 flex items-center justify-between bg-white">
                 <h3 className="text-base font-semibold text-slate-900 tracking-tight">Recent Jobs</h3>
                 <Link href="/jobs" className="text-sm font-semibold text-primary hover:underline flex items-center gap-1 transition-all group">
                     View All <ArrowUpRight size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -161,9 +161,9 @@ export default function DashboardPage() {
                     const date = j.created_at ? new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Just now";
                     
                     return (
-                        <div key={i} className="px-5 py-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer group" onClick={() => router.push(`/jobs/edit/${j.id}`)}>
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-400 border border-slate-100 overflow-hidden shrink-0">
+                        <div key={i} className="px-4 py-3 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer group" onClick={() => router.push(`/jobs/edit/${j.id}`)}>
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-400 border border-slate-100 overflow-hidden shrink-0">
                                     {logo ? (
                                         <img src={resolveMediaUrl(logo)} alt="" className="w-full h-full object-cover" />
                                     ) : (
@@ -210,16 +210,14 @@ function StatWidget({ label, value, icon, color }: any) {
   const theme = themes[color] || themes.blue;
 
   return (
-    <div className="p-3.5 rounded-xl bg-white border border-slate-100 transition-all duration-300 shadow-sm group hover:shadow-md relative overflow-hidden">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-[11px] font-semibold text-slate-500 tracking-tight">{label}</p>
-        <div className={clsx("w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:rotate-12", theme.iconBg, theme.accent)}>
-          {React.cloneElement(icon as React.ReactElement<any>, { size: 16, strokeWidth: 2.5 })}
-        </div>
+    <div className="px-4 py-5 rounded-lg bg-white border border-slate-100 transition-all duration-300 shadow-sm group hover:shadow-md relative overflow-hidden flex flex-col items-center justify-center gap-3">
+      <div className={clsx("w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:rotate-12 group-hover:scale-110", theme.iconBg, theme.accent)}>
+        {React.cloneElement(icon as React.ReactElement<any>, { size: 18, strokeWidth: 2 })}
       </div>
       
-      <div className="space-y-0.5">
-        <h4 className="text-xl font-semibold text-slate-900 tracking-tight leading-none">{value}</h4>
+      <div className="text-center space-y-0.5">
+        <h4 className="text-xl font-bold text-slate-900 tracking-tight leading-none">{value}</h4>
+        <p className="text-[11px] font-semibold text-slate-500 tracking-tight">{label}</p>
       </div>
     </div>
   );

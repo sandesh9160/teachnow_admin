@@ -208,6 +208,7 @@ export interface Job {
   featured: number | boolean;
   admin_featured: number | boolean;
   application_deadline: string | null;
+  featured_until: string | null;
   slug: string;
   meta_title?: string | null;
   meta_description?: string | null;
@@ -252,6 +253,8 @@ export interface JobSeeker {
   is_active?: number | boolean;
   status?: any;
   is_verified?: number | boolean;
+  gender?: string | null;
+  notice_period?: string | null;
   created_at: string;
   updated_at: string;
   user: {

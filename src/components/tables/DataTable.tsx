@@ -34,13 +34,13 @@ export default function DataTable<T>({
 
   return (
     <div className={clsx(
-        "relative w-full overflow-hidden bg-white/50 backdrop-blur-sm rounded-2xl border border-surface-200/60 shadow-xl shadow-surface-900/5",
+        "relative w-full overflow-hidden bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40",
         compact && "border-none shadow-none bg-transparent rounded-none"
     )}>
       <table suppressHydrationWarning className="w-full caption-bottom text-sm border-separate border-spacing-0">
         <thead className={clsx(
-            "bg-indigo-50/40 sticky top-0 z-10",
-            compact && "bg-transparent border-b-2 border-indigo-100"
+            "bg-white sticky top-0 z-10",
+            compact && "bg-transparent border-b-2 border-slate-100"
         )}>
           <tr className={clsx(
               !compact && "border-b border-surface-200/60"
@@ -49,7 +49,7 @@ export default function DataTable<T>({
               <th
                 key={col.key}
                 className={clsx(
-                    "px-6 py-4 text-left text-[11px] font-semibold text-indigo-500/80 border-b border-indigo-100/80 bg-indigo-50/50",
+                    "px-6 py-4 text-left text-[11px] font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 bg-white",
                     compact && "px-4 py-3",
                     idx === 0 && "rounded-tl-2xl",
                     idx === columns.length - 1 && "rounded-tr-2xl"

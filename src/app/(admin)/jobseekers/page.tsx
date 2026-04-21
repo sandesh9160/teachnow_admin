@@ -41,13 +41,10 @@ export default function JobSeekersPage() {
       const res = await getJobSeekers({ page });
       const resData = (res as any).data;
       const list = (resData?.data || []).map((item: any) => {
-        if (typeof item.is_active === "undefined") {
-          if (typeof item.user?.is_active !== "undefined") {
-            item.is_active = item.user.is_active;
-          } else if (typeof item.status !== "undefined") {
-            item.is_active = item.status;
-          }
-        }
+        const val = item.is_active ?? item.user?.is_active ?? item.status;
+        item.is_active = (typeof val === 'string') 
+          ? (val.toLowerCase() === 'active' || val === '1') 
+          : !!val;
         return item;
       });
       
@@ -112,18 +109,15 @@ export default function JobSeekersPage() {
       {/* Header Evolution */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-col gap-0.5">
-            <h1 className="text-2xl font-bold text-slate-900 t">Jobseeker Management</h1>
-            <p className="text-[13px] text-slate-700 font-medium">
+            <h1 className="text-xl font-bold text-slate-900">Jobseeker Management</h1>
+            <p className="text-[11px] text-slate-500 font-semibold leading-none mt-1">
                 Manage candidate accounts <span className="mx-1">·</span> Total {pagination?.total || 0}
             </p>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => fetchJobSeekers(pagination?.currentPage)}
               className="p-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:text-primary transition-all active:scale-95 shadow-sm">
-                <RotateCcw size={18} className={clsx(loading && "animate-spin")} />
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-900 text-[13px] font-semibold rounded-xl hover:bg-slate-50 transition-all shadow-sm active:scale-95">
-                <Layers size={16} className="text-slate-400" /> Export
+                <RotateCcw size={16} className={clsx(loading && "animate-spin")} />
             </button>
           </div>
       </div>
@@ -135,13 +129,13 @@ export default function JobSeekersPage() {
             { label: "Active Accounts", value: jobSeekers.filter(j => j.is_active).length, icon: UserCheck, color: "text-emerald-600", bg: "bg-emerald-50" },
             { label: "Recent Joiners", value: jobSeekers.filter(j => new Date(j.created_at).getTime() > Date.now() - 7*24*60*60*1000).length, icon: Briefcase, color: "text-amber-600", bg: "bg-amber-50" }
         ].map((stat, i) => (
-            <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between group hover:border-slate-300 transition-all">
+            <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between group hover:border-slate-300 transition-all">
                 <div className="min-w-0">
-                    <p className="text-[11px] font-semibold text-slate-500 mb-1">{stat.label}</p>
-                    <p className="text-2xl font-bold text-slate-900 tracking-tight">{stat.value}</p>
+                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">{stat.label}</p>
+                    <p className="text-xl font-bold text-slate-900 tracking-tight">{stat.value}</p>
                 </div>
-                <div className={clsx("w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm", stat.bg, stat.color)}>
-                    <stat.icon size={22} />
+                <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm border", stat.bg, stat.color)}>
+                    <stat.icon size={18} />
                 </div>
             </div>
         ))}
@@ -149,104 +143,77 @@ export default function JobSeekersPage() {
 
       {/* Search Bar */}
       <div className="relative group">
-        <SearchIcon size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+        <SearchIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
         <input 
             type="text" 
             placeholder="Search jobseekers by name, role or location..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="w-full pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-xl text-[14px] font-medium text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all" 
+            className="w-full pl-11 pr-6 py-2 bg-white border border-slate-200 rounded-xl text-[12px] font-medium text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all" 
         />
       </div>
 
       {/* Talent Registry Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden relative z-10">
+      <div className="bg-white rounded-xl border border-slate-200/60 shadow-xl shadow-slate-200/30 overflow-hidden relative z-10">
           <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[900px]">
                   <thead>
-                      <tr className="border-b border-slate-100 bg-slate-50/50">
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight">Jobseeker</th>
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight">Location & Contact</th>
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight text-center">Experience</th>
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight text-center">Status</th>
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight text-right">Joined On</th>
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight text-center">Actions</th>
+                      <tr className="border-b border-slate-100 bg-white">
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500  tracking-wider">Jobseeker</th>
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500  tracking-wider">Location & Contact</th>
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500  tracking-wider text-center">Experience</th>
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500  tracking-wider text-right">Joined On</th>
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500  tracking-wider text-center">Actions</th>
                       </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                       {!loading && filtered.map((row: JobSeeker, i: number) => {
                           return (
-                              <tr key={i} className="group hover:bg-slate-50/50 transition-all duration-200 cursor-pointer" onClick={() => router.push(`/jobseekers/${row.id}`)}>
-                                  <td className="px-6 py-5">
-                                      <div className="flex items-center gap-4">
-                                          <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform relative">
+                               <tr key={i} className="group hover:bg-slate-50/30 transition-all duration-200 cursor-pointer" onClick={() => router.push(`/jobseekers/${row.id}`)}>
+                                  <td className="px-4 py-3">
+                                      <div className="flex items-center gap-3">
+                                          <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform relative">
                                               {row.profile_photo ? (
                                                   <img src={resolveMediaUrl(row.profile_photo)} alt="" className="w-full h-full object-cover" />
                                               ) : (
-                                                  <UserCircle size={22} className="text-slate-400" />
+                                                  <UserCircle size={20} className="text-slate-400" />
                                               )}
-                                              <div className={clsx("absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white", row.is_active ? "bg-emerald-500" : "bg-slate-300")} />
+                                              <div className={clsx("absolute bottom-0 right-0 w-2 h-2 rounded-full border-2 border-white", row.is_active ? "bg-emerald-500" : "bg-slate-300")} />
                                           </div>
                                           <div className="min-w-0">
-                                              <p className="text-[14px] font-bold text-slate-900 leading-tight group-hover:text-primary transition-colors">{row.user?.name}</p>
-                                              <p className="text-[11px] text-primary font-semibold mt-1 tracking-wide">{row.title || "Educator"}</p>
+                                              <p className="text-[13px] font-semibold text-slate-900 leading-tight group-hover:text-primary transition-colors">{row.user?.name}</p>
+                                              <p className="text-[10px] text-primary font-semibold mt-0.5 tracking-wide uppercase">{row.title || "Educator"}</p>
                                           </div>
                                       </div>
                                   </td>
-
-                                  <td className="px-6 py-5">
-                                      <div className="space-y-1">
-                                          <div className="flex items-center gap-1.5 text-[13px] font-semibold text-slate-900">
-                                              <MapPinIcon size={14} className="text-slate-400" /> 
+                                  <td className="px-4 py-3">
+                                      <div className="space-y-0.5">
+                                          <div className="flex items-center gap-1.5 text-[12px] font-medium text-slate-700">
+                                              <MapPinIcon size={12} className="text-slate-400" /> 
                                               {row.location || 'Remote'}
                                           </div>
-                                          <div className="text-[11px] text-slate-500 font-medium ml-5">
+                                          <div className="text-[10px] text-slate-400 font-medium ml-4.5">
                                               {row.phone || "No Contact"}
                                           </div>
                                       </div>
                                   </td>
-
-                                  <td className="px-6 py-5 text-center">
-                                      <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50/50 rounded-full border border-indigo-100">
-                                          <span className="text-[13px] font-bold text-indigo-700">{row.experience_years || 0}</span>
-                                          <span className="text-[10px] font-semibold text-indigo-500">Years</span>
+                                  <td className="px-4 py-3 text-center">
+                                      <div className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-indigo-50/50 rounded-full border border-indigo-100">
+                                          <span className="text-[12px] font-semibold text-indigo-700">{row.experience_years || 0}</span>
+                                          <span className="text-[9px] font-semibold text-indigo-400 uppercase">Yrs</span>
                                       </div>
                                   </td>
-
-                                  <td className="px-6 py-5">
-                                      <div className="flex justify-center">
-                                          <div className={clsx(
-                                              "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border shadow-none",
-                                              row.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
-                                          )}>
-                                              {row.is_active ? <UserCheck size={12} /> : <Power size={12} />}
-                                              <span className="lowercase">{row.is_active ? "active" : "inactive"}</span>
-                                          </div>
-                                      </div>
-                                  </td>
-
-                                  <td className="px-6 py-5 text-right text-[13px] text-slate-700 font-semibold">
+                                  <td className="px-4 py-3 text-right text-[11px] text-slate-500 font-medium">
                                       {new Date(row.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                   </td>
-
-                                  <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
+                                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                                       <div className="flex items-center justify-center gap-1.5">
-                                          <button 
-                                              onClick={() => handleToggleStatus(row.id)}
-                                              title={row.is_active ? "Disable account" : "Enable account"}
-                                              className={clsx(
-                                                  "p-2 rounded-xl transition-all active:scale-90 border shadow-sm",
-                                                  row.is_active ? "bg-amber-50 border-amber-100 text-amber-500 hover:bg-amber-100" : "bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100"
-                                              )}
-                                          >
-                                              <Power size={17} />
-                                          </button>
                                           <button 
                                               onClick={() => router.push(`/jobseekers/${row.id}`)}
                                               title="View Account Profile" 
-                                              className="p-2 bg-indigo-50 border border-indigo-100 text-indigo-500 hover:bg-indigo-100 rounded-xl transition-all active:scale-95 shadow-sm"
+                                              className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-primary rounded-lg transition-all active:scale-95"
                                           >
-                                              <EyeIcon size={17} />
+                                              <EyeIcon size={15} />
                                           </button>
                                       </div>
                                   </td>
@@ -273,7 +240,7 @@ export default function JobSeekersPage() {
 
           {/* Pagination Console */}
           {pagination && pagination.lastPage > 1 && (
-                <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-slate-50/15">
+                <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-white">
                     <p className="text-[12px] font-semibold text-slate-700">
                         Showing <span className="text-slate-900 font-bold">{filtered.length}</span> of {pagination.total}
                     </p>

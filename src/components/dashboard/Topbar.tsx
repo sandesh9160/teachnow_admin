@@ -34,7 +34,7 @@ export default function Topbar({ onMenuToggle, collapsed }: TopbarProps) {
         "max-lg:left-0"
       )}
     >
-      <div className="flex items-center justify-between h-full px-6">
+      <div className="flex items-center justify-between h-full px-4">
         {/* Left: Menu toggle + Search */}
         <div className="flex items-center gap-4">
           <button

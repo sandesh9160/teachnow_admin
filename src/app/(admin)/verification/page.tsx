@@ -100,13 +100,13 @@ export default function VerificationPage() {
                 placeholder="Search requests..." 
                 value={search} 
                 onChange={(e) => setSearch(e.target.value)} 
-                className="w-full pl-10 pr-4 py-2 bg-slate-50/50 border border-slate-100 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-primary/30 transition-all font-medium" 
+                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all font-medium shadow-sm" 
             />
           </div>
       </div>
 
       {/* Verification Queue List */}
-      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-card">
+      <div className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-xl shadow-slate-200/30">
           <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-white">
               <h3 className="text-sm font-semibold text-slate-900 tracking-tight">Document List</h3>
               <p className="text-[11px] text-slate-400 font-semibold">{filtered.length} pending reviews</p>
@@ -120,7 +120,7 @@ export default function VerificationPage() {
                   const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "Recently";
                   
                   return (
-                      <div key={i} className="px-5 py-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors group">
+                      <div key={i} className="px-5 py-4 flex items-center justify-between hover:bg-slate-50/30 transition-colors group">
                           <div className="flex items-center gap-4">
                               <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-500 border border-slate-200 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
                                   {logo ? (
@@ -198,7 +198,7 @@ function StatWidget({ label, value, icon, color }: any) {
   const theme = themes[color] || themes.blue;
 
   return (
-    <div className="p-3.5 rounded-xl bg-white border border-slate-100 transition-all duration-300 shadow-sm group hover:shadow-md relative overflow-hidden">
+    <div className="p-4 rounded-xl bg-white border border-slate-200/60 transition-all duration-300 shadow-lg shadow-slate-200/30 group hover:shadow-xl hover:shadow-slate-200/40 relative overflow-hidden">
       <div className="flex items-center justify-between mb-2">
         <p className="text-[11px] font-semibold text-slate-500 tracking-tight">{label}</p>
         <div className={clsx("w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:rotate-12", theme.iconBg, theme.accent)}>

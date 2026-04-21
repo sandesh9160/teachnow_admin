@@ -161,8 +161,8 @@ export default function JobsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex flex-col gap-0.5">
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Jobs Management</h1>
-            <p className="text-[13px] text-slate-700 font-medium">
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Jobs Management</h1>
+            <p className="text-[11px] text-slate-500 font-semibold leading-none mt-1">
                 Showing {jobs.length} jobs <span className="mx-1">·</span> Total {pagination?.total || 0}
             </p>
           </div>
@@ -177,13 +177,13 @@ export default function JobsPage() {
       {/* Filter Matrix */}
       <div className="flex flex-wrap items-center gap-2.5 relative z-[60]">
         <div className="relative flex-1 min-w-[300px]">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input 
               type="text" 
               placeholder="Search by title or institute..." 
               value={search} 
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all shadow-sm"
+              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-[12px] font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all shadow-sm"
           />
         </div>
         
@@ -248,19 +248,19 @@ export default function JobsPage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="bg-white rounded-[24px] border border-slate-200 shadow-sm overflow-hidden relative z-10">
+      <div className="bg-white rounded-xl border border-slate-200/60 shadow-xl shadow-slate-200/30 overflow-hidden relative z-10">
           <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[1000px]">
                   <thead>
-                      <tr className="border-b border-slate-100 bg-slate-50/50">
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight">Job Title</th>
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight">Institute</th>
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight">Location</th>
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight">Type</th>
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight">Salary</th>
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight text-center">Status</th>
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight">Posted</th>
-                          <th className="px-6 py-4 text-[12px] font-semibold text-slate-900 tracking-tight text-center">Actions</th>
+                      <tr className="border-b border-slate-100 bg-white">
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Job Title</th>
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Institute</th>
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Location</th>
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Type</th>
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Salary</th>
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center">Status</th>
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Posted</th>
+                          <th className="px-4 py-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center">Actions</th>
                       </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -269,76 +269,68 @@ export default function JobsPage() {
                           const applicants = (j as any).applications_count || 0;
                           const salary = j.salary_min ? `\u20B9${(Number(j.salary_min)/1000).toFixed(0)}K` : '\u20B90';
                           const logo = (j.employer as any)?.company_logo;
-                          return (
-                              <tr key={i} className="group hover:bg-slate-50/50 transition-all duration-200 cursor-pointer" onClick={() => router.push(`/jobs/${j.id}`)}>
-                                  <td className="px-6 py-5">
-                                      <div className="flex items-center gap-3.5">
-                                          <div className="w-11 h-11 rounded-[14px] bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300 overflow-hidden">
+                          return (                               <tr key={i} className="group hover:bg-slate-50/30 transition-all duration-200 cursor-pointer" onClick={() => router.push(`/jobs/${j.id}`)}>
+                                  <td className="px-4 py-3">
+                                      <div className="flex items-center gap-3">
+                                          <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-300 overflow-hidden">
                                               {logo ? (
                                                   <img src={resolveMediaUrl(logo)} alt="" className="w-full h-full object-cover" />
                                               ) : (
-                                                  <Briefcase size={20} className="text-blue-500" strokeWidth={1.5} />
+                                                  <Briefcase size={16} className="text-slate-400" strokeWidth={2} />
                                               )}
                                           </div>
-                                          <div className="space-y-1">
-                                              <p className="text-[14px] font-semibold text-slate-900 leading-tight group-hover:text-primary transition-colors">{j.title}</p>
-                                              <div className="flex items-center gap-1.5 text-[11px] text-slate-700 font-medium tracking-tight">
-                                                  <Users size={12} className="text-slate-400" />
+                                          <div className="space-y-0.5">
+                                              <p className="text-[13px] font-semibold text-slate-900 leading-tight group-hover:text-primary transition-colors">{j.title}</p>
+                                              <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium tracking-tight">
+                                                  <Users size={10} className="text-slate-400" />
                                                   <span>{applicants} applicants</span>
                                               </div>
                                           </div>
                                       </div>
                                   </td>
-
-                                  <td className="px-6 py-5 truncate max-w-[200px]">
-                                      <p className="text-[13px] font-semibold text-slate-900 leading-snug">{j.employer?.company_name || 'Not Listed'}</p>
+                                  <td className="px-4 py-3 truncate max-w-[200px]">
+                                      <p className="text-[12px] font-medium text-slate-700 leading-snug">{j.employer?.company_name || 'Not Listed'}</p>
                                   </td>
-
-                                  <td className="px-6 py-5">
-                                      <div className="flex items-center gap-2 text-[13px] text-slate-900 font-medium">
-                                          <MapPin size={14} className="text-slate-400" />
+                                  <td className="px-4 py-3">
+                                      <div className="flex items-center gap-1.5 text-[12px] text-slate-600 font-medium">
+                                          <MapPin size={12} className="text-slate-400" />
                                           <span>{j.location || 'Remote'}</span>
                                       </div>
                                   </td>
-
-                                  <td className="px-6 py-5">
+                                  <td className="px-4 py-3">
                                       <div className={clsx(
-                                          "px-3 py-1 rounded-full text-[11px] font-semibold w-fit tracking-tight",
+                                          "px-2 py-0.5 rounded-full text-[10px] font-semibold w-fit tracking-tight",
                                           j.job_type === 'full_time' ? "bg-blue-50 text-blue-600" : "bg-orange-50 text-orange-600"
                                       )}>
                                           {j.job_type?.replace('_', ' ').toLowerCase()}
                                       </div>
                                   </td>
-
-                                  <td className="px-6 py-5">
-                                      <p className="text-[14px] font-semibold text-slate-900">
+                                  <td className="px-4 py-3">
+                                      <p className="text-[12px] font-semibold text-slate-900">
                                           {salary} {j.salary_max ? `- \u20B9${(Number(j.salary_max)/1000).toFixed(0)}K` : ''}
                                       </p>
                                   </td>
-
-                                  <td className="px-6 py-5">
+                                  <td className="px-4 py-3">
                                       <div className="flex justify-center">
                                       <div className={clsx(
-                                          "flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[11px] font-semibold w-fit border shadow-none",
+                                          "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold w-fit border shadow-none",
                                           status === 'approved' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : 
                                           status === 'pending' ? "bg-amber-50 text-amber-600 border-amber-100" : 
                                           "bg-slate-50 text-slate-500 border-slate-100"
                                       )}>
-                                          {status === 'approved' ? <CheckCircle2 size={13} /> : status === 'pending' ? <ClockIcon size={13} /> : <XCircle size={13} />}
+                                          {status === 'approved' ? <CheckCircle2 size={11} /> : status === 'pending' ? <ClockIcon size={11} /> : <XCircle size={11} />}
                                           <span className="lowercase">{status === 'approved' ? 'active' : status}</span>
                                       </div>
                                       </div>
                                   </td>
-
-                                  <td className="px-6 py-5 text-[13px] text-slate-700 font-medium">
+                                  <td className="px-4 py-3 text-[11px] text-slate-500 font-medium">
                                       {j.created_at ? new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '---'}
                                   </td>
-
-                                  <td className="px-6 py-5" onClick={(e) => e.stopPropagation()}>
-                                      <div className="flex items-center justify-center gap-1 text-slate-400">
-                                          <button title="View" onClick={() => router.push(`/jobs/${j.id}`)} className="p-2 hover:bg-slate-100 hover:text-primary rounded-lg transition-all"><Eye size={17} /></button>
-                                          <button title="Edit" onClick={() => router.push(`/jobs/${j.id}`)} className="p-2 hover:bg-slate-100 hover:text-primary rounded-lg transition-all"><Edit2 size={16} /></button>
-                                          <button title="Delete" className="p-2 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all"><Trash2 size={16} /></button>
+                                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                                      <div className="flex items-center justify-center gap-0.5 text-slate-400">
+                                          <button title="View" onClick={() => router.push(`/jobs/${j.id}`)} className="p-1.5 hover:bg-slate-100 hover:text-primary rounded-lg transition-all"><Eye size={15} /></button>
+                                          <button title="Edit" onClick={() => router.push(`/jobs/${j.id}`)} className="p-1.5 hover:bg-slate-100 hover:text-primary rounded-lg transition-all"><Edit2 size={14} /></button>
+                                          <button title="Delete" className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg transition-all"><Trash2 size={14} /></button>
                                       </div>
                                   </td>
                               </tr>
@@ -363,7 +355,7 @@ export default function JobsPage() {
               )}
           </div>
 
-          <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-slate-50/15">
+          <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-white">
                 <p className="text-[12px] font-semibold text-slate-700">
                     Showing <span className="text-slate-900 font-bold">{jobs.length}</span> of {pagination?.total || 0}
                 </p>
@@ -408,7 +400,7 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
             <button 
                 onClick={() => setOpen()}
                 className={clsx(
-                    "flex items-center justify-between gap-3 px-4 py-2.5 bg-white border rounded-xl text-[13px] font-medium transition-all shadow-sm min-w-[140px]",
+                    "flex items-center justify-between gap-3 px-3 py-2 bg-white border rounded-xl text-[12px] font-medium transition-all shadow-sm min-w-[130px]",
                     isOpen ? "border-primary/40 ring-4 ring-primary/5 text-primary" : "border-slate-200 text-slate-900 hover:bg-slate-50"
                 )}
             >

@@ -31,7 +31,7 @@ export default function AdminLayout({
           collapsed ? "lg:pl-[70px]" : "lg:pl-[240px]"
         )}
       >
-        <div className="p-6">{children}</div>
+        <div className="p-4">{children}</div>
       </main>
     </div>
   );

@@ -58,8 +58,13 @@ export default function CMSNavbarPage() {
       // Filter strictly to root nodes to avoid duplicates from raw flat APIs
       const roots = arr.filter(item => !item.parent_id);
       
+      const sortNodes = (nodes: any[]) => {
+        return [...nodes].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+      };
+
       const flatten = (nodes: any[], level = 0): any[] => {
-        return nodes.reduce((acc, node) => {
+        const sorted = sortNodes(nodes);
+        return sorted.reduce((acc, node) => {
           acc.push({ ...node, level });
           if (node.children && Array.isArray(node.children) && node.children.length > 0) {
             acc.push(...flatten(node.children, level + 1));
@@ -115,7 +120,7 @@ export default function CMSNavbarPage() {
 
   const columns = [
     { 
-      key: "order", 
+      key: "display_order", 
       title: "Order", 
       render: (v: unknown) => (
         <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 shadow-inner">
@@ -206,11 +211,11 @@ export default function CMSNavbarPage() {
   ];
 
   return (
-    <div className="space-y-8 pb-16 antialiased">
+    <div className="space-y-6 pb-16 antialiased">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-start gap-4">
-          <Link href="/dashboard" className="mt-1 w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shadow-sm hover:shadow-xl hover:-translate-x-1 active:scale-90">
+          <Link href="/dashboard" className="mt-1 w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shadow-sm hover:shadow-xl hover:-translate-x-1 active:scale-90">
             <ArrowLeft size={18} />
           </Link>
           <div>
@@ -229,15 +234,15 @@ export default function CMSNavbarPage() {
             setEditingItem(null);
             setIsModalOpen(true);
           }}
-          className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95 group"
+          className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95 group"
         >
           <Plus size={18} className="group-hover:rotate-90 transition-transform" />
-          Add Navigation Link
+          Add Link
         </button>
       </div>
 
       {/* Control Bar */}
-      <div className="bg-white p-3 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white p-2.5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="relative flex-1 w-full max-w-md">
           <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
           <input 
@@ -245,23 +250,14 @@ export default function CMSNavbarPage() {
             placeholder="Search links or paths..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-[1.5rem] text-[13px] text-slate-700 outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-medium placeholder:text-slate-300 shadow-inner" 
+            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[13px] text-slate-700 outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-semibold placeholder:text-slate-300 shadow-inner" 
           />
         </div>
-        <div className="flex items-center gap-3 pr-2">
-            <button 
-                onClick={fetchNavigations}
-                disabled={loading}
-                className="flex items-center gap-2 px-4 py-2.5 text-[11px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-600 transition-all group"
-            >
-                <RotateCcw size={14} className={clsx("group-hover:-rotate-45 transition-transform", loading && "animate-spin")} />
-                Sync Database
-            </button>
-        </div>
+        <div className="flex items-center gap-3 pr-2" />
       </div>
 
       {/* Data Landscape */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-2xl hover:shadow-slate-100/50">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-slate-100/50">
         <DataTable compact columns={columns} data={filtered} loading={loading} emptyMessage="No navigation nodes detected in the current structural registry." />
       </div>
 
