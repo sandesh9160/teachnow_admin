@@ -21,6 +21,7 @@ import type {
   Testimonial,
   FAQ,
   PrivacyPolicyItem,
+  PopularSearch,
 } from "@/types";
 
 /**
