@@ -351,6 +351,26 @@ export const deleteCMSCTA = (id: number) =>
 export const toggleCMSCTA = (id: number) => 
   dashboardServerFetch(`/admin/cms/cta/${id}/toggle`, { method: "PATCH" });
 
+// Popular Searches
+export const getPopularSearches = (params?: Record<string, unknown>) => 
+  dashboardServerFetch<PaginatedResponse<PopularSearch>>("/admin/cms/popular-searches", { params });
+
+export const createPopularSearch = (data: Partial<PopularSearch>) => 
+  dashboardServerFetch("/admin/cms/popular-searches", { method: "POST", data });
+
+export const updatePopularSearch = (id: number, data: Partial<PopularSearch>) => 
+  dashboardServerFetch(`/admin/cms/popular-searches/${id}`, {
+    method: "POST",
+    data,
+    params: { _method: "PUT" },
+  });
+
+export const deletePopularSearch = (id: number) => 
+  dashboardServerFetch(`/admin/cms/popular-searches/${id}`, { method: "DELETE" });
+
+export const togglePopularSearchFeatured = (id: number) => 
+  dashboardServerFetch(`/admin/cms/popular-searches/${id}/toggle-featured`, { method: "PATCH" });
+
 // ─── SEO ─────────────────────────────────────────────────────────────────────
 export const getSEOSettings = () => 
   dashboardServerFetch<SEOSetting[]>("/admin/seo");

@@ -188,6 +188,19 @@ export interface SEOSetting {
   og_image?: string;
 }
 
+export interface PopularSearch {
+  id: number;
+  name: string;
+  slug: string;
+  order: number;
+  meta_title: string | null;
+  meta_description: string | null;
+  meta_keywords: string | null;
+  is_featured: number | boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // ─── Job Types ───────────────────────────────────────────────────────────────
 
 export interface Job {
