@@ -36,16 +36,23 @@ export default function ManagePlansPage() {
     }
   };
 
-  const handleUpdatePlan = async (updatedPlan: Plan) => {
+  const handleSavePlan = async (planData: any) => {
     try {
       setSavingPlan(true);
-      await updatePlan(updatedPlan.id, updatedPlan);
-      setPlans(prev => prev.map(p => p.id === updatedPlan.id ? updatedPlan : p));
+      if (planData.id) {
+        // Update existing
+        await updatePlan(planData.id, planData);
+        toast.success("Plan updated successfully");
+      } else {
+        // Create new
+        await createPlan(planData);
+        toast.success("New plan created successfully!");
+      }
+      fetchPlans();
       setEditingPlan(null);
-      toast.success("Plan updated successfully");
     } catch (error) {
-      console.error("Failed to update plan:", error);
-      toast.error("Failed to update plan");
+      console.error("Failed to save plan:", error);
+      toast.error("Failed to save plan");
     } finally {
       setSavingPlan(false);
     }
@@ -55,9 +62,9 @@ export default function ManagePlansPage() {
     try {
       const isHighlighted = !plan.is_highlighted;
       await updatePlan(plan.id, { is_highlighted: isHighlighted });
-      setPlans(prev => prev.map(p => ({ 
-        ...p, 
-        is_highlighted: p.id === plan.id ? isHighlighted : (isHighlighted ? false : p.is_highlighted) 
+      setPlans(prev => prev.map(p => ({
+        ...p,
+        is_highlighted: p.id === plan.id ? isHighlighted : (isHighlighted ? false : p.is_highlighted)
       })));
       toast.success(isHighlighted ? "Plan highlighted" : "Highlight removed");
     } catch (error) {
@@ -76,29 +83,19 @@ export default function ManagePlansPage() {
     }
   };
 
-  const handleCreatePlan = async () => {
-    const newPlanData: Partial<Plan> = {
-      name: "New Premium Plan",
-      slug: "new-premium-plan",
-      price: 1999,
-      offer_price: 1999,
-      actual_price: 2999,
-      job_posts_limit: 10,
-      validity_days: 60,
-      job_live_days: 30,
-      duration: "month",
-      features: ["Mail Notifications", "Recommendations"],
-      is_active: true,
-      is_highlighted: false
+  const handleCreatePlan = () => {
+    const defaultNewPlan: any = {
+      name: "",
+      actual_price: "",
+      offer_price: "",
+      job_posts_limit: "",
+      validity_days: "",
+      job_live_days: "",
+      features: [],
+      featured_jobs_limit: "",
+      company_featured: 0
     };
-
-    try {
-      await createPlan(newPlanData);
-      toast.success("New plan created. You can now edit its details.");
-      fetchPlans();
-    } catch (error) {
-      toast.error("Failed to create plan");
-    }
+    setEditingPlan(defaultNewPlan);
   };
 
   if (loading) {
@@ -122,14 +119,14 @@ export default function ManagePlansPage() {
         </div>
 
         <div className="flex items-center gap-5">
-           <div className="text-right">
-              <span className="text-[12px] font-bold text-slate-400 block tracking-tight">{activeCount} active plans</span>
-           </div>
-           <button 
+          <div className="text-right">
+            <span className="text-[12px] font-bold text-slate-400 block tracking-tight">{activeCount} active plans</span>
+          </div>
+          <button
             onClick={handleCreatePlan}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-[12px] font-bold transition-all active:scale-95 group"
           >
-            <Plus size={14} /> 
+            <Plus size={14} />
             Create New Plan
           </button>
         </div>
@@ -138,20 +135,20 @@ export default function ManagePlansPage() {
       {/* Reference Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-1">
-            <p className="text-[11px] font-semibold text-slate-400">Total Subscribers</p>
-            <p className="text-2xl font-bold text-slate-900 tracking-tight">
-               {(plans || []).reduce((acc, p) => acc + (p.subscribers || 0), 0).toLocaleString()}
-            </p>
+          <p className="text-[11px] font-semibold text-slate-400">Total Subscribers</p>
+          <p className="text-2xl font-bold text-slate-900 tracking-tight">
+            {(plans || []).reduce((acc, p) => acc + (p.subscribers || 0), 0).toLocaleString()}
+          </p>
         </div>
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-1 relative overflow-hidden">
-            <p className="text-[11px] font-semibold text-slate-400">Monthly Revenue</p>
-            <p className="text-2xl font-bold text-emerald-600 tracking-tight">
-               ₹{(plans || []).reduce((acc, p) => acc + (Number(p.offer_price || p.price || 0) * (p.subscribers || 0)), 0).toLocaleString()}
-            </p>
+          <p className="text-[11px] font-semibold text-slate-400">Monthly Revenue</p>
+          <p className="text-2xl font-bold text-emerald-600 tracking-tight">
+            ₹{(plans || []).reduce((acc, p) => acc + (Number(p.offer_price || p.price || 0) * (p.subscribers || 0)), 0).toLocaleString()}
+          </p>
         </div>
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-1">
-            <p className="text-[11px] font-semibold text-slate-400">Active Plans</p>
-            <p className="text-2xl font-bold text-slate-900 tracking-tight">{activeCount}</p>
+          <p className="text-[11px] font-semibold text-slate-400">Active Plans</p>
+          <p className="text-2xl font-bold text-slate-900 tracking-tight">{activeCount}</p>
         </div>
       </div>
 
@@ -160,7 +157,7 @@ export default function ManagePlansPage() {
       {(!plans || plans.length === 0) ? (
         <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] p-20 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 mb-4">
-             <CreditCard size={32} />
+            <CreditCard size={32} />
           </div>
           <h3 className="text-lg font-bold text-slate-900">No active plans detected</h3>
           <p className="text-sm text-slate-400 mt-1 max-w-xs">Your monetization vault is empty. Click "Propose New Plan" to initialize your offerings.</p>
@@ -172,7 +169,7 @@ export default function ManagePlansPage() {
               key={plan.id}
               plan={plan}
               onEdit={() => setEditingPlan(plan)}
-              onSave={handleUpdatePlan}
+              onSave={handleSavePlan}
               onCancel={() => setEditingPlan(null)}
               onToggleHighlight={handleToggleHighlight}
               onToggleStatus={handleToggleStatus}
@@ -185,7 +182,7 @@ export default function ManagePlansPage() {
         plan={editingPlan}
         saving={savingPlan}
         onClose={() => setEditingPlan(null)}
-        onSave={handleUpdatePlan}
+        onSave={handleSavePlan}
       />
     </div>
   );

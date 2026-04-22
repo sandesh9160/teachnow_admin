@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Loader2, Link2, MapPin, Layers, Settings, ChevronRight } from "lucide-react";
+import { X, Loader2, Link2, Settings2, ChevronRight, Hash, Globe, Layers, Zap, Plus, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { createCMSNavigation, updateCMSNavigation } from "@/services/admin.service";
 import { clsx } from "clsx";
@@ -22,19 +22,31 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
     url: "",
     display_order: 1,
     is_active: 1,
-    show_in_nav: 1
+    show_in_nav: 1,
+    slug: ""
   });
 
   useEffect(() => {
     if (isOpen) {
-      if (item) {
+      if (item?.id) {
         setFormData({
           title: item.title || "",
           parent_id: item.parent_id ? String(item.parent_id) : "",
           url: item.url || "",
           display_order: item.display_order || 1,
-          is_active: item.is_active !== undefined ? item.is_active : 1,
-          show_in_nav: item.show_in_nav !== undefined ? item.show_in_nav : 1
+          is_active: item.is_active !== undefined ? (item.is_active ? 1 : 0) : 1,
+          show_in_nav: item.show_in_nav !== undefined ? (item.show_in_nav ? 1 : 0) : 1,
+          slug: item.slug || ""
+        });
+      } else if (item?.parent_id) {
+        setFormData({
+          title: "",
+          parent_id: String(item.parent_id),
+          url: "",
+          display_order: 1,
+          is_active: 1,
+          show_in_nav: 1,
+          slug: ""
         });
       } else {
         setFormData({
@@ -43,7 +55,8 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
           url: "",
           display_order: 1,
           is_active: 1,
-          show_in_nav: 1
+          show_in_nav: 1,
+          slug: ""
         });
       }
     }
@@ -61,20 +74,21 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
         url: formData.url,
         display_order: parseInt(String(formData.display_order)),
         is_active: formData.is_active,
-        show_in_nav: formData.show_in_nav
+        show_in_nav: formData.show_in_nav,
+        slug: formData.slug
       };
 
       if (item?.id) {
         await updateCMSNavigation(item.id, payload);
-        toast.success("Navigation node updated");
+        toast.success("Link updated");
       } else {
         await createCMSNavigation(payload);
-        toast.success("Navigation node created");
+        toast.success("Link created");
       }
       onSuccess();
       onClose();
     } catch (err) {
-      toast.error("An error occurred preserving node state.");
+      toast.error("Failed to save link");
       console.error(err);
     } finally {
       setLoading(false);
@@ -82,68 +96,68 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col border border-slate-100 animate-slide-up">
-        <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div 
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200" 
+        onClick={onClose}
+      />
+      
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20">
-              <Link2 size={18} strokeWidth={2.5} />
+            <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+              {item?.id ? <Pencil size={18} /> : <Plus size={18} />}
             </div>
-            <div>
-              <h2 className="text-[16px] font-black text-slate-900 tracking-tight leading-none">
-                {item ? "Edit Link" : "Add Link"}
-              </h2>
-              <p className="text-[11px] font-bold text-slate-400 mt-1 uppercase tracking-widest">
-                Navigation Settings
-              </p>
-            </div>
+            <h2 className="text-[15px] font-bold text-slate-900 tracking-tight">
+              {item?.id ? "Edit Link" : "Add New Link"}
+            </h2>
           </div>
           <button 
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 transition-all active:scale-90 shadow-sm"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-rose-600 transition-all active:scale-90"
           >
             <X size={16} />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div className="space-y-3">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div className="space-y-4">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                 Link Name
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+                 Link Title
               </label>
               <input 
                 type="text"
                 required
                 value={formData.title}
                 onChange={e => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-400 transition-all placeholder:font-medium placeholder:text-slate-300"
-                placeholder="e.g. FAQS"
+                className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-sm"
+                placeholder="e.g. FAQ"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
                    Parent Link
                 </label>
                 <select
                   value={formData.parent_id}
                   onChange={e => setFormData({ ...formData, parent_id: e.target.value })}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-400 transition-all"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-bold text-slate-900 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all cursor-pointer"
                 >
-                  <option value="">-- None (Top Level) --</option>
+                  <option value="">None (Top Level)</option>
                   {parentOptions.filter(o => o.id !== item?.id).map((o: any) => (
                     <option key={o.id} value={o.id}>
-                      {"\u00A0".repeat((o.level || 0) * 4)}{o.title}
+                      {"\u00A0".repeat((o.level || 0) * 2)} {o.title}
                     </option>
                   ))}
                 </select>
               </div>
               
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                   Order
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+                   Display Order
                 </label>
                 <input 
                   type="number"
@@ -151,13 +165,13 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
                   required
                   value={formData.display_order}
                   onChange={e => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-400 transition-all"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-sm"
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
                  URL Path
               </label>
               <input 
@@ -165,58 +179,100 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
                 required
                 value={formData.url}
                 onChange={e => setFormData({ ...formData, url: e.target.value })}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-mono text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-400 transition-all placeholder:font-sans placeholder:text-slate-300"
-                placeholder="e.g. /open/home/faqs"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-mono font-bold text-indigo-600 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-sm"
+                placeholder="/faqs"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+                 Slug
+              </label>
+              <input 
+                type="text"
+                required
+                value={formData.slug}
+                onChange={e => setFormData({ ...formData, slug: e.target.value })}
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-mono text-slate-500 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-sm"
+                placeholder="faqs"
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
-              <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg border border-slate-100 transition-all hover:bg-slate-50">
-                <div className="relative flex items-center justify-center">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={formData.is_active === 1}
-                    onChange={e => setFormData({ ...formData, is_active: e.target.checked ? 1 : 0 })}
-                  />
-                  <div className={clsx("w-8 h-4 bg-slate-200 rounded-full transition-colors", formData.is_active === 1 && "bg-emerald-500")}></div>
-                  <div className={clsx("absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full transition-transform", formData.is_active === 1 && "translate-x-4")}></div>
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, is_active: formData.is_active ? 0 : 1 })}
+                className={clsx(
+                    "flex-1 flex flex-col items-start p-3 rounded-lg border transition-all text-left",
+                    formData.is_active ? "bg-emerald-50 border-emerald-100" : "bg-slate-50 border-slate-200"
+                )}
+              >
+                <div className="flex items-center justify-between w-full mb-1">
+                  <span className={clsx("text-[10px] font-bold uppercase tracking-wider", formData.is_active ? "text-emerald-600" : "text-slate-400")}>Active Status</span>
+                  <div className={clsx(
+                      "w-7 h-4 rounded-full relative transition-colors",
+                      formData.is_active ? "bg-emerald-500" : "bg-slate-300"
+                  )}>
+                      <div className={clsx(
+                          "absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform",
+                          formData.is_active ? "translate-x-3.5" : "translate-x-0.5"
+                      )} />
+                  </div>
                 </div>
-                <span className="text-[11px] font-bold text-slate-600 group-hover:text-slate-900">Active</span>
-              </label>
+                <span className="text-[9px] font-medium text-slate-500">
+                  {formData.is_active ? "Link is active" : "Link is inactive"}
+                </span>
+              </button>
 
-              <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg border border-slate-100 transition-all hover:bg-slate-50">
-                <div className="relative flex items-center justify-center">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={formData.show_in_nav === 1}
-                    onChange={e => setFormData({ ...formData, show_in_nav: e.target.checked ? 1 : 0 })}
-                  />
-                  <div className={clsx("w-8 h-4 bg-slate-200 rounded-full transition-colors", formData.show_in_nav === 1 && "bg-indigo-600")}></div>
-                  <div className={clsx("absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full transition-transform", formData.show_in_nav === 1 && "translate-x-4")}></div>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, show_in_nav: formData.show_in_nav ? 0 : 1 })}
+                className={clsx(
+                    "flex-1 flex flex-col items-start p-3 rounded-lg border transition-all text-left",
+                    formData.show_in_nav ? "bg-indigo-50 border-indigo-100" : "bg-slate-50 border-slate-200"
+                )}
+              >
+                <div className="flex items-center justify-between w-full mb-1">
+                  <span className={clsx("text-[10px] font-bold uppercase tracking-wider", formData.show_in_nav ? "text-indigo-600" : "text-slate-400")}>Menu Location</span>
+                  <div className={clsx(
+                      "w-7 h-4 rounded-full relative transition-colors",
+                      formData.show_in_nav ? "bg-indigo-600" : "bg-slate-300"
+                  )}>
+                      <div className={clsx(
+                          "absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform",
+                          formData.show_in_nav ? "translate-x-3.5" : "translate-x-0.5"
+                      )} />
+                  </div>
                 </div>
-                <span className="text-[11px] font-bold text-slate-600 group-hover:text-slate-900">Show in Header</span>
-              </label>
+                <span className="text-[9px] font-medium text-slate-500">
+                  {formData.show_in_nav ? "Show in Top Menu" : "Hide from Top Menu"}
+                </span>
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+          <div className="flex gap-3 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-6 py-3 text-[11px] font-black uppercase tracking-widest text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all"
+              className="flex-1 h-10 text-[11px] font-bold uppercase text-slate-400 hover:text-slate-600 transition-all"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="group flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-[11px] font-black uppercase tracking-widest text-white rounded-lg shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-0.5 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none"
+              className="flex-1 h-10 bg-indigo-600 text-white rounded-lg text-[11px] font-bold uppercase shadow-md hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {loading ? <Loader2 size={16} className="animate-spin" /> : <ChevronRight size={16} />}
-              {item ? "Save Changes" : "Add Link"}
+              {loading ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <>
+                  <ChevronRight size={16} />
+                  <span>Save Link</span>
+                </>
+              )}
             </button>
           </div>
         </form>

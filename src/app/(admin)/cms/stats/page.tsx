@@ -52,9 +52,9 @@ export default function CMSStatsPage() {
         total_companies: data.total_companies,
         total_candidates: data.total_candidates,
         total_recruiters: data.total_recruiters,
-        is_active: data.is_active,
+        is_active: 1, // Hardcoded to 1 since UI toggle was removed
       });
-      toast.success("Metrics configuration saved successfully");
+      toast.success("Platform statistics updated successfully!");
     } catch (err) {
       toast.error("Failed to save metrics");
     } finally {
@@ -168,33 +168,7 @@ export default function CMSStatsPage() {
 
         {/* Right Settings Panel */}
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
-               <h3 className="text-[13px] font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
-                 Visibility
-               </h3>
-               
-               <label className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-all">
-                <span className="text-[12px] font-bold text-slate-700">Display metrics publicly</span>
-                <div className="relative flex items-center justify-center">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={data.is_active === 1}
-                    onChange={e => setData({ ...data, is_active: e.target.checked ? 1 : 0 })}
-                  />
-                  <div className={clsx("w-9 h-5 bg-slate-200 rounded-full transition-colors", data.is_active === 1 && "bg-emerald-500")}></div>
-                  <div className={clsx("absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-sm", data.is_active === 1 && "translate-x-4")}></div>
-                </div>
-              </label>
-              
-              <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
-                <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
-                  These metrics showcase the scale of your platform. Updates to these numbers will instantly propagate to the frontend.
-                </p>
-              </div>
-          </div>
         </div>
-
       </div>
     </div>
   );

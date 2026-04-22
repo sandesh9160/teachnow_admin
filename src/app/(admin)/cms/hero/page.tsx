@@ -72,7 +72,7 @@ export default function CMSHeroPage() {
       formData.append("button_text", data.button_text || "");
       formData.append("button_link", data.button_link || "");
       formData.append("trust_text", data.trust_text || "");
-      formData.append("is_active", String(data.is_active));
+      formData.append("is_active", "1");
       
       const file = fileInputRef.current?.files?.[0];
       if (file) {
@@ -234,27 +234,7 @@ export default function CMSHeroPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
-               <h3 className="text-[13px] font-bold text-slate-800 flex items-center gap-2">
-                 Visibility
-               </h3>
-               
-               <label className="flex items-center justify-between p-3 rounded-xl border border-slate-100 hover:bg-slate-50 cursor-pointer transition-all">
-                <span className="text-[12px] font-bold text-slate-700">Make this banner active</span>
-                <div className="relative flex items-center justify-center">
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={data.is_active === 1}
-                    onChange={e => setData({ ...data, is_active: e.target.checked ? 1 : 0 })}
-                  />
-                  <div className={clsx("w-9 h-5 bg-slate-200 rounded-full transition-colors", data.is_active === 1 && "bg-emerald-500")}></div>
-                  <div className={clsx("absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow-sm", data.is_active === 1 && "translate-x-4")}></div>
-                </div>
-              </label>
-          </div>
         </div>
-
       </div>
     </div>
   );

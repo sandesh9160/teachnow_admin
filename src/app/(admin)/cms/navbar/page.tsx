@@ -5,24 +5,15 @@ import {
   ArrowLeft, 
   Plus, 
   Search, 
-  RotateCcw, 
   Trash2, 
   Layout, 
   Menu,
   Pencil,
-  Eye,
-  EyeOff,
-  MoreVertical,
-  GripVertical,
-  Check,
-  X,
   Loader2,
-  Zap,
-  Globe,
-  Settings,
-  ArrowUpRight,
-  Clock,
-  Compass
+  Compass,
+  Settings2,
+  Layers,
+  ChevronRight
 } from "lucide-react";
 import Link from "next/link";
 import { 
@@ -32,7 +23,6 @@ import {
   toggleCMSNavigationNav 
 } from "@/services/admin.service";
 import DataTable from "@/components/tables/DataTable";
-import Badge from "@/components/ui/Badge";
 import CMSNavigationModal from "@/components/modals/CMSNavigationModal";
 import { toast } from "sonner";
 import { clsx } from "clsx";
@@ -53,10 +43,27 @@ export default function CMSNavbarPage() {
       setLoading(true);
       const payload = await getCMSNavigations();
       const data = Array.isArray(payload) ? payload : (payload as any)?.data ?? payload;
-      const arr = Array.isArray(data) ? data : [];
+      const rawArr = Array.isArray(data) ? data : [];
       
-      // Filter strictly to root nodes to avoid duplicates from raw flat APIs
-      const roots = arr.filter(item => !item.parent_id);
+      // Reconstruct tree from flat array (handles multi-level nesting safely)
+      const itemMap = new Map();
+      
+      // First pass: Initialize map with empty children to avoid reference pollution
+      rawArr.forEach(item => {
+        itemMap.set(item.id, { ...item, children: [] });
+      });
+      
+      const roots: any[] = [];
+      
+      // Second pass: Build relationships
+      itemMap.forEach(item => {
+        if (item.parent_id && itemMap.has(item.parent_id)) {
+          const parent = itemMap.get(item.parent_id);
+          parent.children.push(item);
+        } else if (!item.parent_id) {
+          roots.push(item);
+        }
+      });
       
       const sortNodes = (nodes: any[]) => {
         return [...nodes].sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
@@ -85,7 +92,7 @@ export default function CMSNavbarPage() {
   const handleToggleActive = async (id: number) => {
     try {
       await toggleCMSNavigationActive(id);
-      toast.success("Visibility updated");
+      toast.success("Status updated");
       fetchNavigations();
     } catch (error) {
       toast.error("Failed to update status");
@@ -95,21 +102,21 @@ export default function CMSNavbarPage() {
   const handleToggleNav = async (id: number) => {
     try {
       await toggleCMSNavigationNav(id);
-      toast.success("Navigation placement updated");
+      toast.success("Visibility updated");
       fetchNavigations();
     } catch (error) {
-      toast.error("Failed to update navigation placement");
+      toast.error("Failed to update visibility");
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this navigation item?")) return;
+    if (!confirm("Are you sure you want to delete this link?")) return;
     try {
       await deleteCMSNavigation(id);
-      toast.success("Item deleted");
+      toast.success("Link deleted");
       fetchNavigations();
     } catch (error) {
-      toast.error("Failed to delete item");
+      toast.error("Failed to delete link");
     }
   };
 
@@ -123,87 +130,116 @@ export default function CMSNavbarPage() {
       key: "display_order", 
       title: "Order", 
       render: (v: unknown) => (
-        <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-2 py-0.5 rounded-lg border border-slate-100 shadow-inner">
-            {(typeof v === "number" ? v : 0).toString().padStart(2, "0")}
-        </span>
+        <div className="flex items-center justify-center w-6 h-6 rounded-md bg-slate-50 border border-slate-100 text-[10px] font-bold text-slate-400 tabular-nums shadow-sm">
+            {Number(v || 0)}
+        </div>
       )
     },
     { 
       key: "title", 
-      title: "Link Name", 
+      title: "Navigation Link", 
       render: (v: unknown, item: any) => (
-        <div style={{ paddingLeft: `${(item.level || 0) * 1.5}rem` }} className="flex items-center gap-2">
-           {item.level > 0 && <span className="text-slate-300 font-normal">↳</span>}
-           <span className={clsx("font-semibold tracking-tight", (item.level || 0) === 0 ? "text-slate-900 text-[13px]" : "text-slate-600 text-[12px]")}>
-              {typeof v === "string" && v ? v : "Untitled Node"}
-           </span> 
-        </div>
-      )
-    },
-    { 
-      key: "url", 
-      title: "URL Path", 
-      render: (v: unknown) => (
-        <div className="flex items-center gap-2">
-            <code className="bg-indigo-50 px-2.5 py-1 rounded-xl text-[10px] font-bold text-indigo-600 border border-indigo-100 shadow-sm">
-                {typeof v === "string" && v ? v : "/"}
-            </code>
-        </div>
-      ) 
-    },
-    { 
-      key: "in_nav", 
-      title: "Menu Type", 
-      render: (v: unknown, item: any) => (
-        <button 
-          onClick={() => handleToggleNav(item.id)}
-          className={clsx(
-            "flex items-center gap-2 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
-            Boolean(v) ? "bg-slate-900 text-white shadow-lg shadow-slate-200" : "bg-slate-100 text-slate-400 border border-slate-200"
-          )}
+        <div 
+          style={{ paddingLeft: `${(item.level || 0) * 1.5}rem` }} 
+          className="flex items-center gap-3 py-0.5"
         >
-          {Boolean(v) ? <Layout size={12} /> : <Menu size={12} />}
-          {Boolean(v) ? "Header Nav" : "Internal"}
-        </button>
+           {item.level > 0 ? (
+             <div className="w-3 h-3 border-l-2 border-b-2 border-slate-200 rounded-bl-sm -mt-2 ml-1" />
+           ) : (
+             <div className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500 shadow-sm">
+                <Layers size={12} />
+             </div>
+           )}
+           <div className="flex flex-col">
+              <span className={clsx(
+                "font-bold tracking-tight", 
+                (item.level || 0) === 0 ? "text-slate-900 text-[12px]" : "text-slate-600 text-[11px]"
+              )}>
+                {typeof v === "string" && v ? v : "New Link"}
+              </span>
+              <span className="text-[9px] text-slate-400 font-medium truncate max-w-[180px]">
+                {item.url}
+              </span>
+           </div>
+        </div>
       )
+    },
+    { 
+      key: "show_in_nav", 
+      title: "Menu Location", 
+      render: (v: any, item: any) => {
+        const isActive = v === 1 || v === true;
+        return (
+          <button 
+            onClick={() => handleToggleNav(item.id)}
+            className={clsx(
+              "flex items-center gap-2 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all",
+              isActive 
+                ? "bg-slate-900 text-white hover:bg-black shadow-sm" 
+                : "bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200"
+            )}
+          >
+            {isActive ? <Layout size={10} /> : <Menu size={10} />}
+            {isActive ? "Top Menu" : "Hidden"}
+          </button>
+        );
+      }
     },
     { 
       key: "is_active", 
       title: "Status", 
-      render: (v: unknown, item: any) => (
-        <button 
-          onClick={() => handleToggleActive(item.id)}
-          className={clsx(
-            "flex items-center gap-2 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all",
-            Boolean(v) ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"
-          )}
-        >
-          <div className={clsx("w-1.5 h-1.5 rounded-full", Boolean(v) ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.3)]" : "bg-rose-500")} />
-          {Boolean(v) ? "Active" : "Disabled"}
-        </button>
-      ) 
+      render: (v: any, item: any) => {
+        const isActive = v === 1 || v === true;
+        return (
+          <button 
+            onClick={() => handleToggleActive(item.id)}
+            className={clsx(
+              "flex items-center gap-2 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all",
+              isActive 
+                ? "bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100" 
+                : "bg-slate-100 text-slate-400 border border-slate-200 hover:bg-slate-200"
+            )}
+          >
+            <div className={clsx(
+              "w-1.5 h-1.5 rounded-full transition-all", 
+              isActive ? "bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]" : "bg-slate-300"
+            )} />
+            {isActive ? "Active" : "Inactive"}
+          </button>
+        );
+      }
     },
     { 
         key: "actions", 
         title: "Actions", 
         render: (_: any, item: any) => (
-            <div className="flex items-center justify-end gap-1.5">
+            <div className="flex items-center justify-end gap-1.5 pr-2">
                 <button 
-                    title="Edit Link"
+                    title="Add Child"
+                    onClick={() => {
+                       setEditingItem({ parent_id: item.id });
+                       setIsModalOpen(true);
+                    }}
+                    className="w-7 h-7 flex items-center justify-center text-emerald-500 hover:text-white bg-white hover:bg-emerald-500 border border-emerald-100 rounded-lg transition-all shadow-sm"
+                >
+                    <Plus size={12} strokeWidth={3} />
+                </button>
+                <button 
+                    title="Edit"
                     onClick={() => {
                        setEditingItem(item);
                        setIsModalOpen(true);
                     }}
-                    className="p-1.5 text-indigo-500 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all"
+                    className="w-7 h-7 flex items-center justify-center text-indigo-500 hover:text-white bg-white hover:bg-indigo-500 border border-indigo-100 rounded-lg transition-all shadow-sm"
                 >
-                    <Pencil size={14} />
+                    <Pencil size={12} strokeWidth={3} />
                 </button>
                 <button 
                     onClick={() => handleDelete(item.id)}
-                    title="Delete Link"
-                    className="p-1.5 text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg transition-all"
+                    title="Delete"
+                    className="w-7 h-7 flex items-center justify-center text-rose-500 hover:text-white bg-white hover:bg-rose-500 border border-rose-100 rounded-lg transition-all shadow-sm"
                 >
-                    <Trash2 size={14} />
+                    <Trash2 size={12} strokeWidth={3} />
                 </button>
             </div>
         ) 
@@ -211,21 +247,21 @@ export default function CMSNavbarPage() {
   ];
 
   return (
-    <div className="space-y-6 pb-16 antialiased">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex items-start gap-4">
-          <Link href="/dashboard" className="mt-1 w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shadow-sm hover:shadow-xl hover:-translate-x-1 active:scale-90">
+    <div className="space-y-5 pb-10 antialiased max-w-[1100px] mx-auto px-4 md:px-0">
+      {/* Header — Clean & Compact */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-4">
+        <div className="flex items-center gap-4">
+          <Link 
+            href="/dashboard" 
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm active:scale-90"
+          >
             <ArrowLeft size={18} />
           </Link>
           <div>
-            <div className="flex items-center gap-2 mb-2">
-               <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100/50">Navigation Setup</span>
+            <div className="flex items-center gap-2 mb-1">
+               <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 uppercase tracking-tight">CMS Management</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-none">Main Navigation Menu</h1>
-            <p className="text-[13px] text-slate-500 font-medium mt-2 flex items-center gap-2">
-               <Compass size={14} className="text-indigo-500" /> Manage your website's header links and dropdown menus.
-            </p>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-none">Navigation Menu</h1>
           </div>
         </div>
         
@@ -234,31 +270,39 @@ export default function CMSNavbarPage() {
             setEditingItem(null);
             setIsModalOpen(true);
           }}
-          className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:-translate-y-1 transition-all active:scale-95 group"
+          className="h-10 flex items-center gap-2 px-5 bg-indigo-600 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
         >
-          <Plus size={18} className="group-hover:rotate-90 transition-transform" />
-          Add Link
+          <Plus size={16} />
+          <span>Add New Link</span>
         </button>
       </div>
 
-      {/* Control Bar */}
-      <div className="bg-white p-2.5 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="relative flex-1 w-full max-w-md">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+      {/* Control Bar — High Density */}
+      <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="relative flex-1 w-full max-w-sm">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input 
             type="text" 
-            placeholder="Search links or paths..." 
+            placeholder="Search links..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[13px] text-slate-700 outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-semibold placeholder:text-slate-300 shadow-inner" 
+            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-[12px] text-slate-700 outline-none focus:ring-2 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-semibold placeholder:text-slate-400" 
           />
         </div>
-        <div className="flex items-center gap-3 pr-2" />
+        <div className="text-slate-400 text-[10px] font-bold uppercase pr-2">
+           Total: {filtered.length} Links
+        </div>
       </div>
 
-      {/* Data Landscape */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-slate-100/50">
-        <DataTable compact columns={columns} data={filtered} loading={loading} emptyMessage="No navigation nodes detected in the current structural registry." />
+      {/* Main Table — Compact */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <DataTable 
+          compact 
+          columns={columns} 
+          data={filtered} 
+          loading={loading} 
+          emptyMessage="No links found. Click 'Add New Link' to start." 
+        />
       </div>
 
       <CMSNavigationModal
@@ -268,6 +312,15 @@ export default function CMSNavbarPage() {
         item={editingItem}
         parentOptions={items}
       />
+
+      <style jsx global>{`
+        [data-table-row] {
+          transition: background-color 0.15s ease;
+        }
+        [data-table-row]:hover {
+          background-color: #f8fafc !important;
+        }
+      `}</style>
     </div>
   );
 }

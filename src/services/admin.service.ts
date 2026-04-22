@@ -259,11 +259,7 @@ export const createCMSNavigation = (data: any) =>
   dashboardServerFetch("/admin/cms/navigation", { method: "POST", data });
 
 export const updateCMSNavigation = (id: number, data: any) => 
-  dashboardServerFetch(`/admin/cms/navigation/${id}`, {
-    method: "POST",
-    data,
-    params: { _method: "PUT" },
-  });
+  dashboardServerFetch(`/admin/cms/navigation/${id}`, { method: "PUT", data });
 
 export const deleteCMSNavigation = (id: number) => 
   dashboardServerFetch(`/admin/cms/navigation/${id}`, { method: "DELETE" });
