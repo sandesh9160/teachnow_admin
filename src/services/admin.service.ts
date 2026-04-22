@@ -35,7 +35,7 @@ export const getDashboardStats = () =>
 // ─── Master Data (Categories, Locations, Skills, etc.) ──────────────────────
 
 export const getCategories = (params?: Record<string, unknown>) =>
-  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/categories", { params });
+  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/categories", { params: { ...params, _t: Date.now() } });
 
 export const createCategory = (data: Partial<MasterDataItem>) =>
   dashboardServerFetch("/admin/categories", { method: "POST", data });
@@ -43,18 +43,18 @@ export const createCategory = (data: Partial<MasterDataItem>) =>
 // export const updateCategory = (id: number, data: Partial<MasterDataItem>) =>
 //   dashboardServerFetch(`/admin/categories/${id}`, { method: "PUT", data });
 
-export const updateCategory = (id: number, data: Partial<MasterDataItem>) =>
+export const updateCategory = (id: number, data: any) =>
   dashboardServerFetch(`/admin/categories/${id}`, {
     method: "POST",
     data,
-    params: { _method: "PUT" }, // 🔥 important fix
+    params: { _method: "PUT" },
   });
 
 export const deleteCategory = (id: number) =>
   dashboardServerFetch(`/admin/categories/${id}`, { method: "DELETE" });
 
 export const getLocations = (params?: Record<string, unknown>) =>
-  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/locations", { params });
+  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/locations", { params: { ...params, _t: Date.now() } });
 
 export const createLocation = (data: Partial<MasterDataItem>) =>
   dashboardServerFetch("/admin/locations", { method: "POST", data });
@@ -66,13 +66,17 @@ export const deleteLocation = (id: number) =>
   dashboardServerFetch(`/admin/locations/${id}`, { method: "DELETE" });
 
 export const getSkills = (params?: Record<string, unknown>) =>
-  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/cms/skills", { params });
+  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/cms/skills", { params: { ...params, _t: Date.now() } });
 
 export const createSkill = (data: Partial<MasterDataItem>) =>
   dashboardServerFetch("/admin/cms/skills", { method: "POST", data });
 
-export const updateSkill = (id: number, data: Partial<MasterDataItem>) =>
-  dashboardServerFetch(`/admin/cms/skills/${id}`, { method: "PUT", data });
+export const updateSkill = (id: number, data: any) =>
+  dashboardServerFetch(`/admin/cms/skills/${id}`, {
+    method: "POST",
+    data,
+    params: { _method: "PUT" },
+  });
 
 export const deleteSkill = (id: number) =>
   dashboardServerFetch(`/admin/cms/skills/${id}`, { method: "DELETE" });

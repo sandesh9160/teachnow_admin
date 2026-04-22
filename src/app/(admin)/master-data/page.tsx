@@ -108,47 +108,91 @@ export default function MasterDataPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingItem?.name) return toast.error("Name is required");
+    
+    // Basic Validations
+    if (!editingItem?.name?.trim()) {
+        return toast.error("Name is required");
+    }
+
+
+    if (activeTab === "locations" && !(editingItem as any).country?.trim()) {
+        return toast.error("Country is required for locations");
+    }
 
     try {
         setSaving(true);
-        const formData = new FormData();
-        
-        if (activeTab === "skills") {
-           // Skills specific payload
-           formData.append("name", editingItem.name);
-           formData.append("is_active", editingItem.is_active !== undefined ? String(editingItem.is_active) : (editingItem.is_visible ? "1" : "0"));
-           formData.append("is_custom", editingItem.is_custom !== undefined ? String(editingItem.is_custom) : "1");
-        } else {
-           // Categories & Locations payload
-           formData.append("name", editingItem.name);
-           formData.append("slug", editingItem.slug || editingItem.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
-           formData.append("is_visible", editingItem.is_visible ? "1" : "0");
-           formData.append("is_featured", editingItem.is_featured ? "1" : "0");
-           formData.append("meta_title", editingItem.meta_title || "");
-           formData.append("meta_description", editingItem.meta_description || "");
-           formData.append("meta_keywords", editingItem.meta_keywords || "");
+        let res: any;
 
-           if (editingItem.icon_file) {
-               formData.append(activeTab === "categories" ? "icon" : "image", editingItem.icon_file);
-           }
-        }
-
-        if (editingItem.id) {
-            formData.append("_method", "PUT");
-        }
-
+        console.log("[MasterData] Saving...", { activeTab, isNew: editingItem.isNew, id: editingItem.id });
         if (editingItem.isNew) {
-            if (activeTab === "categories") await createCategory(formData as any);
-            else if (activeTab === "locations") await createLocation(formData as any);
-            else if (activeTab === "skills") await createSkill(formData as any);
-            toast.success("Entry created successfully");
-        }else if (editingItem.id) {
-                if (activeTab === "categories") await updateCategory(editingItem.id, formData as any);
-                else if (activeTab === "locations") await updateLocation(editingItem.id, formData as any);
-                else if (activeTab === "skills") await updateSkill(editingItem.id, formData as any);
-                toast.success("Entry updated successfully");
+            if (activeTab === "skills") {
+                const payload = {
+                    name: editingItem.name
+                };
+                console.log("[MasterData] Creating Skill:", payload);
+                res = await createSkill(payload as any);
+            } else {
+                const formData = new FormData();
+                formData.append("name", editingItem.name);
+                formData.append("slug", editingItem.slug || editingItem.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+                formData.append("is_visible", editingItem.is_visible ? "1" : "0");
+                formData.append("is_featured", editingItem.is_featured ? "1" : "0");
+                formData.append("meta_title", editingItem.meta_title || "");
+                formData.append("meta_description", editingItem.meta_description || "");
+                formData.append("meta_keywords", editingItem.meta_keywords || "");
+                
+                if (activeTab === "locations") {
+                    formData.append("country", (editingItem as any).country || "INDIA");
                 }
+
+                if (editingItem.icon_file) {
+                    formData.append(activeTab === "categories" ? "icon" : "image", editingItem.icon_file);
+                }
+
+                if (activeTab === "categories") res = await createCategory(formData as any);
+                else if (activeTab === "locations") res = await createLocation(formData as any);
+            }
+            if (res?.status === false || res?.statusCode >= 400) {
+                toast.error(res?.message || "Creation failed");
+                return; // Don't close modal or refresh if failed
+            }
+            toast.success(res?.message || "Entry created successfully");
+        } else if (editingItem.id) {
+            if (activeTab === "categories") {
+                const payload = {
+                    name: editingItem.name,
+                    meta_title: editingItem.meta_title || "",
+                    meta_description: editingItem.meta_description || "",
+                    meta_keywords: editingItem.meta_keywords || "",
+                    is_visible: editingItem.is_visible ? 1 : 0,
+                    is_featured: (editingItem.is_featured === 1 || editingItem.is_featured === true) ? 1 : 0
+                };
+                res = await updateCategory(editingItem.id, payload);
+            } else if (activeTab === "locations") {
+                const formData = new FormData();
+                formData.append("name", editingItem.name);
+                formData.append("slug", editingItem.slug || "");
+                formData.append("is_visible", editingItem.is_visible ? "1" : "0");
+                formData.append("is_featured", editingItem.is_featured ? "1" : "0");
+                formData.append("country", (editingItem as any).country || "INDIA");
+                if (editingItem.icon_file) formData.append("image", editingItem.icon_file);
+                res = await updateLocation(editingItem.id, formData as any);
+            } else if (activeTab === "skills") {
+                const payload = {
+                    name: editingItem.name
+                };
+                console.log("[MasterData] Updating Skill:", { id: editingItem.id, payload });
+                res = await updateSkill(editingItem.id, payload);
+            }
+            if (res?.status === false || res?.statusCode >= 400) {
+                toast.error(res?.message || "Operation failed");
+            } else {
+                toast.success(res?.message || "Entry updated successfully");
+                console.log("[MasterData] Success Response:", res);
+                // Add a small delay to ensure backend DB consistency before refresh
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
         
         setEditingItem(null);
         fetchData();
@@ -188,7 +232,7 @@ export default function MasterDataPage() {
                 </div>
                 <div>
                    <span className="text-surface-900 font-semibold block leading-none">{r.name}</span>
-                   {r.is_featured ? (
+                   {(Number(r.is_featured) === 1 || r.is_featured === true) ? (
                        <span className="text-[9px] text-amber-500 font-bold uppercase flex items-center gap-0.5 mt-1">
                            <Star size={9} className="fill-amber-500" /> Featured
                        </span>
@@ -203,7 +247,7 @@ export default function MasterDataPage() {
       title: "Status", 
       render: (v: any, r: any) => {
         // Handle skills which use is_active instead of is_visible
-        const isActive = activeTab === "skills" ? (r.is_active === 1 || r.is_active === "1" || r.is_active === true) : v;
+        const isActive = activeTab === "skills" ? (Number(r.is_active) === 1 || r.is_active === true) : (Number(v) === 1 || v === true);
         return (
           <Badge variant={isActive ? "success" : "default"} dot className="text-[9px] uppercase font-semibold">
             {isActive ? (activeTab === "skills" ? "Active" : "Visible") : (activeTab === "skills" ? "Inactive" : "Hidden")}
@@ -268,9 +312,11 @@ export default function MasterDataPage() {
             onClick={() => {
                if (activeTab === "skills") {
                   setEditingItem({ name: "", is_active: 1, is_custom: 1, isNew: true } as any);
-               } else {
+                } else if (activeTab === "locations") {
+                  setEditingItem({ name: "", country: "", is_visible: 1, is_featured: 0, isNew: true } as any);
+                } else {
                   setEditingItem({ name: "", is_visible: 1, is_featured: 0, isNew: true } as any);
-               }
+                }
             }} 
             className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg text-[12px] font-semibold hover:bg-primary-700 shadow-sm transition-all cursor-pointer"
           >
@@ -401,14 +447,26 @@ export default function MasterDataPage() {
                                     />
                                 </div>
                                 {(activeTab === "categories" || activeTab === "locations") && (
-                                  <div className="col-span-2">
+                                  <div className={activeTab === "locations" ? "col-span-1" : "col-span-2"}>
                                       <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Slug (Auto-generated)</label>
                                       <input 
                                           type="text"
                                           placeholder={activeTab === 'locations' ? "new-york" : "data-science"}
                                           value={editingItem.slug || ""}
                                           onChange={(e) => setEditingItem({ ...editingItem, slug: e.target.value })}
-                                          className="w-full px-3 py-1.5 bg-surface-50 border border-surface-100 rounded-lg text-[12px] text-surface-400 focus:outline-none transition-all font-medium italic"
+                                          className="w-full px-3 py-1.5 bg-surface-50 border border-surface-100 rounded-lg text-[12px] text-surface-400 focus:outline-none focus:border-primary-500 transition-all font-medium italic"
+                                      />
+                                  </div>
+                                )}
+                                {activeTab === "locations" && (
+                                  <div className="col-span-1">
+                                      <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Country</label>
+                                      <input 
+                                          type="text"
+                                          placeholder="e.g. INDIA"
+                                          value={(editingItem as any).country || ""}
+                                          onChange={(e) => setEditingItem({ ...editingItem, country: e.target.value } as any)}
+                                          className="w-full px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-[13px] text-surface-700 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-medium"
                                       />
                                   </div>
                                 )}
@@ -432,15 +490,15 @@ export default function MasterDataPage() {
                                     </div>
                                     <button 
                                         type="button"
-                                        onClick={() => setEditingItem({ ...editingItem, is_featured: editingItem.is_featured ? 0 : 1 })}
+                                        onClick={() => setEditingItem({ ...editingItem, is_featured: (editingItem.is_featured === 1 || editingItem.is_featured === true) ? 0 : 1 })}
                                         className={clsx(
                                             "w-8 h-4.5 rounded-full transition-colors relative",
-                                            editingItem.is_featured ? "bg-amber-500" : "bg-surface-300"
+                                            (editingItem.is_featured === 1 || editingItem.is_featured === true) ? "bg-amber-500" : "bg-surface-300"
                                         )}
                                     >
                                         <div className={clsx(
                                             "absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm",
-                                            editingItem.is_featured ? "right-0.5" : "left-0.5"
+                                            (editingItem.is_featured === 1 || editingItem.is_featured === true) ? "right-0.5" : "left-0.5"
                                         )} />
                                     </button>
                                 </div>
@@ -459,15 +517,15 @@ export default function MasterDataPage() {
                                     </div>
                                     <button 
                                         type="button"
-                                        onClick={() => setEditingItem({ ...editingItem, is_visible: editingItem.is_visible ? 0 : 1 })}
+                                        onClick={() => setEditingItem({ ...editingItem, is_visible: (editingItem.is_visible === 1 || editingItem.is_visible === true) ? 0 : 1 })}
                                         className={clsx(
                                             "w-8 h-4.5 rounded-full transition-colors relative",
-                                            editingItem.is_visible ? "bg-primary-600" : "bg-surface-300"
+                                            (editingItem.is_visible === 1 || editingItem.is_visible === true) ? "bg-primary-600" : "bg-surface-300"
                                         )}
                                     >
                                         <div className={clsx(
                                             "absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm",
-                                            editingItem.is_visible ? "right-0.5" : "left-0.5"
+                                            (editingItem.is_visible === 1 || editingItem.is_visible === true) ? "right-0.5" : "left-0.5"
                                         )} />
                                     </button>
                                 </div>
