@@ -12,7 +12,7 @@ import {
   Loader2,
   Clock,
 } from "lucide-react";
-import { getVerificationRequests, approveVerification, rejectVerification } from "@/services/admin.service";
+import { getVerificationRequests } from "@/services/admin.service";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 import Badge from "@/components/ui/Badge";
@@ -21,7 +21,6 @@ import { resolveMediaUrl } from "@/lib/media";
 export default function VerificationPage() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [processingId, setProcessingId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -41,19 +40,6 @@ export default function VerificationPage() {
     }
   };
 
-  const handleAction = async (id: number, action: "approve" | "reject") => {
-    try {
-      setProcessingId(id);
-      if (action === "approve") await approveVerification(id);
-      else await rejectVerification(id, "Verification requirements not met");
-      toast.success(`Request ${action}d successfully`);
-      fetchRequests();
-    } catch (err) {
-      toast.error("Operation failed");
-    } finally {
-      setProcessingId(null);
-    }
-  };
 
   const filtered = requests.filter((r) => 
     r.employer?.company_name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -152,24 +138,6 @@ export default function VerificationPage() {
                               </div>
                               
                               <div className="flex items-center gap-2 ml-2 pl-6 border-l border-slate-100">
-                                  {status === "pending" && (
-                                     <>
-                                        <button 
-                                            onClick={() => handleAction(r.id, "approve")}
-                                            disabled={processingId === r.id}
-                                            className="p-1 px-3 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg text-[11px] font-semibold transition-all active:scale-95 hover:bg-emerald-100 flex items-center gap-1.5"
-                                        >
-                                           {processingId === r.id ? <Loader2 size={12} className="animate-spin" /> : <CheckCircle2 size={14} />} Approve
-                                        </button>
-                                        <button 
-                                            onClick={() => handleAction(r.id, "reject")}
-                                            disabled={processingId === r.id}
-                                            className="p-1 px-3 bg-rose-50 text-rose-600 border border-rose-100 rounded-lg text-[11px] font-semibold transition-all active:scale-95 hover:bg-rose-100 flex items-center gap-1.5"
-                                        >
-                                           <XCircle size={14} /> Reject
-                                        </button>
-                                     </>
-                                  )}
                                   <Link href={`/employers/${r.employer_id}`} className="p-2 text-slate-400 hover:text-primary transition-colors">
                                       <ArrowRight size={18} />
                                   </Link>

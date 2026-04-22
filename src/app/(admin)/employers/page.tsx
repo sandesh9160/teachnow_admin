@@ -218,9 +218,6 @@ export default function EmployersPage() {
           >
             <RotateCcw size={15} className={clsx(loading && "animate-spin")} /> Refresh
           </button>
-          <button className="h-10 px-5 flex items-center gap-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition-all font-bold text-[13px] active:scale-95 shadow-lg shadow-slate-200">
-            <Download size={15} /> Export
-          </button>
         </div>
       </div>
 

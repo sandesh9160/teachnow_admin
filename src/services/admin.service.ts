@@ -162,11 +162,14 @@ export const updateEmployer = (id: number, data: Partial<Employer>) =>
 export const deleteEmployer = (id: number) =>
   dashboardServerFetch(`/admin/employers/${id}`, { method: "DELETE" });
 
-export const verifyEmployer = (id: number, status: string = 'approved') =>
-  dashboardServerFetch(`/admin/employers/${id}/verify`, { method: "PATCH", data: { status } });
+export const verifyEmployer = (id: number) => 
+  dashboardServerFetch<ApiResponse<{ employer_verified: boolean }>>(`/admin/employers/${id}/verify`, { method: "POST", params: { _method: "PATCH" }, data: { status: "approved" } });
 
-export const featureEmployer = (id: number) =>
-  dashboardServerFetch(`/admin/employers/${id}/feature`, { method: "PATCH" });
+export const featureEmployer = (id: number) => 
+  dashboardServerFetch<ApiResponse<{ employer_featured: boolean }>>(`/admin/employers/${id}/feature`, { method: "POST", params: { _method: "PATCH" } });
+
+export const updateEmployerSEO = (id: number, data: any) =>
+  dashboardServerFetch(`/admin/seo/employer/${id}`, { method: "POST", data, params: { _method: "PATCH" } });
 
 // ─── Applications ────────────────────────────────────────────────────────────
 
@@ -367,9 +370,6 @@ export const updateCategorySEO = (id: number, data: any) =>
 
 export const updateLocationSEO = (id: number, data: any) =>
   dashboardServerFetch(`/admin/seo/location/${id}`, { method: "PUT", data });
-
-export const updateEmployerSEO = (id: number, data: any) =>
-  dashboardServerFetch(`/admin/seo/employer/${id}`, { method: "PUT", data });
 
 // ─── Deleted Items ───────────────────────────────────────────────────────────
 

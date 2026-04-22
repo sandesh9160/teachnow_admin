@@ -287,6 +287,18 @@ export interface Recruiter {
   jobs?: Job[];
 }
 
+export interface EmployerDocument {
+  id: number;
+  employer_id: number;
+  document_name: string;
+  document_type: string;
+  document_file: string;
+  status: string;
+  is_verified: number | boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Employer {
   id: number;
   company_name: string;
@@ -316,6 +328,10 @@ export interface Employer {
   jobs_count?: number;
   recruiters?: Recruiter[];
   jobs?: Job[];
+  documents?: EmployerDocument[];
+  employer_users?: Recruiter[];
+  map_link?: string;
+  role?: string;
 }
 
 // ─── Application Types ──────────────────────────────────────────────────────

@@ -49,7 +49,7 @@ export default function DataTable<T>({
               <th
                 key={col.key}
                 className={clsx(
-                    "px-6 py-4 text-left text-[11px] font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 bg-white",
+                    "px-6 py-4 text-left text-[11px] font-bold text-indigo-600 uppercase tracking-wider border-b border-indigo-50 bg-white",
                     compact && "px-4 py-3",
                     idx === 0 && "rounded-tl-2xl",
                     idx === columns.length - 1 && "rounded-tr-2xl"
