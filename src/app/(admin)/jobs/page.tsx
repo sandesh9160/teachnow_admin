@@ -21,7 +21,6 @@ export default function JobsPage() {
   // State for Table Data
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pagination, setPagination] = useState<any>(null);
 
   // State for Metadata
   const [categories, setCategories] = useState<MasterDataItem[]>([]);
@@ -40,74 +39,35 @@ export default function JobsPage() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   // Core Data Fetcher
-  const fetchJobs = useCallback(async (page = 1) => {
+  const fetchJobs = useCallback(async () => {
     try {
       setLoading(true);
       
-      // Constructing robust query parameters
       const params: any = { 
-          page,
-          per_page: 15 // Standardized density
+          per_page: 500 // Fetch a larger set for client-side filtering to match employer pattern
       };
 
-      if (search) params.search = search;
-      
-      if (catFilter.id !== 'all') {
-          params.category_id = catFilter.id;
-          params.category = catFilter.name; // Fallback for various backend versions
-      }
-
-      if (locFilter.id !== 'all') {
-          params.location_id = locFilter.id;
-          params.location = locFilter.name; // Job object uses string 'location'
-      }
-
-      if (instFilter.id !== 'all') {
-          params.employer_id = instFilter.id;
-      }
-
-      if (typeFilter.id !== 'all') {
-          params.job_type = typeFilter.id;
-      }
-
-      if (statusFilter.id !== 'all') {
-          params.status = statusFilter.id;
-      }
-
-      console.log("[Jobs] Fetching with params:", params);
+      console.log("[Jobs] Fetching...");
       const res: any = await getJobs(params);
       
-      // Flexible parsing for results with deep validation
       let list = [];
-      let pageData = res;
-      
       if (Array.isArray(res)) {
           list = res;
       } else if (res?.data && Array.isArray(res.data)) {
           list = res.data;
-          pageData = res;
       } else if (res?.data?.data && Array.isArray(res.data.data)) {
           list = res.data.data;
-          pageData = res.data;
       } else if (res?.status === true && res?.data) {
-          // Additional fallback for status-wrapped responses
           list = Array.isArray(res.data) ? res.data : (res.data.data || []);
-          pageData = res.data;
       }
 
       setJobs(list);
-      setPagination({
-        currentPage: Number(pageData?.current_page) || 1,
-        lastPage: Number(pageData?.last_page) || 1,
-        total: Number(pageData?.total) || list.length
-      });
     } catch (err: any) {
-      toast.error("Data fetch failed. Connection timed out.");
-      console.error("[Jobs Sync Error]", err);
+      toast.error("Data fetch failed.");
     } finally {
       setLoading(false);
     }
-  }, [search, catFilter, locFilter, instFilter, typeFilter, statusFilter]);
+  }, []);
 
   // Initial Boot
   useEffect(() => {
@@ -119,7 +79,6 @@ export default function JobsPage() {
           getEmployers({ per_page: 500 })
         ]);
 
-        // Flexible parsing for different API response structures
         const extractData = (res: any) => {
             if (Array.isArray(res)) return res;
             if (res?.data && Array.isArray(res.data)) return res.data;
@@ -130,19 +89,13 @@ export default function JobsPage() {
         setCategories(extractData(catsRes));
         setLocations(extractData(locsRes));
         setEmployers(extractData(employersRes));
+        
+        await fetchJobs();
       } catch (e) {
         console.error("Master data fetch failed", e);
       }
     };
     boot();
-  }, []);
-
-  // Filter Watcher
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchJobs(1);
-    }, 300);
-    return () => clearTimeout(timer);
   }, [fetchJobs]);
 
   const resetFilters = () => {
@@ -154,6 +107,31 @@ export default function JobsPage() {
     setStatusFilter({id: 'all', name: 'Status'});
   };
 
+  const filteredJobs = jobs.filter((j: Job) => {
+      const matchesSearch = !search || 
+        j.title?.toLowerCase().includes(search.toLowerCase()) ||
+        j.employer?.company_name?.toLowerCase().includes(search.toLowerCase());
+      
+      const matchesCat = catFilter.id === 'all' || 
+        j.category_id === Number(catFilter.id) || 
+        (typeof j.category === 'string' ? j.category : j.category?.name)?.toLowerCase() === catFilter.name.toLowerCase();
+        
+      const matchesLoc = locFilter.id === 'all' || 
+        j.location?.toLowerCase().includes(locFilter.name.toLowerCase());
+        
+      const matchesInst = instFilter.id === 'all' || 
+        j.employer_id === Number(instFilter.id) ||
+        j.employer?.id === Number(instFilter.id);
+        
+      const matchesType = typeFilter.id === 'all' || 
+        j.job_type === typeFilter.id;
+        
+      const matchesStatus = statusFilter.id === 'all' || 
+        j.status?.toLowerCase() === statusFilter.id.toLowerCase();
+        
+      return matchesSearch && matchesCat && matchesLoc && matchesInst && matchesType && matchesStatus;
+  });
+
   const hasActiveFilters = search || catFilter.id !== 'all' || locFilter.id !== 'all' || instFilter.id !== 'all' || typeFilter.id !== 'all' || statusFilter.id !== 'all';
 
   return (
@@ -163,11 +141,11 @@ export default function JobsPage() {
           <div className="flex flex-col gap-0.5">
             <h1 className="text-xl font-bold text-slate-900 tracking-tight">Jobs Management</h1>
             <p className="text-[11px] text-slate-500 font-semibold leading-none mt-1">
-                Showing {jobs.length} jobs <span className="mx-1">·</span> Total {pagination?.total || 0}
+                Showing {filteredJobs.length} jobs <span className="mx-1">·</span> Total {jobs.length}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button suppressHydrationWarning onClick={() => fetchJobs(pagination?.currentPage)}
+            <button suppressHydrationWarning onClick={() => fetchJobs()}
               className="p-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:text-primary transition-all active:scale-95 shadow-sm">
               <RotateCcw size={18} className={clsx(loading && "animate-spin")} />
             </button>
@@ -205,7 +183,11 @@ export default function JobsPage() {
 
         <FilterDropdown 
             label={instFilter.name} 
-            options={[{id: 'all', name: 'Institute'}, ...employers.map(e => ({id: e.id, name: e.company_name}))]} 
+            options={[
+                {id: 'all', name: 'Institute'}, 
+                ...Array.from(new Map(employers.map(e => [e.company_name, e])).values())
+                  .map(e => ({id: e.id, name: e.company_name}))
+            ]} 
             onSelect={(opt: any) => setInstFilter({id: opt.id, name: opt.id === 'all' ? 'Institute' : opt.name})}
             isOpen={activeDropdown === 'institute'}
             setOpen={() => setActiveDropdown(activeDropdown === 'institute' ? null : 'institute')}
@@ -228,9 +210,9 @@ export default function JobsPage() {
             label={statusFilter.name} 
             options={[
                 {id: 'all', name: 'Status'},
-                {id: 'approved', name: 'Active'},
+                {id: 'approved', name: 'Approved'},
                 {id: 'pending', name: 'Pending'},
-                {id: 'rejected', name: 'Archived'}
+                {id: 'rejected', name: 'Rejected'}
             ]} 
             onSelect={(opt: any) => setStatusFilter({id: opt.id, name: opt.id === 'all' ? 'Status' : opt.name})}
             isOpen={activeDropdown === 'status'}
@@ -264,7 +246,7 @@ export default function JobsPage() {
                       </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                      {!loading && jobs.map((j: Job, i: number) => {
+                      {!loading && filteredJobs.map((j: Job, i: number) => {
                           const status = j.status?.toLowerCase() || 'pending';
                           const applicants = (j as any).applications_count || 0;
                           const salary = j.salary_min ? `\u20B9${(Number(j.salary_min)/1000).toFixed(0)}K` : '\u20B90';
@@ -299,10 +281,10 @@ export default function JobsPage() {
                                   </td>
                                   <td className="px-4 py-3">
                                       <div className={clsx(
-                                          "px-2 py-0.5 rounded-full text-[10px] font-semibold w-fit tracking-tight",
-                                          j.job_type === 'full_time' ? "bg-blue-50 text-blue-600" : "bg-orange-50 text-orange-600"
+                                          "px-3 py-1 rounded-lg text-[10px] font-bold w-fit tracking-tight whitespace-nowrap uppercase border",
+                                          j.job_type === 'full_time' ? "bg-blue-50 text-blue-600 border-blue-100" : "bg-orange-50 text-orange-600 border-orange-100"
                                       )}>
-                                          {j.job_type?.replace('_', ' ').toLowerCase()}
+                                          {j.job_type?.replace('_', ' ')}
                                       </div>
                                   </td>
                                   <td className="px-4 py-3">
@@ -313,12 +295,13 @@ export default function JobsPage() {
                                   <td className="px-4 py-3">
                                       <div className="flex justify-center">
                                       <div className={clsx(
-                                          "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold w-fit border shadow-none",
+                                          "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold w-fit border shadow-none",
                                           status === 'approved' ? "bg-emerald-50 text-emerald-600 border-emerald-100" : 
                                           status === 'pending' ? "bg-amber-50 text-amber-600 border-amber-100" : 
+                                          status === 'rejected' ? "bg-rose-50 text-rose-600 border-rose-100" :
                                           "bg-slate-50 text-slate-500 border-slate-100"
                                       )}>
-                                          {status === 'approved' ? <CheckCircle2 size={11} /> : status === 'pending' ? <ClockIcon size={11} /> : <XCircle size={11} />}
+                                          {status === 'approved' ? <CheckCircle2 size={13} /> : status === 'pending' ? <ClockIcon size={13} /> : <XCircle size={13} />}
                                           <span className="lowercase">{status === 'approved' ? 'active' : status}</span>
                                       </div>
                                       </div>
@@ -343,11 +326,11 @@ export default function JobsPage() {
               {loading && (
                   <div className="px-5 py-24 flex flex-col items-center justify-center">
                       <Loader2 className="animate-spin text-primary/40 mb-3" size={40} />
-                      <span className="text-[13px] font-semibold text-slate-400">Refreshing registry...</span>
+                      <span className="text-[13px] font-semibold text-slate-400">Loading...</span>
                   </div>
               )}
 
-              {!loading && jobs.length === 0 && (
+              {!loading && filteredJobs.length === 0 && (
                   <div className="px-5 py-24 flex flex-col items-center justify-center opacity-50">
                       <Briefcase size={48} className="text-slate-300 mb-3" />
                       <span className="text-[14px] font-semibold text-slate-400">No matching records found</span>
@@ -357,26 +340,9 @@ export default function JobsPage() {
 
           <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-white">
                 <p className="text-[12px] font-semibold text-slate-700">
-                    Showing <span className="text-slate-900 font-bold">{jobs.length}</span> of {pagination?.total || 0}
+                    Showing <span className="text-slate-900 font-bold">{filteredJobs.length}</span> of {jobs.length}
                 </p>
                 
-                <div className="flex items-center gap-3">
-                    <button
-                        disabled={pagination?.currentPage === 1 || loading}
-                        onClick={(e) => { e.stopPropagation(); fetchJobs((pagination?.currentPage || 1) - 1); }}
-                        className="h-10 px-5 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[12px] font-bold active:scale-95"
-                    >
-                        <ChevronLeft size={16} strokeWidth={2.5} /> Previous
-                    </button>
-                    
-                    <button
-                        disabled={pagination?.currentPage === pagination?.lastPage || loading}
-                        onClick={(e) => { e.stopPropagation(); fetchJobs((pagination?.currentPage || 1) + 1); }}
-                        className="h-10 px-5 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[12px] font-bold active:scale-95"
-                    >
-                        Next <ChevronRight size={16} strokeWidth={2.5} />
-                    </button>
-                </div>
           </div>
       </div>
     </div>
@@ -431,13 +397,13 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
     );
 }
 
-function ClockIcon(props: any) {
+function ClockIcon({ size = 24, ...props }: any) {
     return (
         <svg
             {...props}
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            width={size}
+            height={size}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
