@@ -57,6 +57,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
       { title: "Job Seekers", href: "/jobseekers", icon: Users },
       { title: "Recruiters", href: "/recruiters", icon: UserCheck },
       { title: "Employers (Institutes)", href: "/employers", icon: Building2 },
+      { title: "Resumes", href: "/resumes", icon: FileText },
     ]
   },
   {
@@ -193,7 +194,7 @@ export default function Sidebar({
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between h-16 px-5 border-b border-surface-100">
+        <div className="flex items-center justify-between h-14 px-5 border-b border-surface-100">
           {!collapsed ? (
             <div className="flex items-center justify-between w-full">
                 <Link href="/dashboard" className="flex items-center gap-3 active:scale-95 transition-transform">

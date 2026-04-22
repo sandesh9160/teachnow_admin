@@ -22,6 +22,8 @@ import type {
   FAQ,
   PrivacyPolicyItem,
   PopularSearch,
+  CMSResume,
+  CMSResumesResponse,
 } from "@/types";
 
 /**
@@ -494,8 +496,8 @@ export const toggleEmailTemplateStatus = (id: number) =>
 
 // ─── Testimonials ───────────────────────────────────────────────────────────
 
-export const getTestimonials = () =>
-  dashboardServerFetch<ApiResponse<Testimonial[]>>("/admin/cms/testimonials");
+export const getTestimonials = (params?: Record<string, unknown>) =>
+  dashboardServerFetch<ApiResponse<Testimonial[]>>("/admin/cms/testimonials", { params: { ...params, _t: Date.now() } });
 
 export const createTestimonial = (data: FormData) =>
   dashboardServerFetch<ApiResponse<Testimonial>>("/admin/cms/testimonials", { 
@@ -543,7 +545,7 @@ export const toggleFAQStatus = (id: number) =>
   dashboardServerFetch(`/admin/cms/faqs/${id}/toggle`, { method: "POST" });
 
 export const toggleTestimonialStatus = (id: number) =>
-  dashboardServerFetch(`/admin/cms/testimonials/${id}/toggle`, { method: "PATCH" });
+  dashboardServerFetch(`/admin/cms/testimonials/${id}/toggle`, { method: "PATCH", data: {} });
 
 // ─── Blogs ───────────────────────────────────────────────────────────────────
 
@@ -630,3 +632,6 @@ export const saveMailSettings = (data: any) =>
 
 export const getMailSettings = () =>
   dashboardServerFetch<any>(`/admin/cms/mail/settings`);
+
+export const getCMSResumes = (params?: Record<string, unknown>) =>
+  dashboardServerFetch<CMSResumesResponse>("/admin/cms/resumes", { params: { ...params, _t: Date.now() } });

@@ -491,3 +491,22 @@ export interface PrivacyPolicyItem {
   updated_at: string;
   children: PrivacyPolicyItem[];
 }
+
+export interface CMSResume {
+  id: number;
+  type: string;
+  title: string;
+  file_url: string;
+  created_at: string;
+  job_seeker: {
+    id: number;
+    name: string;
+    email: string;
+  };
+}
+
+export interface CMSResumesResponse {
+  status: boolean;
+  resumes: PaginatedResponse<CMSResume>;
+  generated_resumes: PaginatedResponse<CMSResume>;
+}

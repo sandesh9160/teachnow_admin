@@ -28,13 +28,13 @@ export default function Topbar({ onMenuToggle, collapsed }: TopbarProps) {
   return (
     <header
       className={clsx(
-        "fixed top-0 right-0 h-16 z-30 transition-all duration-300",
+        "fixed top-0 right-0 h-14 z-30 transition-all duration-300",
         "bg-white border-b border-slate-100/80",
         collapsed ? "left-[70px]" : "left-[240px]",
         "max-lg:left-0"
       )}
     >
-      <div className="flex items-center justify-between h-full px-4">
+      <div className="flex items-center justify-between h-14 px-4">
         {/* Left: Menu toggle + Search */}
         <div className="flex items-center gap-4">
           <button
