@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   Trash2,
   User as UserIcon,
+  Eye as EyeIcon,
   Power,
   Globe,
   Heart,
@@ -42,6 +43,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
   const [processing, setProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState<"Overview" | "Documents" | "Activity">("Overview");
   const [isActive, setIsActive] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDetails();
@@ -137,12 +139,18 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
       {/* Primary Header Card */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-2xl bg-blue-600 border border-slate-100 flex items-center justify-center text-white text-xl font-bold shadow-sm shrink-0 overflow-hidden">
+              <div 
+                className="w-16 h-16 rounded-2xl bg-blue-600 border border-slate-100 flex items-center justify-center text-white text-xl font-bold shadow-sm shrink-0 overflow-hidden cursor-zoom-in group/avatar relative"
+                onClick={() => seeker.profile_photo && setPreviewImage(resolveMediaUrl(seeker.profile_photo))}
+              >
                 {seeker.profile_photo ? (
-                  <img src={resolveMediaUrl(seeker.profile_photo)} alt="" className="w-full h-full object-cover" />
+                  <img src={resolveMediaUrl(seeker.profile_photo)} alt="" className="w-full h-full object-cover transition-transform group-hover/avatar:scale-110" />
                 ) : (
                   <span>{initials}</span>
                 )}
+                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center">
+                   <EyeIcon size={18} />
+                </div>
               </div>
               <div className="space-y-1">
                   <div className="flex items-center gap-3">
@@ -161,27 +169,39 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
               </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
-             <button className="flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[13px] font-semibold rounded-xl hover:bg-indigo-100 transition-all shadow-sm active:scale-95">
-                <FileCheck size={16} /> Edit Profile
-             </button>
-             <button 
-                onClick={() => handleAction("toggle-status")}
-                disabled={processing}
-                className={clsx(
-                    "flex items-center gap-2 px-4 py-2 text-[13px] font-semibold rounded-xl transition-all shadow-sm active:scale-95 border",
-                    seeker.is_active ? "bg-amber-50 border-amber-100 text-amber-600 hover:bg-amber-100" : "bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100"
-                )}
-             >
-                <Power size={16} /> 
-                {seeker.is_active ? "Disable Account" : "Enable Account"}
-             </button>
+          <div className="flex items-center gap-3">
+             <div className="flex items-center gap-3 mr-2">
+                <span className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Account Status</span>
+                <button
+                  onClick={() => handleAction("toggle-status")}
+                  disabled={processing}
+                  title={seeker.is_active ? "Disable Account" : "Enable Account"}
+                  className={clsx(
+                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none shrink-0 shadow-sm border",
+                    seeker.is_active ? "bg-emerald-500 border-emerald-600" : "bg-slate-300 border-slate-400",
+                    processing && "opacity-50 cursor-not-allowed"
+                  )}
+                >
+                  <span
+                    className={clsx(
+                      "inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm",
+                      seeker.is_active ? "translate-x-6" : "translate-x-1"
+                    )}
+                  />
+                  {processing && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/20 rounded-full">
+                      <Loader2 size={12} className="animate-spin text-white" />
+                    </div>
+                  )}
+                </button>
+             </div>
              <button 
                 onClick={() => handleAction("delete")}
                 disabled={processing}
+                title="Delete Candidate"
                 className="p-2.5 bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-100 rounded-xl transition-all shadow-sm active:scale-95"
              >
-                <Trash2 size={16} />
+                <Trash2 size={18} />
              </button>
           </div>
       </div>      {/* Secondary Metrics Row */}
@@ -291,46 +311,100 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
           )}
 
           {activeTab === "Documents" && (
-             <div className="lg:col-span-2 space-y-6">
-                <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-6 space-y-6">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                         <FileCheck size={16} />
+             <div className="lg:col-span-3 space-y-8">
+                {/* Section 1: Uploaded Resumes */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 px-1">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                         <FileText size={18} />
                       </div>
-                      <h3 className="text-[15px] font-bold text-slate-900 tracking-tight">Professional Resumes</h3>
+                      <h3 className="text-[16px] font-bold text-slate-900 tracking-tight">Uploaded Resumes</h3>
+                      <span className="ml-auto text-[11px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                        {seeker.resumes?.length || 0} Files
+                      </span>
                     </div>
-                    {(seeker.resumes || []).length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {seeker.resumes?.map((resume) => (
-                            <div key={resume.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50 flex flex-col gap-4 group hover:border-primary/20 hover:bg-white transition-all shadow-sm">
-                              <div className="flex items-center gap-3">
-                                 <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 group-hover:scale-105 transition-all shadow-sm">
-                                    <FileText size={20} />
-                                 </div>
-                                 <div className="min-w-0">
-                                   <p className="text-[13px] font-bold text-slate-900 truncate leading-tight mb-1">{resume.file_name}</p>
-                                   <p className={clsx(
-                                      "text-[10px] font-bold tracking-wider",
-                                      resume.is_default ? "text-emerald-600" : "text-slate-400"
-                                   )}>{resume.is_default ? "Primary Document" : "Supplementary"}</p>
-                                 </div>
-                              </div>
-                              <a
-                                href={resolveMediaUrl(resume.file_url || (resume as any).resume_file)}
-                                target="_blank"
-                                className="w-full h-10 rounded-xl border border-indigo-100 bg-white text-[12px] font-bold text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95"
-                              >
-                                <ExternalLink size={14} /> View Document
-                              </a>
+
+                    <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+                        {(seeker.resumes || []).length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                              {seeker.resumes?.map((resume) => (
+                                <div key={resume.id} className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 flex flex-col gap-4 group hover:border-indigo-200 hover:bg-white transition-all shadow-sm">
+                                  <div className="flex items-center gap-3">
+                                     <div className="w-11 h-11 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 group-hover:scale-105 transition-all shadow-sm">
+                                        <FileText size={22} />
+                                     </div>
+                                     <div className="min-w-0">
+                                       <p className="text-[13px] font-bold text-slate-900 truncate leading-tight mb-1">{resume.file_name}</p>
+                                       <p className={clsx(
+                                          "text-[10px] font-bold tracking-wider",
+                                          resume.is_default ? "text-emerald-600" : "text-slate-400"
+                                       )}>{resume.is_default ? "Primary Document" : "Supplementary"}</p>
+                                     </div>
+                                  </div>
+                                  <a
+                                    href={resolveMediaUrl(resume.file_url)}
+                                    target="_blank"
+                                    className="w-full h-10 rounded-xl border border-indigo-100 bg-white text-[12px] font-bold text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95"
+                                  >
+                                    <ExternalLink size={14} /> View Resume
+                                  </a>
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                    ) : (
-                        <div className="p-12 text-center rounded-xl border border-dashed border-slate-200 bg-slate-50/50">
-                           <FileCheck size={32} className="mx-auto text-slate-300 mb-3" />
-                           <p className="text-[13px] text-slate-400 font-bold">No documents uploaded yet</p>
-                        </div>
-                    )}
+                        ) : (
+                            <div className="p-12 text-center">
+                               <FileText size={32} className="mx-auto text-slate-200 mb-3" />
+                               <p className="text-[13px] text-slate-400 font-bold">No uploaded resumes found</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Section 2: Generated Resumes (CVs) */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 px-1">
+                      <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                         <Zap size={18} />
+                      </div>
+                      <h3 className="text-[16px] font-bold text-slate-900 tracking-tight">Generated Resumes</h3>
+                      <span className="ml-auto text-[11px] font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                        {seeker.cvs?.length || 0} Documents
+                      </span>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border border-slate-200/60 shadow-sm p-6">
+                        {(seeker.cvs || []).length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                              {seeker.cvs?.map((cv) => (
+                                <div key={cv.id} className="p-4 rounded-2xl border border-slate-100 bg-slate-50/50 flex flex-col gap-4 group hover:border-amber-200 hover:bg-white transition-all shadow-sm">
+                                  <div className="flex items-center gap-3">
+                                     <div className="w-11 h-11 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-amber-600 group-hover:scale-105 transition-all shadow-sm">
+                                        <Award size={22} />
+                                     </div>
+                                     <div className="min-w-0">
+                                       <p className="text-[13px] font-bold text-slate-900 truncate leading-tight mb-1">{cv.title || "Generated CV"}</p>
+                                       <p className="text-[10px] font-bold text-slate-400 tracking-wider">
+                                          Created {fmt(cv.created_at)}
+                                       </p>
+                                     </div>
+                                  </div>
+                                  <a
+                                    href={resolveMediaUrl(cv.pdf_path)}
+                                    target="_blank"
+                                    className="w-full h-10 rounded-xl border border-amber-100 bg-white text-[12px] font-bold text-amber-600 hover:bg-amber-600 hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95"
+                                  >
+                                    <ExternalLink size={14} /> View CV
+                                  </a>
+                                </div>
+                              ))}
+                            </div>
+                        ) : (
+                            <div className="p-12 text-center">
+                               <Award size={32} className="mx-auto text-slate-200 mb-3" />
+                               <p className="text-[13px] text-slate-400 font-bold">No generated resumes found</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
              </div>
           )}
@@ -391,6 +465,36 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
              </div>
           )}
       </div>
+      {/* Profile Image Preview Modal */}
+      {previewImage && (
+        <div 
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-300"
+          onClick={(e) => {
+            e.stopPropagation();
+            setPreviewImage(null);
+          }}
+        >
+          <div 
+            className="relative max-w-[95vw] max-h-[90vh] bg-white p-1 rounded-3xl shadow-2xl animate-in zoom-in-95 duration-300 flex items-center justify-center overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setPreviewImage(null);
+              }}
+              className="absolute top-4 right-4 w-12 h-12 bg-black/50 hover:bg-black/70 backdrop-blur-md rounded-full shadow-2xl flex items-center justify-center text-white transition-all hover:scale-110 z-[1001]"
+            >
+              <XCircle size={28} />
+            </button>
+            <img 
+              src={previewImage} 
+              alt="Profile Preview" 
+              className="rounded-2xl w-auto h-auto max-w-full max-h-[88vh] object-contain shadow-2xl min-w-[320px] md:min-w-[600px]"
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

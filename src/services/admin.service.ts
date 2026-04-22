@@ -110,7 +110,7 @@ export const featureJob = (id: number) =>
 // ─── Job Seekers ─────────────────────────────────────────────────────────────
 
 export const getJobSeekers = (params?: Record<string, unknown>) =>
-  dashboardServerFetch<PaginatedResponse<JobSeeker>>("/admin/jobseekers", { params });
+  dashboardServerFetch<ApiResponse<PaginatedResponse<JobSeeker>>>("/admin/jobseekers", { params });
 
 export const getJobSeeker = (id: number) =>
   dashboardServerFetch<ApiResponse<JobSeeker>>(`/admin/jobseekers/${id}`);
@@ -176,7 +176,7 @@ export const featureEmployer = (id: number) =>
   dashboardServerFetch<ApiResponse<{ employer_featured: boolean }>>(`/admin/employers/${id}/feature`, { method: "POST", params: { _method: "PATCH" } });
 
 export const updateEmployerSEO = (id: number, data: any) =>
-  dashboardServerFetch(`/admin/seo/employer/${id}`, { method: "POST", data, params: { _method: "PATCH" } });
+  dashboardServerFetch(`/admin/seo/employer/${id}`, { method: "PUT", data });
 
 // ─── Applications ────────────────────────────────────────────────────────────
 

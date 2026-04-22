@@ -93,9 +93,17 @@ export default function RecruiterDetailPage({
   const jobs = recruiter.jobs ?? [];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5 pb-16 antialiased animate-fade-in-up">
+    <div className="max-w-7xl mx-auto space-y-5 pb-16 antialiased animate-fade-in-up px-4">
+      {/* ─── Back Button ─────────────────────────────────────────────── */}
+      <button
+        onClick={() => router.back()}
+        className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all"
+      >
+        <ChevronLeft size={18} /> Back to Recruiters
+      </button>
+
       {/* ─── Header Card ────────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-5 space-y-5">
+      <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-6 space-y-5">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
               <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 text-xl font-bold shrink-0">
@@ -118,25 +126,30 @@ export default function RecruiterDetailPage({
                   </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                 <button 
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-xl border border-slate-200 shadow-sm">
+                  <span className="text-[12px] font-semibold text-slate-600">{recruiter.is_active ? "Active" : "Inactive"}</span>
+                  <button
                     onClick={() => handleAction("toggle-status")}
                     disabled={processing}
                     className={clsx(
-                        "flex items-center gap-2 h-9 px-4 text-[12px] font-bold rounded-xl transition-all shadow-sm active:scale-95 border",
-                        recruiter.is_active ? "bg-amber-50 border-amber-100 text-amber-600 hover:bg-amber-100" : "bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100"
+                      "relative w-12 h-7 rounded-full transition-all duration-300 shadow-sm",
+                      recruiter.is_active ? "bg-emerald-500" : "bg-slate-300"
                     )}
-                 >
-                    <UserCheck size={14} /> 
-                    {recruiter.is_active ? "Disable account" : "Enable account"}
-                 </button>
-                 <button 
-                    onClick={() => handleAction("delete")}
-                    disabled={processing}
-                    className="w-9 h-9 flex items-center justify-center bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-100 rounded-xl transition-all shadow-sm active:scale-95"
-                 >
-                    <Trash2 size={15} />
-                 </button>
+                  >
+                    <div className={clsx(
+                      "absolute top-1 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-300",
+                      recruiter.is_active ? "left-6" : "left-1"
+                    )} />
+                  </button>
+                </div>
+                <button 
+                   onClick={() => handleAction("delete")}
+                   disabled={processing}
+                   className="h-9 px-4 flex items-center gap-2 bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-100 rounded-xl transition-all shadow-sm active:scale-95 text-[12px] font-bold"
+                >
+                   <Trash2 size={15} /> Delete
+                </button>
               </div>
           </div>
 
@@ -179,12 +192,12 @@ export default function RecruiterDetailPage({
           {activeTab === "Overview" && (
               <>
                 <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-6 space-y-6">
+                    <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-8 space-y-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
-                             <Building2 size={16} />
+                          <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                             <Building2 size={20} />
                           </div>
-                          <h3 className="text-[15px] font-bold text-slate-900 tracking-tight">Recruiter details</h3>
+                          <h3 className="text-[18px] font-bold text-slate-900 tracking-tight">Recruiter details</h3>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
                             <Field label="Full name" value={recruiter.name} />

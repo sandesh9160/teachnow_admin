@@ -251,6 +251,15 @@ export interface JobSeekerResume {
   created_at: string;
 }
 
+export interface JobSeekerCV {
+  id: number;
+  job_seeker_id: number;
+  title: string;
+  pdf_path: string;
+  is_default: number | boolean;
+  created_at: string;
+}
+
 export interface JobSeeker {
   id: number;
   user_id: number;
@@ -278,6 +287,7 @@ export interface JobSeeker {
     email_verified_at?: string | null;
   };
   resumes?: JobSeekerResume[];
+  cvs?: JobSeekerCV[];
   job_applications?: Application[];
   skills?: any[];
 }

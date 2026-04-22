@@ -43,6 +43,7 @@ export default function EmployersPage() {
   // Filter State
   const [locFilter, setLocFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [featuredFilter, setFeaturedFilter] = useState("all");
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   useEffect(() => {
@@ -106,7 +107,10 @@ export default function EmployersPage() {
     const matchesStatus = statusFilter === "all" ||
       (statusFilter === "verified" ? e.is_verified : !e.is_verified);
 
-    return matchesSearch && matchesLocation && matchesStatus;
+    const matchesFeatured = featuredFilter === "all" ||
+      (featuredFilter === "featured" ? (e.is_featured && e.company_featured === 1) : (e.company_featured === 1 && !e.is_featured));
+
+    return matchesSearch && matchesLocation && matchesStatus && matchesFeatured;
   });
 
   const uniqueLocations = Array.from(new Set(employers.map(e => e.city).filter(Boolean))).sort();
@@ -152,6 +156,25 @@ export default function EmployersPage() {
           {val ? "Verified" : "Pending"}
         </Badge>
       )
+    },
+
+    {
+      key: "featured",
+      title: "Featured",
+      render: (_: any, row: Employer) => {
+        const isFeatured = row.is_featured;
+        const hasRequest = row.company_featured === 1;
+
+        if (isFeatured && hasRequest) {
+          return <Badge variant="success" dot className="text-[10px] px-2 h-4.5 bg-transparent border-none">Featured</Badge>;
+        }
+        
+        if (hasRequest && !isFeatured) {
+          return <Badge variant="warning" dot className="text-[10px] px-2 h-4.5 bg-transparent border-none"> Pending</Badge>;
+        }
+
+        return <span className="text-surface-400 text-[10px] font-medium">—</span>;
+      }
     },
 
     {
@@ -226,8 +249,9 @@ export default function EmployersPage() {
         {[
           { label: "Active", value: employers.length, icon: Building2, color: "text-indigo-600", bg: "bg-indigo-50" },
           { label: "Verified", value: employers.filter(e => e.is_verified).length, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Featured", value: employers.filter(e => e.is_featured).length, icon: Star, color: "text-amber-600", bg: "bg-amber-50" },
-          { label: "Pending", value: employers.filter(e => !e.is_verified).length, icon: Activity, color: "text-rose-600", bg: "bg-rose-50" }
+          { label: "Verification Pending", value: employers.filter(e => !e.is_verified).length, icon: Activity, color: "text-rose-600", bg: "bg-rose-50" },
+          { label: "Featured", value: employers.filter(e => e.is_featured).length, icon: Star, color: "text-amber-600", bg: "bg-amber-50" }
+        
         ].map((stat, i) => (
           <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 hover:border-slate-300 transition-all group">
             <div className="flex items-center justify-between">
@@ -272,9 +296,17 @@ export default function EmployersPage() {
           setOpen={() => setActiveDropdown(activeDropdown === "status" ? null : "status")}
         />
 
-        {(search || locFilter !== "all" || statusFilter !== "all") && (
+        <FilterDropdown
+          label={featuredFilter === "all" ? "Featured" : featuredFilter.charAt(0).toUpperCase() + featuredFilter.slice(1)}
+          options={["all", "featured", "pending"]}
+          onSelect={(val: string) => setFeaturedFilter(val)}
+          isOpen={activeDropdown === "featured"}
+          setOpen={() => setActiveDropdown(activeDropdown === "featured" ? null : "featured")}
+        />
+
+        {(search || locFilter !== "all" || statusFilter !== "all" || featuredFilter !== "all") && (
           <button
-            onClick={() => { setSearch(""); setLocFilter("all"); setStatusFilter("all"); }}
+            onClick={() => { setSearch(""); setLocFilter("all"); setStatusFilter("all"); setFeaturedFilter("all"); }}
             className="flex items-center gap-1.5 px-3 py-2 text-[12px] font-semibold text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
           >
             Reset
@@ -292,6 +324,7 @@ export default function EmployersPage() {
                 <th className="px-6 py-4 text-[12px] font-bold text-slate-900 uppercase tracking-wider">Location</th>
                 <th className="px-6 py-4 text-[12px] font-bold text-slate-900 uppercase tracking-wider text-center">Status</th>
                 <th className="px-6 py-4 text-[12px] font-bold text-slate-900 uppercase tracking-wider text-center">Joined</th>
+                <th className="px-6 py-4 text-[12px] font-bold text-slate-900 uppercase tracking-wider text-center">Featured</th>
                 <th className="px-6 py-4 text-[12px] font-bold text-slate-900 uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
@@ -306,10 +339,7 @@ export default function EmployersPage() {
                         ) : row.company_name?.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-[13px] font-bold text-slate-900 leading-tight group-hover:text-primary transition-colors">{row.company_name}</p>
-                          {row.is_featured && <Star size={10} className="text-amber-400 fill-amber-400" />}
-                        </div>
+                        <p className="text-[13px] font-bold text-slate-900 leading-tight group-hover:text-primary transition-colors">{row.company_name}</p>
                         <p className="text-[11px] text-slate-500 font-semibold mt-0.5 tracking-tight uppercase tracking-widest">{row.institution_type || 'Institution'}</p>
                       </div>
                     </div>
@@ -328,13 +358,29 @@ export default function EmployersPage() {
                         "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border lowercase",
                         row.is_verified ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
                       )}>
-                        <span className="lowercase">{row.is_verified ? "verified" : "pending"}</span>
+                        <span className="lowercase">{row.is_verified ? "verified" : "Verification Pending"}</span>
                       </div>
                     </div>
                   </td>
 
                   <td className="px-6 py-4 text-center text-[12px] text-slate-600 font-semibold" suppressHydrationWarning>
                     {new Date(row.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </td>
+
+                  <td className="px-6 py-4 text-center">
+                    <div className="inline-flex">
+                      {row.is_featured && row.company_featured === 1 ? (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                          <Star size={12} className="fill-emerald-600" /> Featured
+                        </div>
+                      ) : row.company_featured === 1 && !row.is_featured ? (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-100">
+                          <Star size={12} className="fill-amber-500" /> Pending
+                        </div>
+                      ) : (
+                        <span className="text-slate-400 text-[10px] font-semibold">—</span>
+                      )}
+                    </div>
                   </td>
 
                   <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>

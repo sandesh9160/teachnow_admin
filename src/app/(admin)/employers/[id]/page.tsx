@@ -152,19 +152,26 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => handleAction("feature")}
-            disabled={processing}
-            className={clsx(
-              "flex items-center gap-2 px-4 py-2 text-[13px] font-semibold rounded-xl transition-all shadow-sm active:scale-95 border",
-              (employer.is_featured || employer.company_featured) ? "bg-amber-50 border-amber-100 text-amber-600 hover:bg-amber-100" : "bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100"
-            )}
-          >
-            <Star size={16} className={(employer.is_featured || employer.company_featured) ? "fill-amber-500" : ""} />
-            {(employer.is_featured || employer.company_featured) ? "Featured" : "Standard"}
-          </button>
-          {(!employer.is_verified || employer.documents?.some(d => !d.is_verified)) && (
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+            <span className="text-[13px] font-semibold text-slate-600">Featured</span>
+            <button
+              onClick={() => handleAction("feature")}
+              disabled={processing}
+              className={clsx(
+                "relative w-12 h-7 rounded-full transition-all duration-300 shadow-sm",
+                employer.is_featured 
+                  ? "bg-amber-500" 
+                  : "bg-slate-300"
+              )}
+            >
+              <div className={clsx(
+                "absolute top-1 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-300",
+                employer.is_featured ? "left-6" : "left-1"
+              )} />
+            </button>
+          </div>
+          {!employer.is_verified && (
             <button
               onClick={() => handleAction("verify")}
               disabled={processing}
@@ -173,13 +180,6 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
               <ShieldCheck size={16} /> Verify
             </button>
           )}
-          <button
-            onClick={() => handleAction("delete")}
-            disabled={processing}
-            className="p-2.5 bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-100 rounded-xl transition-all shadow-sm active:scale-95"
-          >
-            <Trash2 size={16} />
-          </button>
         </div>
       </div>
 
@@ -229,6 +229,22 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
             </div>
 
             <div className="lg:col-span-1 space-y-6">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+                <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
+                  <Star size={16} className="text-amber-500" /> Feature Request Status
+                </h3>
+                <div className={clsx(
+                  "px-4 py-3 rounded-xl text-[13px] font-semibold border text-center",
+                  employer.is_featured && employer.company_featured === 1
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                    : employer.company_featured === 1 
+                    ? "bg-amber-50 text-amber-700 border-amber-100" 
+                    : "bg-slate-50 text-slate-600 border-slate-100"
+                )}>
+                  {employer.is_featured && employer.company_featured === 1 ? "Accepted" : employer.company_featured === 1 ? "Pending Request" : "Not Requested"}
+                </div>
+              </div>
+
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
                 <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
                   <Mail size={16} className="text-indigo-500" /> Digital Contact
@@ -433,6 +449,28 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
           </div>
         )}
 
+      </div>
+
+      {/* ─── Delete Section ─────────────────────────────────────────── */}
+      <div className="bg-white rounded-2xl border border-rose-100 shadow-sm p-8 space-y-4">
+        <div className="space-y-2">
+          <h3 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
+            <Trash2 size={16} className="text-rose-500" /> Danger Zone
+          </h3>
+          <p className="text-[13px] text-slate-600">This action cannot be undone. All associated data will be permanently deleted.</p>
+        </div>
+        <button
+          onClick={() => {
+            const message = `Are you absolutely sure you want to delete "${employer.company_name}"?\n\nThis will permanently delete:\n• Organization profile\n• All job postings\n• All recruiter accounts\n• All applications\n\nThis cannot be undone.`;
+            if (confirm(message)) {
+              handleAction("delete");
+            }
+          }}
+          disabled={processing}
+          className="flex items-center gap-2 px-6 py-3 bg-rose-50 border border-rose-200 text-rose-600 text-[13px] font-bold rounded-xl hover:bg-rose-100 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+        >
+          <Trash2 size={16} /> Permanently Delete Organization
+        </button>
       </div>
     </div>
   );
