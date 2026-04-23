@@ -22,6 +22,10 @@ export default function VerificationPage() {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [totalDocuments, setTotalDocuments] = useState(0);
+  const [pendingDocuments, setPendingDocuments] = useState(0);
+  const [verifiedInstitutes, setVerifiedInstitutes] = useState(0);
+  const [unverifiedInstitutes, setUnverifiedInstitutes] = useState(0);
 
   useEffect(() => {
     fetchRequests();
@@ -33,6 +37,12 @@ export default function VerificationPage() {
       const res = await getVerificationRequests();
       const list = (res as any).data?.data || (res as any).data || (res as any) || [];
       setRequests(Array.isArray(list) ? list : []);
+
+      // Extract metrics from response
+      setTotalDocuments((res as any).total_documents || 0);
+      setPendingDocuments((res as any).pending_documents || 0);
+      setVerifiedInstitutes((res as any).verified_institutes || 0);
+      setUnverifiedInstitutes((res as any).unverified_institutes || 0);
     } catch (err) {
       toast.error("Failed to fetch verification queue");
     } finally {
@@ -47,9 +57,10 @@ export default function VerificationPage() {
   );
 
   const stats = [
-    { label: "Pending Requests", value: requests.filter(r => r.status === 'pending').length, icon: Clock, color: "blue" },
-    { label: "Verified Institutes", value: requests.filter(r => r.status === 'approved' || r.status === 'verified').length, icon: CheckCircle2, color: "emerald" },
-    { label: "Rejected Requests", value: requests.filter(r => r.status === 'rejected').length, icon: XCircle, color: "indigo" }
+    { label: "Pending Documents", value: pendingDocuments, icon: Clock, color: "blue" },
+    { label: "Verified Institutes", value: verifiedInstitutes, icon: CheckCircle2, color: "emerald" },
+    { label: "Unverified Institutes", value: unverifiedInstitutes, icon: XCircle, color: "rose" },
+    { label: "Total Documents", value: totalDocuments, icon: FileText, color: "indigo" }
   ];
 
   if (loading) {
@@ -71,7 +82,7 @@ export default function VerificationPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map((stat, i) => (
              <StatWidget key={i} label={stat.label} value={stat.value} icon={<stat.icon />} color={stat.color} />
         ))}
@@ -161,6 +172,7 @@ function StatWidget({ label, value, icon, color }: any) {
   const themes: any = {
     blue: { bg: "bg-blue-50/50", accent: "text-blue-500", iconBg: "bg-blue-50" },
     emerald: { bg: "bg-emerald-50/50", accent: "text-emerald-500", iconBg: "bg-emerald-50" },
+    rose: { bg: "bg-rose-50/50", accent: "text-rose-500", iconBg: "bg-rose-50" },
     indigo: { bg: "bg-indigo-50/50", accent: "text-indigo-500", iconBg: "bg-indigo-50" },
   };
   const theme = themes[color] || themes.blue;
