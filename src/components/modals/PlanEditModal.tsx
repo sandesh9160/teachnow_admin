@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { 
   X, Save, CreditCard, Tag, Calendar, 
   Briefcase, Zap, Star, List, Settings2,
-  Loader2, BadgePercent, ShieldCheck
+  Loader2, BadgePercent, ShieldCheck, ListOrdered
 } from "lucide-react";
 import { clsx } from "clsx";
 import type { Plan } from "@/types";
@@ -141,29 +141,68 @@ export default function PlanEditModal({
                         </SmartField>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center">
-                                <ShieldCheck size={16} />
+                    <div className="grid grid-cols-1 gap-4">
+                        <SmartField label="Display Order" icon={ListOrdered}>
+                            <input
+                                type="number"
+                                value={form.display_order || 0}
+                                onChange={(e) => handleChange("display_order", Number(e.target.value))}
+                                className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
+                                placeholder="0"
+                            />
+                        </SmartField>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="p-4 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+                                    <ShieldCheck size={16} />
+                                </div>
+                                <div>
+                                    <p className="text-[13px] font-bold text-slate-900">Featured</p>
+                                    <p className="text-[11px] text-blue-600 font-medium">Institution list</p>
+                                </div>
                             </div>
-                            <div>
-                                <p className="text-[13px] font-bold text-slate-900">Featured Institution</p>
-                                <p className="text-[11px] text-blue-600 font-medium">Include institution in featured list</p>
-                            </div>
+                            <button
+                                type="button"
+                                onClick={() => handleChange("company_featured", form.company_featured ? 0 : 1)}
+                                className={clsx(
+                                    "w-10 h-5 rounded-full relative transition-colors duration-200 outline-none",
+                                    form.company_featured ? "bg-blue-600" : "bg-slate-300"
+                                )}
+                            >
+                                <div className={clsx(
+                                    "absolute top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200",
+                                    form.company_featured ? "translate-x-6" : "translate-x-1"
+                                )} />
+                            </button>
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => handleChange("company_featured", form.company_featured ? 0 : 1)}
-                            className={clsx(
-                                "w-10 h-5 rounded-full relative transition-colors duration-200 outline-none",
-                                form.company_featured ? "bg-blue-600" : "bg-slate-300"
-                            )}
-                        >
-                            <div className={clsx(
-                                "absolute top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200",
-                                form.company_featured ? "translate-x-6" : "translate-x-1"
-                            )} />
-                        </button>
+
+                        <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center">
+                                    <Star size={16} />
+                                </div>
+                                <div>
+                                    <p className="text-[13px] font-bold text-slate-900">Highlighted</p>
+                                    <p className="text-[11px] text-amber-600 font-medium">Most popular tag</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => handleChange("is_highlighted", !form.is_highlighted)}
+                                className={clsx(
+                                    "w-10 h-5 rounded-full relative transition-colors duration-200 outline-none",
+                                    form.is_highlighted ? "bg-amber-500" : "bg-slate-300"
+                                )}
+                            >
+                                <div className={clsx(
+                                    "absolute top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200",
+                                    form.is_highlighted ? "translate-x-6" : "translate-x-1"
+                                )} />
+                            </button>
+                        </div>
                     </div>
 
                     <SmartField label="Plan Features" icon={List}>

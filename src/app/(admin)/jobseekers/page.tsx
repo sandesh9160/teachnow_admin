@@ -33,6 +33,7 @@ export default function JobSeekersPage() {
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState<any>(null);
   const [activeTotal, setActiveTotal] = useState(0);
+  const [totalJobSeekers, setTotalJobSeekers] = useState(0);
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -45,27 +46,53 @@ export default function JobSeekersPage() {
       setLoading(true);
       // Fetch main list
       const res = await getJobSeekers({ page });
-      const resData = res.data;
+      let list: any[] = [];
+      let paginationData: any = null;
+
+      // Robust response handling similar to JobsPage
+      if (res?.data?.data && Array.isArray(res.data.data)) {
+        list = res.data.data;
+        paginationData = res.data;
+      } else if (res?.data && Array.isArray(res.data)) {
+        list = res.data;
+        paginationData = res;
+      } else if (Array.isArray(res)) {
+        list = res;
+      } else if (res?.status === true && res?.data) {
+        list = Array.isArray(res.data) ? res.data : (res.data.data || []);
+        paginationData = Array.isArray(res.data) ? null : res.data;
+      }
+
+      // Update totals from main response if available
+      const mainTotal = (res as any)?.total_job_seekers ?? (paginationData as any)?.total ?? (paginationData as any)?.total_jobseekers ?? 0;
+      setTotalJobSeekers(mainTotal);
 
       // Fetch total active count globally
       const resActive = await getJobSeekers({ is_active: 1, per_page: 1 });
-      setActiveTotal(resActive.data?.total || 0);
+      const activeCount = (resActive as any)?.active_job_seekers ?? (resActive as any)?.data?.active_job_seekers ?? (resActive as any)?.total ?? (resActive as any)?.data?.total ?? 0;
+      setActiveTotal(activeCount);
 
-      const list = (resData?.data || []).map((item: any) => {
+      const processedList = list.map((item: any) => {
+        if (!item) return item;
         const val = item.is_active ?? item.user?.is_active ?? item.status;
         item.is_active = (typeof val === 'string')
           ? (val.toLowerCase() === 'active' || val === '1')
           : !!val;
         return item;
-      });
+      }).filter(Boolean);
 
-      setJobSeekers(list);
+      setJobSeekers(processedList);
+      
+      const lastPg = paginationData?.last_page ?? 1;
+      const currentPg = paginationData?.current_page || page;
+
       setPagination({
-        currentPage: resData?.current_page || 1,
-        lastPage: resData?.last_page || 1,
-        total: resData?.total || 0
+        currentPage: currentPg,
+        lastPage: lastPg,
+        total: mainTotal
       });
     } catch (err: any) {
+      console.error("[JobSeekers] Fetch error:", err);
       toast.error("Failed to fetch job seekers");
     } finally {
       setLoading(false);
@@ -141,7 +168,7 @@ export default function JobSeekersPage() {
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[
-          { label: "Total Jobseekers", value: pagination?.total || 0, icon: UserCircle, color: "text-blue-600", bg: "bg-blue-50" },
+          { label: "Total Jobseekers", value: totalJobSeekers, icon: UserCircle, color: "text-blue-600", bg: "bg-blue-50" },
           { label: "Active Accounts", value: activeTotal, icon: UserCheck, color: "text-emerald-600", bg: "bg-emerald-50" },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between group hover:border-slate-300 transition-all">
@@ -228,7 +255,7 @@ export default function JobSeekersPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right text-[11px] text-slate-500 font-medium">
-                      {new Date(row.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {row.created_at ? new Date(row.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                     </td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-3">
@@ -288,7 +315,7 @@ export default function JobSeekersPage() {
         </div>
 
         {/* Pagination Console */}
-        {pagination && pagination.lastPage > 1 && (
+        {pagination && (
           <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-white">
             <p className="text-[12px] font-semibold text-slate-700">
               Showing <span className="text-slate-900 font-bold">{filtered.length}</span> of {pagination.total}

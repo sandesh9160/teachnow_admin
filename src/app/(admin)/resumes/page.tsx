@@ -10,7 +10,10 @@ import {
     Calendar,
     ExternalLink,
     Loader2,
-    FileType
+    FileType,
+    ChevronLeft,
+    ChevronRight,
+    ArrowUpRight
 } from "lucide-react";
 import { getCMSResumes } from "@/services/admin.service";
 import { CMSResume, CMSResumesResponse } from "@/types";
@@ -24,12 +27,16 @@ export default function ResumesPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("uploaded");
   const [search, setSearch] = useState("");
+  const [uploadedPage, setUploadedPage] = useState(1);
+  const [generatedPage, setGeneratedPage] = useState(1);
 
-  const fetchResumes = async () => {
+  const fetchResumes = async (upPage = uploadedPage, genPage = generatedPage) => {
     try {
       setLoading(true);
-      const res = await getCMSResumes();
+      const res = await getCMSResumes({ page: upPage, cv_page: genPage });
       setData(res);
+      setUploadedPage(upPage);
+      setGeneratedPage(genPage);
     } catch (err) {
       toast.error("Failed to fetch resumes");
     } finally {
@@ -38,8 +45,16 @@ export default function ResumesPage() {
   };
 
   useEffect(() => {
-    fetchResumes();
+    fetchResumes(1, 1);
   }, []);
+
+  const handlePageChange = (newPage: number) => {
+    if (activeTab === "uploaded") {
+      fetchResumes(newPage, generatedPage);
+    } else {
+      fetchResumes(uploadedPage, newPage);
+    }
+  };
 
   const currentData = activeTab === "uploaded" 
     ? data?.resumes?.data || [] 
@@ -73,57 +88,57 @@ export default function ResumesPage() {
         <button 
             onClick={() => setActiveTab("uploaded")}
             className={clsx(
-                "p-5 rounded-2xl border transition-all duration-300 text-left relative overflow-hidden group",
+                "p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group",
                 activeTab === "uploaded" 
-                    ? "bg-indigo-600 border-indigo-600 shadow-xl shadow-indigo-600/20" 
+                    ? "bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/10" 
                     : "bg-white border-slate-200 hover:border-indigo-200 hover:bg-slate-50/50"
             )}
         >
             <div className="relative z-10 flex items-center justify-between">
-                <div>
-                    <p className={clsx("text-[11px] font-bold uppercase tracking-widest mb-1", activeTab === "uploaded" ? "text-indigo-100" : "text-slate-500")}>Uploaded Resumes</p>
-                    <h3 className={clsx("text-3xl font-black", activeTab === "uploaded" ? "text-white" : "text-slate-900")}>
-                        {data?.resumes?.total || 0}
-                    </h3>
+                <div className="flex items-center gap-3">
+                    <div className={clsx(
+                        "w-9 h-9 rounded-lg flex items-center justify-center transition-transform duration-500 group-hover:scale-110",
+                        activeTab === "uploaded" ? "bg-white/20 text-white" : "bg-indigo-50 text-indigo-600"
+                    )}>
+                        <FileText size={18} />
+                    </div>
+                    <div>
+                        <p className={clsx("text-[10px] font-bold uppercase tracking-wider mb-0.5", activeTab === "uploaded" ? "text-indigo-100" : "text-slate-500")}>Uploaded Resumes</p>
+                        <h3 className={clsx("text-xl font-black", activeTab === "uploaded" ? "text-white" : "text-slate-900")}>
+                            {data?.resumes?.total || 0}
+                        </h3>
+                    </div>
                 </div>
-                <div className={clsx(
-                    "w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110",
-                    activeTab === "uploaded" ? "bg-white/20 text-white" : "bg-indigo-50 text-indigo-600"
-                )}>
-                    <FileText size={24} />
-                </div>
+                {activeTab === "uploaded" && <ArrowUpRight size={16} className="text-white/40" />}
             </div>
-            {activeTab === "uploaded" && (
-                <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
-            )}
         </button>
 
         <button 
             onClick={() => setActiveTab("generated")}
             className={clsx(
-                "p-5 rounded-2xl border transition-all duration-300 text-left relative overflow-hidden group",
+                "p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group",
                 activeTab === "generated" 
-                    ? "bg-indigo-600 border-indigo-600 shadow-xl shadow-indigo-600/20" 
-                    : "bg-white border-slate-200 hover:border-indigo-200 hover:bg-slate-50/50"
+                    ? "bg-purple-600 border-purple-600 shadow-lg shadow-purple-600/10" 
+                    : "bg-white border-slate-200 hover:border-purple-200 hover:bg-slate-50/50"
             )}
         >
             <div className="relative z-10 flex items-center justify-between">
-                <div>
-                    <p className={clsx("text-[11px] font-bold uppercase tracking-widest mb-1", activeTab === "generated" ? "text-indigo-100" : "text-slate-500")}>Generated Resumes</p>
-                    <h3 className={clsx("text-3xl font-black", activeTab === "generated" ? "text-white" : "text-slate-900")}>
-                        {data?.generated_resumes?.total || 0}
-                    </h3>
+                <div className="flex items-center gap-3">
+                    <div className={clsx(
+                        "w-9 h-9 rounded-lg flex items-center justify-center transition-transform duration-500 group-hover:scale-110",
+                        activeTab === "generated" ? "bg-white/20 text-white" : "bg-purple-50 text-purple-600"
+                    )}>
+                        <FileType size={18} />
+                    </div>
+                    <div>
+                        <p className={clsx("text-[10px] font-bold uppercase tracking-wider mb-0.5", activeTab === "generated" ? "text-purple-100" : "text-slate-500")}>Generated CVs</p>
+                        <h3 className={clsx("text-xl font-black", activeTab === "generated" ? "text-white" : "text-slate-900")}>
+                            {data?.generated_resumes?.total || 0}
+                        </h3>
+                    </div>
                 </div>
-                <div className={clsx(
-                    "w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110",
-                    activeTab === "generated" ? "bg-white/20 text-white" : "bg-indigo-50 text-indigo-600"
-                )}>
-                    <FileType size={24} />
-                </div>
+                {activeTab === "generated" && <ArrowUpRight size={16} className="text-white/40" />}
             </div>
-            {activeTab === "generated" && (
-                <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
-            )}
         </button>
       </div>
 
@@ -139,10 +154,10 @@ export default function ResumesPage() {
         />
       </div>
 
-      {/* Main Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/60 shadow-xl shadow-slate-200/20 overflow-hidden relative z-10">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[1000px]">
+      {/* Main Registry Table */}
+      <div className="bg-white rounded-xl border border-slate-200/60 shadow-xl shadow-slate-200/30 overflow-hidden relative z-10 flex flex-col">
+        <div className="overflow-x-auto no-scrollbar">
+          <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/50">
                 <th className="px-6 py-4 text-[11px] font-bold text-slate-500 tracking-wider uppercase">Candidate</th>
@@ -165,35 +180,35 @@ export default function ResumesPage() {
               ) : filtered.length > 0 ? (
                 filtered.map((row) => (
                   <tr key={row.id} className="group hover:bg-slate-50/30 transition-all duration-200">
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-2.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100 text-indigo-600 group-hover:scale-110 transition-transform">
-                          <User size={18} />
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100 text-indigo-600 group-hover:scale-110 transition-transform">
+                          <User size={14} />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[13px] font-bold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                          <p className="text-[12.5px] font-bold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
                             {row.job_seeker?.name || "Unknown Candidate"}
                           </p>
-                          <div className="flex items-center gap-1 mt-1">
+                          <div className="flex items-center gap-1 mt-0.5">
                             <Mail size={10} className="text-slate-400" />
-                            <span className="text-[11px] text-slate-500 font-medium truncate max-w-[200px]">
+                            <span className="text-[10px] text-slate-500 font-medium truncate max-w-[200px]">
                               {row.job_seeker?.email}
                             </span>
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-2.5">
                       <div className="flex items-center gap-2 max-w-[300px]">
-                        <FileText size={14} className="text-slate-400 shrink-0" />
-                        <span className="text-[13px] text-slate-600 font-semibold truncate hover:text-indigo-600 transition-colors">
+                        <FileText size={12} className="text-slate-400 shrink-0" />
+                        <span className="text-[12.5px] text-slate-600 font-semibold truncate hover:text-indigo-600 transition-colors">
                           {row.title}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-2.5">
                       <span className={clsx(
-                        "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-tight",
+                        "inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-tight",
                         activeTab === "uploaded" 
                             ? "bg-indigo-50 text-indigo-600 border-indigo-100" 
                             : "bg-purple-50 text-purple-600 border-purple-100"
@@ -201,10 +216,10 @@ export default function ResumesPage() {
                         {activeTab === "uploaded" ? "Upload" : "Generated"}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-2.5">
                       <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-slate-400" />
-                        <span className="text-[12px] text-slate-500 font-medium whitespace-nowrap">
+                        <Calendar size={12} className="text-slate-400" />
+                        <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
                           {new Date(row.created_at).toLocaleDateString(undefined, { 
                             month: 'short', 
                             day: 'numeric', 
@@ -213,13 +228,13 @@ export default function ResumesPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-6 py-2.5 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <a 
                           href={resolveFileUrl(row.file_url)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-all active:scale-90"
                           title="View Resume"
                         >
                           <ExternalLink size={18} />
@@ -229,7 +244,7 @@ export default function ResumesPage() {
                           download
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"
+                          className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all active:scale-90"
                           title="Download"
                         >
                           <Download size={18} />
@@ -254,6 +269,48 @@ export default function ResumesPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Console */}
+        {(() => {
+          const pagination = activeTab === "uploaded" ? data?.resumes : data?.generated_resumes;
+          if (!pagination || pagination.last_page <= 1) return null;
+
+          return (
+            <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-white">
+                <p className="text-[12px] font-semibold text-slate-500">
+                    Showing <span className="text-slate-900 font-bold">{filtered.length}</span> of {pagination.total} entries
+                </p>
+
+                <div className="flex items-center gap-3">
+                    <button
+                        disabled={pagination.current_page === 1 || loading}
+                        onClick={() => handlePageChange(pagination.current_page - 1)}
+                        className="h-9 px-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[11px] font-bold active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                        <ChevronLeft size={14} strokeWidth={2.5} /> Previous
+                    </button>
+
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-bold text-slate-900 bg-indigo-50 text-indigo-600 w-8 h-8 flex items-center justify-center rounded-lg border border-indigo-100">
+                            {pagination.current_page}
+                        </span>
+                        <span className="text-[11px] font-bold text-slate-400 mx-1">/</span>
+                        <span className="text-[11px] font-bold text-slate-500 w-8 h-8 flex items-center justify-center">
+                            {pagination.last_page}
+                        </span>
+                    </div>
+
+                    <button
+                        disabled={pagination.current_page === pagination.last_page || loading}
+                        onClick={() => handlePageChange(pagination.current_page + 1)}
+                        className="h-9 px-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[11px] font-bold active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                        Next <ChevronRight size={14} strokeWidth={2.5} />
+                    </button>
+                </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

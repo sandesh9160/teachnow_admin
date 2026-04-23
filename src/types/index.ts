@@ -122,6 +122,7 @@ export interface Plan {
   features: string[];
   is_highlighted: boolean;
   is_active: boolean;
+  display_order?: number;
   subscribers?: number;
 }
 
@@ -342,6 +343,7 @@ export interface Employer {
   is_verified: number | boolean;
   is_featured: number | boolean;
   company_featured: number | boolean;
+  featured_until?: string | null;
   slug: string;
   meta_title?: string | null;
   meta_description?: string | null;

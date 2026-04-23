@@ -269,6 +269,7 @@ export default function RecruitersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
+              
               {!loading &&
                 filtered.map((row: any, i: number) => (
                   <tr
@@ -283,11 +284,13 @@ export default function RecruitersPage() {
                             <Image
                               // Combines the Base API URL with the image path
                               src={`${process.env.NEXT_PUBLIC_LARAVEL_API_URL}/${row.employer.company_logo}`}
+                                                            
                               alt="Company Logo"
                               fill
                               sizes="32px"
                               className="object-cover"
                             />
+                           
                           ) : (
                             <span className="text-slate-400 font-bold text-[11px]">
                               {row.employer?.company_name?.charAt(0) || "C"}
@@ -396,6 +399,7 @@ export default function RecruitersPage() {
                 ))}
             </tbody>
           </table>
+          
 
           {loading && (
             <div className="py-24 flex flex-col items-center justify-center">

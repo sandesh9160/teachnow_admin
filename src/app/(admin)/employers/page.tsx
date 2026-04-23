@@ -20,7 +20,9 @@ import {
   Globe,
   Activity,
   ArrowUpRight,
-  Loader2
+  Loader2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { getEmployers, verifyEmployer, featureEmployer, deleteEmployer, updateEmployerSEO, updateEmployer } from "@/services/admin.service";
 import { Employer } from "@/types";
@@ -35,6 +37,11 @@ export default function EmployersPage() {
   const [employers, setEmployers] = useState<Employer[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [pagination, setPagination] = useState<{ currentPage: number; lastPage: number; total: number }>({
+    currentPage: 1,
+    lastPage: 1,
+    total: 0
+  });
   const [seoModal, setSeoModal] = useState<{ isOpen: boolean; employer: Employer | null }>({
     isOpen: false,
     employer: null,
@@ -50,12 +57,33 @@ export default function EmployersPage() {
     fetchEmployers();
   }, []);
 
-  const fetchEmployers = async () => {
+  const fetchEmployers = async (page = 1) => {
     try {
       setLoading(true);
-      const res = await getEmployers();
-      const list = (res as any).data?.data || (res as any).data || [];
+      const res = await getEmployers({ page });
+      
+      let list: any[] = [];
+      let meta: any = null;
+
+      if ((res as any)?.data?.data && Array.isArray((res as any).data.data)) {
+        list = (res as any).data.data;
+        meta = (res as any).data;
+      } else if ((res as any)?.data && Array.isArray((res as any).data)) {
+        list = (res as any).data;
+        meta = res;
+      } else if (Array.isArray(res)) {
+        list = res;
+      }
+
       setEmployers(Array.isArray(list) ? list : []);
+      
+      if (meta) {
+        setPagination({
+          currentPage: meta.current_page || page,
+          lastPage: meta.last_page || 1,
+          total: meta.total || meta.total_employers || 0
+        });
+      }
     } catch (err: any) {
       toast.error("Failed to fetch employers");
     } finally {
@@ -108,7 +136,14 @@ export default function EmployersPage() {
       (statusFilter === "verified" ? e.is_verified : !e.is_verified);
 
     const matchesFeatured = featuredFilter === "all" ||
-      (featuredFilter === "featured" ? (e.is_featured && e.company_featured === 1) : (e.company_featured === 1 && !e.is_featured));
+      (() => {
+        const isFeatured = e.is_featured && e.company_featured === 1;
+        const isExpired = e.featured_until ? new Date(e.featured_until) < new Date() : false;
+        
+        if (featuredFilter === "featured") return isFeatured && !isExpired;
+        if (featuredFilter === "pending") return e.company_featured === 1 && !e.is_featured;
+        return false;
+      })();
 
     return matchesSearch && matchesLocation && matchesStatus && matchesFeatured;
   });
@@ -132,7 +167,9 @@ export default function EmployersPage() {
             <span className="font-semibold text-surface-900 block truncate leading-tight text-[13px]">{row.company_name}</span>
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-[9px] font-semibold text-surface-400 uppercase">{row.institution_type || 'Institution'}</span>
-              {row.is_featured && <div className="w-1.5 h-1.5 rounded-full bg-primary" />}
+              {row.is_featured && row.company_featured === 1 && (!row.featured_until || new Date(row.featured_until) >= new Date()) && (
+                <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+              )}
             </div>
           </div>
         </div>
@@ -236,7 +273,7 @@ export default function EmployersPage() {
         </div>
         <div className="flex items-center gap-2.5">
           <button
-            onClick={fetchEmployers}
+            onClick={() => fetchEmployers()}
             className="h-10 px-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all font-semibold text-[13px] active:scale-95 shadow-sm"
           >
             <RotateCcw size={15} className={clsx(loading && "animate-spin")} /> Refresh
@@ -369,17 +406,36 @@ export default function EmployersPage() {
 
                   <td className="px-6 py-4 text-center">
                     <div className="inline-flex">
-                      {row.is_featured && row.company_featured === 1 ? (
-                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
-                          <Star size={12} className="fill-emerald-600" /> Featured
-                        </div>
-                      ) : row.company_featured === 1 && !row.is_featured ? (
-                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-100">
-                          <Star size={12} className="fill-amber-500" /> Pending
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 text-[10px] font-semibold">—</span>
-                      )}
+                      {(() => {
+                        const isFeatured = row.is_featured && row.company_featured === 1;
+                        const isExpired = row.featured_until ? new Date(row.featured_until) < new Date() : false;
+
+                        if (isFeatured && !isExpired) {
+                          return (
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
+                              <Star size={12} className="fill-emerald-600" /> Featured
+                            </div>
+                          );
+                        }
+                        
+                        if (isFeatured && isExpired) {
+                          return (
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-100">
+                              <Star size={12} className="fill-rose-600" /> Expired
+                            </div>
+                          );
+                        }
+
+                        if (row.company_featured === 1 && !row.is_featured) {
+                          return (
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-100">
+                              <Star size={12} className="fill-amber-500" /> Pending
+                            </div>
+                          );
+                        }
+
+                        return <span className="text-slate-400 text-[10px] font-semibold">—</span>;
+                      })()}
                     </div>
                   </td>
 
@@ -413,6 +469,43 @@ export default function EmployersPage() {
             </div>
           )}
         </div>
+
+        {/* Pagination Console */}
+        {pagination && (
+          <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-white">
+            <p className="text-[12px] font-semibold text-slate-700">
+              Showing <span className="text-slate-900 font-bold">{filtered.length}</span> of {pagination.total} entries
+            </p>
+
+            <div className="flex items-center gap-3">
+              <button
+                disabled={pagination.currentPage === 1 || loading}
+                onClick={() => fetchEmployers(pagination.currentPage - 1)}
+                className="h-10 px-5 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[12px] font-bold active:scale-95 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft size={16} strokeWidth={2.5} /> Previous
+              </button>
+
+              <div className="flex items-center gap-1.5">
+                <span className="text-[12px] font-bold text-slate-900 bg-primary/5 text-primary w-9 h-9 flex items-center justify-center rounded-xl border border-primary/10">
+                  {pagination.currentPage}
+                </span>
+                <span className="text-[12px] font-bold text-slate-400 mx-1">/</span>
+                <span className="text-[12px] font-bold text-slate-500 w-9 h-9 flex items-center justify-center">
+                  {pagination.lastPage}
+                </span>
+              </div>
+
+              <button
+                disabled={pagination.currentPage === pagination.lastPage || loading}
+                onClick={() => fetchEmployers(pagination.currentPage + 1)}
+                className="h-10 px-5 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[12px] font-bold active:scale-95 disabled:cursor-not-allowed"
+              >
+                Next <ChevronRight size={16} strokeWidth={2.5} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <SEOEditModal

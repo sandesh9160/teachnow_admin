@@ -24,7 +24,8 @@ export default function ManagePlansPage() {
       setLoading(true);
       const res = await getPlans();
       if (res && res.data) {
-        setPlans(res.data);
+        const sortedPlans = (res.data as Plan[]).sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+        setPlans(sortedPlans);
       } else {
         setPlans([]);
       }
@@ -119,9 +120,7 @@ export default function ManagePlansPage() {
         </div>
 
         <div className="flex items-center gap-5">
-          <div className="text-right">
-            <span className="text-[12px] font-bold text-slate-400 block tracking-tight">{activeCount} active plans</span>
-          </div>
+
           <button
             onClick={handleCreatePlan}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-[12px] font-bold transition-all active:scale-95 group"
@@ -133,24 +132,7 @@ export default function ManagePlansPage() {
       </div>
 
       {/* Reference Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-1">
-          <p className="text-[11px] font-semibold text-slate-400">Total Subscribers</p>
-          <p className="text-2xl font-bold text-slate-900 tracking-tight">
-            {(plans || []).reduce((acc, p) => acc + (p.subscribers || 0), 0).toLocaleString()}
-          </p>
-        </div>
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-1 relative overflow-hidden">
-          <p className="text-[11px] font-semibold text-slate-400">Monthly Revenue</p>
-          <p className="text-2xl font-bold text-emerald-600 tracking-tight">
-            ₹{(plans || []).reduce((acc, p) => acc + (Number(p.offer_price || p.price || 0) * (p.subscribers || 0)), 0).toLocaleString()}
-          </p>
-        </div>
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-1">
-          <p className="text-[11px] font-semibold text-slate-400">Active Plans</p>
-          <p className="text-2xl font-bold text-slate-900 tracking-tight">{activeCount}</p>
-        </div>
-      </div>
+
 
 
       {/* Plan Inventory */}
