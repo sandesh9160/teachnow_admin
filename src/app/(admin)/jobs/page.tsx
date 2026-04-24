@@ -346,15 +346,7 @@ export default function JobsPage() {
             <div className="bg-white rounded-xl border border-slate-200/60 shadow-xl shadow-slate-200/30 overflow-hidden relative z-10">
                 <div>
                     <table className="w-full text-left border-collapse table-fixed">
-                        <colgroup>
-                            <col className="w-[27%]" />  {/* Job Title */}
-                            <col className="w-[18%]" />  {/* Institute */}
-                            <col className="w-[15%]" />  {/* Location */}
-                            <col className="w-[10%]" />  {/* Feature */}
-                            <col className="w-[10%]" />  {/* Status */}
-                            <col className="w-[10%]" />  {/* Posted */}
-                            <col className="w-[10%]" />  {/* Actions */}
-                        </colgroup>
+                        <colgroup><col className="w-[27%]" /><col className="w-[18%]" /><col className="w-[15%]" /><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[10%]" /></colgroup>
                         <thead>
                             <tr className="border-b border-slate-100 bg-slate-50/60">
                                 <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Job Title</th>
