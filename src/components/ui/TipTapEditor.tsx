@@ -114,7 +114,7 @@ export function TipTapEditor({ value, onChange, placeholder = "Start typing desc
     },
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none focus:outline-none min-h-[300px] px-6 py-5 text-[14px] font-medium text-surface-600 leading-relaxed",
+        class: "prose prose-sm max-w-none focus:outline-none min-h-[400px] px-6 py-5 text-[14px] font-medium text-surface-600 leading-relaxed",
       },
     },
   });
@@ -265,7 +265,7 @@ export function TipTapEditor({ value, onChange, placeholder = "Start typing desc
         </div>
       )}
       
-      <div className="bg-white min-h-[300px]">
+      <div className="bg-white min-h-[400px]">
          <EditorContent editor={editor} />
       </div>
       

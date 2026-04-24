@@ -166,27 +166,28 @@ export default function EmailTemplateModal({ isOpen, onClose, onSave, template }
             <div className="flex items-center gap-2">
               <label className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">Email Body (Rich Text) <span className="text-rose-500">*</span></label>
             </div>
-            <TipTapEditor
-              value={formData.body || ""}
-              onChange={(body) => setFormData(prev => ({ ...prev, body }))}
-              placeholder="Start writing the email body content..."
-            />
-            
             {/* ─── Variables Reference ─────────────────────────────────────── */}
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mt-4">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-3 text-slate-800">
                 <AlertCircle size={16} className="text-indigo-600" />
-                <span className="text-[11px] font-extrabold uppercase tracking-tight">Available System Variables</span>
+                <span className="text-[11px] font-semibold uppercase tracking-tight">Available System Variables</span>
               </div>
-              <p className="text-[10px] text-slate-500 font-bold mb-3 uppercase tracking-wider">You can use these dynamic placeholders in your email content:</p>
+              <p className="text-[10px] text-slate-500 font-semibold mb-3 uppercase tracking-wider">You can use these dynamic placeholders in your email content:</p>
               <div className="flex flex-wrap gap-2">
                 {["{name}", "{job_title}", "{user_name}", "{reset_link}", "{company_name}", "{id}"].map(v => (
-                  <span key={v} className="px-2 py-1 bg-white border border-slate-200 text-indigo-600 font-bold text-[11px] rounded transition-all select-all hover:border-indigo-300 shadow-sm">
+                  <span key={v} className="px-2 py-1 bg-white border border-slate-200 text-indigo-600 font-semibold text-[11px] rounded transition-all select-all hover:border-indigo-300 shadow-sm">
                     {v}
                   </span>
                 ))}
               </div>
             </div>
+
+            <TipTapEditor
+              value={formData.body || ""}
+              onChange={(body) => setFormData(prev => ({ ...prev, body }))}
+              placeholder="Start writing the email body content..."
+            />
+
           </div>
         </form>
       </div>

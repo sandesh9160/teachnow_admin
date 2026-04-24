@@ -23,7 +23,10 @@ import {
   Layout,
   Bell,
   Quote,
-  ShieldCheck
+  ShieldCheck,
+  Clock,
+  Mail,
+  FileSearch
 } from "lucide-react";
 import { adminSignOut } from "@/lib/auth";
 import { clsx } from "clsx";
@@ -112,8 +115,28 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
           { title: "About Us", href: "/content/about" },
           { title: "Contact Us", href: "/content/contact" },
           { title: "FAQs", href: "/content/faqs" },
+          { title: "Terms & Conditions", href: "/content/terms" },
+          { title: "Privacy Policy", href: "/content/privacy" },
         ]
       },
+    ]
+  },
+  {
+    label: "Resources",
+    color: "text-slate-400",
+    headerIcon: null,
+    items: [
+      { title: "Teaching Resources", href: "/resources", icon: GraduationCap },
+    ]
+  },
+  {
+    label: "System & Templates",
+    color: "text-slate-400",
+    headerIcon: null,
+    items: [
+      { title: "Resume Templates", href: "/cv-templates", icon: Layout },
+      { title: "Email Templates", href: "/email/templates", icon: Mail },
+      { title: "Cron Jobs", href: "/cron-jobs", icon: Clock },
     ]
   },
 ];
@@ -221,7 +244,6 @@ export default function Sidebar({
             </button>
           </div>
 
-        <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1 no-scrollbar">
           {navGroups.map((group, groupIndex) => {
             return (
             <div key={groupIndex} className="space-y-0.5 pb-2">
@@ -308,7 +330,8 @@ export default function Sidebar({
                 );
               })}
             </div>
-          );})}
+          );
+          })}
         </nav>
 
         {/* Footer */}

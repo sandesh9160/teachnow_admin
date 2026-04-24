@@ -21,7 +21,8 @@ import {
   Eye,
   Settings2,
   Code2,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Save
 } from "lucide-react";
 import { 
   getCVTemplates, 
@@ -225,29 +226,27 @@ export default function ManageCVTemplatesPage() {
                   <ArrowLeft size={20} />
                 </button>
                 <div>
-                   <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-                        {editingTemplate ? "Edit Design Layout" : "Publish New Layout"}
+                   <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
+                        {editingTemplate ? "Edit Template Design" : "Create New Template"}
                     </h1>
-                    <p className="text-[13px] font-medium text-slate-500">Define core structure and preview for the builder.</p>
+                    <p className="text-[12px] font-medium text-slate-500 italic">Configure the HTML structure and visual preview.</p>
                 </div>
             </div>
 
-            <div className="flex items-center gap-3">
-                        <button 
+            <div className="flex items-center gap-2">
+                <button 
                   onClick={() => setIsEditing(false)}
-                  suppressHydrationWarning
-                  className="px-5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-[13px] font-bold text-slate-500 hover:text-rose-600 hover:border-rose-100 hover:bg-rose-50 transition-all shadow-sm active:scale-95"
+                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[12px] font-semibold text-slate-500 hover:bg-slate-50 transition-all active:scale-95"
                 >
-                    Discard Changes
+                    Cancel
                 </button>
                 <button 
                     onClick={handleSave}
                     disabled={saveLoading}
-                    suppressHydrationWarning
-                    className="min-w-[180px] bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-2xl text-[13px] font-bold shadow-xl shadow-indigo-600/10 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                    className="min-w-[140px] bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-xl text-[12px] font-semibold shadow-lg shadow-indigo-600/10 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
                 >
-                    {saveLoading ? <Loader2 size={18} className="animate-spin" /> : <CheckCircle2 size={18} />}
-                    {editingTemplate ? "Apply Changes" : "Confirm & Save"}
+                    {saveLoading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                    {editingTemplate ? "Save Changes" : "Create Template"}
                 </button>
             </div>
         </div>
@@ -261,34 +260,34 @@ export default function ManageCVTemplatesPage() {
                     <div className="space-y-6">
                         <div className="flex items-center gap-2 mb-2">
                             <Settings2 size={16} className="text-indigo-600" />
-                            <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest">General Configuration</h3>
+                            <h3 className="text-[12px] font-semibold text-slate-900 uppercase tracking-widest">General Configuration</h3>
                         </div>
 
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Template Display Name</label>
+                            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 ml-1">Template Display Name</label>
                             <input 
                                 required
                                 type="text"
                                 placeholder="e.g. Modern Minimalist 2024"
                                 value={editorData.name}
                                 onChange={e => setEditorData({...editorData, name: e.target.value})}
-                                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[20px] text-[13px] font-semibold focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[20px] text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Category / Design Tags</label>
+                            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 ml-1">Category / Design Tags</label>
                             <input 
                                 type="text"
                                 placeholder="e.g. professional, creative"
                                 value={editorData.key_values}
                                 onChange={e => setEditorData({...editorData, key_values: e.target.value})}
-                                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[20px] text-[13px] font-semibold focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-100 rounded-[20px] text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">System Visibility</label>
+                            <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 ml-1">System Visibility</label>
                             <div className="grid grid-cols-2 gap-3">
                                 {[
                                     { val: 1, label: "Live", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
@@ -299,7 +298,7 @@ export default function ManageCVTemplatesPage() {
                                         type="button"
                                         onClick={() => setEditorData({...editorData, is_active: opt.val})}
                                         className={clsx(
-                                            "flex items-center justify-center gap-2 py-3.5 rounded-[20px] border-2 transition-all font-bold text-[12px]",
+                                            "flex items-center justify-center gap-2 py-3.5 rounded-[20px] border-2 transition-all font-semibold text-[12px]",
                                             editorData.is_active === opt.val 
                                                 ? `${opt.bg} border-indigo-600 text-slate-900` 
                                                 : "border-slate-50 bg-slate-50 text-slate-400 hover:border-slate-200"
@@ -317,7 +316,7 @@ export default function ManageCVTemplatesPage() {
                     <div className="space-y-4 pt-4 border-t border-slate-100">
                         <div className="flex items-center gap-2">
                             <Sparkles size={16} className="text-amber-500" />
-                            <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest">Available Tags</h3>
+                            <h3 className="text-[12px] font-semibold text-slate-900 uppercase tracking-widest">Available Tags</h3>
                         </div>
                         <p className="text-[10px] font-medium text-slate-400 leading-relaxed mb-1">
                             Use these variables in your HTML to inject candidate data.
@@ -338,7 +337,7 @@ export default function ManageCVTemplatesPage() {
                                             }
                                         }}
                                         className={clsx(
-                                            "px-2.5 py-1.5 border rounded-lg text-[10px] font-mono font-bold transition-all active:scale-95 flex items-center gap-1.5",
+                                            "px-2.5 py-1.5 border rounded-lg text-[10px] font-mono font-semibold transition-all active:scale-95 flex items-center gap-1.5",
                                             isUsed 
                                                 ? "bg-indigo-600 text-white border-indigo-700 shadow-lg shadow-indigo-600/20" 
                                                 : "bg-slate-50 border-slate-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200"
@@ -357,9 +356,9 @@ export default function ManageCVTemplatesPage() {
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <ImageIcon size={16} className="text-indigo-600" />
-                                <h3 className="text-[12px] font-bold text-slate-900 uppercase tracking-widest">Mockup Upload</h3>
+                                <h3 className="text-[12px] font-semibold text-slate-900 uppercase tracking-widest">Mockup Upload</h3>
                             </div>
-                            <span className="text-[10px] font-bold text-slate-300">JPG/PNG/WEBP</span>
+                            <span className="text-[10px] font-semibold text-slate-300">JPG/PNG/WEBP</span>
                         </div>
                         
                         <div className={clsx(
@@ -378,7 +377,7 @@ export default function ManageCVTemplatesPage() {
                                     <div className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center mb-3 shadow-sm group-hover:-translate-y-1 transition-transform">
                                         <Upload size={20} strokeWidth={2} className="text-indigo-600" />
                                     </div>
-                                    <p className="text-[11px] font-bold text-slate-900 uppercase tracking-tight mb-1">Upload Preview</p>
+                                    <p className="text-[11px] font-semibold text-slate-900 uppercase tracking-tight mb-1">Upload Preview</p>
                                     <p className="text-[10px] font-medium text-slate-400 leading-tight">Drag and drop or click to browse</p>
                                 </div>
                             )}
@@ -412,7 +411,7 @@ export default function ManageCVTemplatesPage() {
                             <div className="w-px h-4 bg-slate-200 mx-2" />
                             <div className="flex items-center gap-2 text-slate-400">
                                 {showPreview ? <Eye size={14} className="text-indigo-600" /> : <Code2 size={14} />}
-                                <span className={clsx("text-[11px] font-extrabold uppercase tracking-widest", showPreview ? "text-indigo-600" : "text-slate-400")}>
+                                <span className={clsx("text-[11px] font-semibold uppercase tracking-widest", showPreview ? "text-indigo-600" : "text-slate-400")}>
                                     {showPreview ? "Live Design Preview" : "HTML Blueprint Editor"}
                                 </span>
                             </div>
@@ -421,7 +420,7 @@ export default function ManageCVTemplatesPage() {
                              <button 
                                 onClick={() => setShowPreview(false)}
                                 className={clsx(
-                                    "flex items-center gap-2 px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all",
+                                    "flex items-center gap-2 px-4 py-1.5 rounded-xl text-[10px] font-semibold uppercase transition-all",
                                     !showPreview ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "text-slate-400 hover:text-slate-900"
                                 )}
                              >
@@ -430,7 +429,7 @@ export default function ManageCVTemplatesPage() {
                              <button 
                                 onClick={() => setShowPreview(true)}
                                 className={clsx(
-                                    "flex items-center gap-2 px-4 py-1.5 rounded-xl text-[10px] font-bold uppercase transition-all",
+                                    "flex items-center gap-2 px-4 py-1.5 rounded-xl text-[10px] font-semibold uppercase transition-all",
                                     showPreview ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "text-slate-400 hover:text-slate-900"
                                 )}
                              >
@@ -464,17 +463,17 @@ export default function ManageCVTemplatesPage() {
 
                     <div className="px-6 py-3 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between">
                          <div className="flex items-center gap-4">
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-tight">
                                 Chars: {editorData.html_template.length}
                             </span>
-                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">
+                            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-tight">
                                 Lines: {editorData.html_template.split('\n').length}
                             </span>
                          </div>
                          {showPreview && (
                             <div className="flex items-center gap-2 text-emerald-600">
                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest">Real-time Rendering</span>
+                                <span className="text-[10px] font-semibold uppercase tracking-widest">Real-time Rendering</span>
                             </div>
                          )}
                     </div>
@@ -507,13 +506,13 @@ export default function ManageCVTemplatesPage() {
             </div>
             <div>
               <div className="flex items-center gap-2 mb-1">
-                 <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100 uppercase tracking-tighter">System Assets</span>
+                 <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100 uppercase tracking-tighter">System Assets</span>
                  <span className="w-1 h-1 rounded-full bg-slate-300" />
-                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stats.active}/{stats.total} Active Designs</span>
+                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{stats.active}/{stats.total} Active Templates</span>
               </div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">Resume Layouts</h1>
-              <p className="text-[13px] text-slate-500 font-medium mt-1 max-w-lg leading-relaxed">
-                Fine-tune the visual blueprints for the AI Resume Builder. Control HTML structures and live deployment status.
+              <h1 className="text-xl font-semibold text-slate-900 tracking-tight leading-tight">Resume Templates</h1>
+              <p className="text-[12px] text-slate-500 font-medium mt-0.5 max-w-lg leading-relaxed">
+                Manage visual layouts for the AI Resume Builder. Control HTML structures and live status.
               </p>
             </div>
           </div>
@@ -522,23 +521,22 @@ export default function ManageCVTemplatesPage() {
              {/* Integrated Quick Stats */}
              <div className="flex items-center gap-6 px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100">
                 <div className="flex flex-col">
-                   <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Storage</span>
-                   <span className="text-[14px] font-black text-slate-900">{(stats.total * 1.2).toFixed(1)}MB</span>
+                   <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">Storage</span>
+                   <span className="text-[14px] font-bold text-slate-900">{(stats.total * 1.2).toFixed(1)}MB</span>
                 </div>
                 <div className="w-px h-8 bg-slate-200" />
                 <div className="flex flex-col">
-                   <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest">Variants</span>
-                   <span className="text-[14px] font-black text-slate-900">{stats.designs || 1} Types</span>
+                   <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">Variants</span>
+                   <span className="text-[14px] font-bold text-slate-900">{stats.designs || 1} Types</span>
                 </div>
              </div>
 
              <button 
                 onClick={handleCreateNew}
-                suppressHydrationWarning
-                className="flex items-center gap-2.5 bg-slate-900 hover:bg-indigo-600 text-white px-8 py-3.5 rounded-2xl text-[12px] font-bold transition-all active:scale-95 shadow-xl shadow-slate-900/10 group"
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl text-[12px] font-semibold transition-all active:scale-95 shadow-lg shadow-indigo-600/20"
               >
-                <Plus size={18} /> 
-                Create New Blueprint
+                <Plus size={16} /> 
+                Add Template
               </button>
           </div>
         </div>
@@ -552,10 +550,10 @@ export default function ManageCVTemplatesPage() {
              <input 
                type="text" 
                suppressHydrationWarning
-               placeholder="Search blueprints by name, design category or layout ID..." 
+               placeholder="Search templates by name, category or ID..." 
                value={search}
                onChange={e => setSearch(e.target.value)}
-               className="w-full pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-[22px] text-[13px] font-semibold text-slate-900 placeholder:text-slate-300 focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all shadow-sm"
+               className="w-full pl-12 pr-6 py-4 bg-white border border-slate-200 rounded-[22px] text-[13px] font-medium text-slate-900 placeholder:text-slate-300 focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all shadow-sm"
              />
           </div>
 
@@ -567,7 +565,11 @@ export default function ManageCVTemplatesPage() {
                    suppressHydrationWarning
                    className={clsx(
                       "px-6 py-2.5 text-[11px] font-bold rounded-[18px] transition-all capitalize",
-                      filter === opt ? "bg-slate-900 text-white shadow-xl shadow-slate-900/20" : "text-slate-400 hover:text-slate-950"
+                      filter === opt 
+                        ? opt === "all" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                        : opt === "active" ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                        : "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
+                        : "text-slate-400 hover:bg-slate-50"
                    )}
                 >
                    {opt}
@@ -580,7 +582,7 @@ export default function ManageCVTemplatesPage() {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200">
           <Loader2 size={32} className="animate-spin text-indigo-600 mb-4" strokeWidth={1.5} />
-          <p className="text-sm font-semibold text-slate-500 tracking-tight uppercase">Synchronizing templates...</p>
+          <p className="text-sm font-medium text-slate-500 tracking-tight uppercase">Synchronizing templates...</p>
         </div>
       ) : filteredTemplates.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

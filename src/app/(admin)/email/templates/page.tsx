@@ -22,7 +22,8 @@ import {
 
 import DataTable from "@/components/tables/DataTable";
 import EmailTemplateModal from "@/components/modals/EmailTemplateModal";
-import type { EmailTemplate } from "@/types";
+import Pagination from "@/components/ui/Pagination";
+import type { EmailTemplate, PaginatedResponse } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 
@@ -31,6 +32,9 @@ export default function EmailTemplatesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showOnlyActive, setShowOnlyActive] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   
   // View states
   const [isEditing, setIsEditing] = useState(false);
@@ -38,15 +42,36 @@ export default function EmailTemplatesPage() {
 
   useEffect(() => {
     fetchTemplates();
-  }, []);
+  }, [currentPage, search, showOnlyActive]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const fetchTemplates = async () => {
     try {
       setLoading(true);
-      const res = await getEmailTemplates();
-      // Adjust based on common API response structure
-      const data = (res as any).data || res;
-      setTemplates(Array.isArray(data) ? data : []);
+      const res = await getEmailTemplates({ 
+        page: currentPage, 
+        search, 
+        active: showOnlyActive ? 1 : undefined 
+      });
+      
+      const responseData = res.data;
+      
+      if (responseData && 'current_page' in responseData) {
+        // It's a paginated response
+        const paginated = responseData as PaginatedResponse<EmailTemplate>;
+        setTemplates(paginated.data || []);
+        setTotalPages(paginated.last_page || 1);
+        setTotalItems(paginated.total || 0);
+      } else {
+        // Fallback for non-paginated array response
+        const data = Array.isArray(responseData) ? responseData : [];
+        setTemplates(data);
+        setTotalPages(1);
+        setTotalItems(data.length);
+      }
     } catch (error) {
       console.error("Failed to fetch email templates:", error);
       toast.error("Unable to load email templates");
@@ -85,12 +110,28 @@ export default function EmailTemplatesPage() {
   };
 
   const handleToggle = async (template: EmailTemplate) => {
+    // Optimistic Update
+    const originalStatus = template.is_active;
+    const newStatus = originalStatus ? 0 : 1;
+    
+    setTemplates(prev => prev.map(t => 
+      t.id === template.id ? { ...t, is_active: newStatus } : t
+    ));
+
     try {
       const res = await toggleEmailTemplateStatus(template.id);
-      const updated = (res as any).data || res;
-      setTemplates(prev => prev.map(t => t.id === updated.id ? updated : t));
-      toast.success(`${template.name} is now ${updated.is_active ? 'enabled' : 'disabled'}`);
+      // Backend usually returns { data: { ...updatedTemplate } }
+      const updated = (res as any).data?.data || (res as any).data || res;
+      
+      if (updated && typeof updated === 'object' && 'id' in updated) {
+        setTemplates(prev => prev.map(t => t.id === updated.id ? updated : t));
+        toast.success(`${template.name} is now ${updated.is_active ? 'enabled' : 'disabled'}`);
+      }
     } catch (error) {
+      // Revert on error
+      setTemplates(prev => prev.map(t => 
+        t.id === template.id ? { ...t, is_active: originalStatus } : t
+      ));
       toast.error("Failed to toggle status");
     }
   };
@@ -106,17 +147,6 @@ export default function EmailTemplatesPage() {
     }
   };
 
-  const filteredTemplates = templates.filter(t => {
-    const matchesSearch = 
-      t.name.toLowerCase().includes(search.toLowerCase()) || 
-      t.subject.toLowerCase().includes(search.toLowerCase()) ||
-      t.slug.toLowerCase().includes(search.toLowerCase()) ||
-      (t.body || "").toLowerCase().includes(search.toLowerCase());
-    
-    const matchesFilter = showOnlyActive ? t.is_active === 1 : true;
-    
-    return matchesSearch && matchesFilter;
-  });
 
   const columns = [
     {
@@ -153,37 +183,28 @@ export default function EmailTemplatesPage() {
       ),
     },
     {
-      key: "status",
-      title: "System Status",
-      render: (_: unknown, row: EmailTemplate) => (
-        <div className="flex items-center gap-2">
-            <div className={clsx(
-              "px-2.5 py-0.5 rounded-full border text-[8px] font-extrabold flex items-center gap-1 shadow-sm",
-              row.is_active 
-                ? "bg-emerald-500 text-white border-emerald-600" 
-                : "bg-rose-500 text-white border-rose-600"
-            )}>
-              <div className="w-1 h-1 rounded-full bg-white animate-pulse" />
-              {row.is_active ? "LIVE" : "DORMANT"}
-            </div>
-        </div>
-      ),
-    },
-    {
-      key: "updated_at",
-      title: "Modified",
-      render: (val: any) => (
-        <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400">
-          <Clock size={11} className="text-indigo-400" />
-          <span className="text-slate-500">{val ? new Date(val as string).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : ""}</span>
-        </div>
-      ),
-    },
-    {
       key: "actions",
       title: "Actions",
       render: (_: unknown, row: EmailTemplate) => (
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-3">
+          <button
+            onClick={(e) => { e.stopPropagation(); handleToggle(row); }}
+            className={clsx(
+              "relative inline-flex h-5 w-9 items-center rounded-full transition-all outline-none border border-slate-200 shrink-0",
+              row.is_active ? "bg-emerald-500 border-emerald-600" : "bg-slate-200"
+            )}
+            title={row.is_active ? "Disable Template" : "Enable Template"}
+          >
+            <span
+              className={clsx(
+                "inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-all shadow-sm",
+                row.is_active ? "translate-x-5" : "translate-x-0.5"
+              )}
+            />
+          </button>
+          
+          <div className="w-px h-4 bg-slate-100 mx-1" />
+
           <button
             onClick={(e) => { e.stopPropagation(); handleEdit(row); }}
             className="p-1.5 text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg transition-all hover:bg-indigo-600 hover:text-white shadow-sm"
@@ -284,27 +305,21 @@ export default function EmailTemplatesPage() {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <DataTable 
           columns={columns} 
-          data={filteredTemplates} 
+          data={templates} 
           loading={loading}
           onRowClick={handleEdit}
           emptyMessage="No email templates found matching your criteria."
         />
-      </div>
-
-      {/* ─── Helper Notice ───────────────────────────────────────────────── */}
-      <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 flex gap-4">
-        <AlertCircle className="text-indigo-600 shrink-0" size={24} />
-        <div className="text-xs text-indigo-900 font-medium leading-relaxed">
-          <p className="font-bold mb-1 text-sm">Automated Variable Guide</p>
-          <p className="mb-3 text-indigo-700/80 font-bold uppercase tracking-tight text-[10px]">Do NOT modify the text inside the curly brackets. These are dynamic system variables:</p>
-          <div className="flex flex-wrap gap-2">
-            {["{name}", "{job_title}", "{user_name}", "{reset_link}", "{company_name}", "{id}"].map(v => (
-              <code key={v} className="bg-white px-2 py-1 rounded border border-indigo-200 text-indigo-700 font-bold shrink-0">
-                {v}
-              </code>
-            ))}
+        
+        {!loading && totalPages > 1 && (
+          <div className="border-t border-slate-100 bg-slate-50/30">
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

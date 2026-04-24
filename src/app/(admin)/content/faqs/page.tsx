@@ -253,7 +253,9 @@ export default function FAQPage() {
       {/* ─── CREATION MODAL ────────────────────────────────────────────── */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
-           <div className="bg-white w-full max-w-lg rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
+           <div className="bg-white w-full max-w-4xl rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
+
+
               <div className="px-5 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
                   <h3 className="text-sm font-bold text-slate-900">{editingFaq ? "Edit FAQ" : "New FAQ"}</h3>
                   <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">

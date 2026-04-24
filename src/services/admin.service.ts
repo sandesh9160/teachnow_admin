@@ -479,8 +479,8 @@ export const toggleResourceVisibility = (id: number) =>
 
 // ─── Email Templates ─────────────────────────────────────────────────────────
 
-export const getEmailTemplates = () =>
-  dashboardServerFetch<ApiResponse<EmailTemplate[]>>("/admin/cms/email-templates");
+export const getEmailTemplates = (params?: Record<string, unknown>) =>
+  dashboardServerFetch<ApiResponse<PaginatedResponse<EmailTemplate>>>("/admin/cms/email-templates", { params });
 
 export const createEmailTemplate = (data: Partial<EmailTemplate>) =>
   dashboardServerFetch<ApiResponse<EmailTemplate>>("/admin/cms/email-templates", { method: "POST", data });
@@ -492,7 +492,7 @@ export const deleteEmailTemplate = (id: number) =>
   dashboardServerFetch(`/admin/cms/email-templates/${id}`, { method: "DELETE" });
 
 export const toggleEmailTemplateStatus = (id: number) =>
-  dashboardServerFetch<ApiResponse<EmailTemplate>>(`/admin/cms/email-templates/${id}/toggle`, { method: "POST" });
+  dashboardServerFetch<ApiResponse<EmailTemplate>>(`/admin/cms/email-templates/${id}/toggle`, { method: "PATCH" });
 
 // ─── Testimonials ───────────────────────────────────────────────────────────
 
@@ -615,6 +615,27 @@ export const deletePrivacyPolicy = (id: number) =>
 
 export const togglePrivacyPolicyStatus = (id: number) =>
   dashboardServerFetch(`/admin/cms/privacy-policy/${id}/toggle`, { method: "PATCH" });
+
+// ─── Terms and Conditions ─────────────────────────────────────────────────────
+
+export const getTermsConditions = () =>
+  dashboardServerFetch<PrivacyPolicyResponse>("/admin/cms/terms-condition");
+
+export const createTermsCondition = (data: Partial<PrivacyPolicyItem>) =>
+  dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>("/admin/cms/terms-condition", { method: "POST", data });
+
+export const updateTermsCondition = (id: number, data: Partial<PrivacyPolicyItem>) =>
+  dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>(`/admin/cms/terms-condition/${id}`, { 
+    method: "POST", 
+    data,
+    params: { _method: "PUT" }
+  });
+
+export const deleteTermsCondition = (id: number) =>
+  dashboardServerFetch(`/admin/cms/terms-condition/${id}`, { method: "DELETE" });
+
+export const toggleTermsConditionStatus = (id: number) =>
+  dashboardServerFetch(`/admin/cms/terms-condition/${id}/toggle`, { method: "PATCH" });
 
 // ─── Cron Jobs & Mail Settings ──────────────────────────────────────────────────
 
