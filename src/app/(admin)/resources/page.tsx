@@ -6,7 +6,9 @@ import {
   Search, 
   Filter, 
   Loader2,
-  LibraryBig
+  LibraryBig,
+  Layout,
+  Mail
 } from "lucide-react";
 import { 
   getResources, 
@@ -17,13 +19,17 @@ import {
 } from "@/services/admin.service";
 import ResourceCard from "@/components/cards/ResourceCard";
 import ResourceModal from "@/components/modals/ResourceModal";
-import type { TeachingResource } from "@/types";
+import Pagination from "@/components/ui/Pagination";
+import type { TeachingResource, PaginatedResponse } from "@/types";
 import { toast } from "sonner";
 
 export default function ManageResourcesPage() {
   const [resources, setResources] = useState<TeachingResource[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -31,20 +37,39 @@ export default function ManageResourcesPage() {
 
   useEffect(() => {
     fetchResources();
-  }, []);
+  }, [currentPage, search]);
 
   const fetchResources = async () => {
     try {
       setLoading(true);
-      const res = await getResources();
-      const data = (res as any).data || res;
-      setResources(Array.isArray(data) ? data : []);
+      const res = await getResources({
+        page: currentPage,
+        search
+      });
+      
+      const responseData = (res as any).data;
+      
+      if (responseData && 'current_page' in responseData) {
+        const paginated = responseData as PaginatedResponse<TeachingResource>;
+        setResources(paginated.data || []);
+        setTotalPages(paginated.last_page || 1);
+        setTotalItems(paginated.total || 0);
+      } else {
+        const data = Array.isArray(responseData) ? responseData : [];
+        setResources(data);
+        setTotalPages(1);
+        setTotalItems(data.length);
+      }
     } catch (error) {
       console.error("Failed to fetch resources:", error);
       toast.error("Unable to load teaching resources");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   const handleCreateNew = () => {
@@ -102,13 +127,6 @@ export default function ManageResourcesPage() {
     }
   };
 
-  // Safe search filtering
-  const filteredResources = resources.filter(res => {
-    const matchesSearch = search.toLowerCase() === "" || 
-      (res.title || "").toLowerCase().includes(search.toLowerCase()) ||
-      (res.author_name || "").toLowerCase().includes(search.toLowerCase());
-    return matchesSearch;
-  });
 
   if (isModalOpen) {
     return (
@@ -137,7 +155,20 @@ export default function ManageResourcesPage() {
             <p className="text-sm text-slate-500 font-medium">Manage PDFs, class notes, and learning materials</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <a 
+            href="/cv-templates"
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-[11px] transition-all border border-slate-200 uppercase tracking-tight"
+          >
+            <Layout size={16} /> Resume Templates
+          </a>
+          <a 
+            href="/email/templates"
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-[11px] transition-all border border-slate-200 uppercase tracking-tight"
+          >
+            <Mail size={16} /> Email Templates
+          </a>
+          <div className="w-px h-6 bg-slate-200 mx-1 hidden md:block" />
           <button 
             onClick={fetchResources}
             className="p-2.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl transition-all"
@@ -174,7 +205,7 @@ export default function ManageResourcesPage() {
           <Loader2 size={32} className="animate-spin text-indigo-600 mb-4" />
           <p className="text-sm font-semibold text-slate-600">Loading resources catalog...</p>
         </div>
-      ) : filteredResources.length === 0 ? (
+      ) : resources.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-slate-200 shadow-sm border-dashed">
           <div className="w-16 h-16 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mb-4 border border-slate-100">
             <LibraryBig size={32} />
@@ -189,16 +220,28 @@ export default function ManageResourcesPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredResources.map((resource) => (
-            <ResourceCard 
-              key={resource.id} 
-              resource={resource} 
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onToggleStatus={handleToggleStatus}
-            />
-          ))}
+        <div className="space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {resources.map((resource) => (
+                    <ResourceCard 
+                    key={resource.id} 
+                    resource={resource} 
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onToggleStatus={handleToggleStatus}
+                    />
+                ))}
+            </div>
+
+            {totalPages > 1 && (
+                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <Pagination 
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                    />
+                </div>
+            )}
         </div>
       )}
     </div>

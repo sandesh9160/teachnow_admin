@@ -10,7 +10,9 @@ import {
   Plus,
   Pencil,
   Trash2,
-  Clock
+  Clock,
+  LibraryBig,
+  Layout
 } from "lucide-react";
 import { 
   getEmailTemplates, 
@@ -259,6 +261,20 @@ export default function EmailTemplatesPage() {
             <RefreshCcw size={18} className={clsx("group-hover:rotate-180 transition-transform duration-700", loading && "animate-spin")} />
             Refresh
           </button>
+          <div className="flex items-center gap-2">
+            <a 
+                href="/resources"
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-[11px] transition-all border border-slate-200 uppercase tracking-tight"
+            >
+                <LibraryBig size={16} /> Resources
+            </a>
+            <a 
+                href="/cv-templates"
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-[11px] transition-all border border-slate-200 uppercase tracking-tight"
+            >
+                <Layout size={16} /> Resumes
+            </a>
+          </div>
           <button 
             onClick={handleAddNew}
             className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl font-bold text-sm transition-all shadow-lg shadow-indigo-100 active:scale-95"

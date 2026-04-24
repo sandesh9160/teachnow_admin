@@ -206,7 +206,7 @@ export const deletePlan = (id: number) =>
 // ─── CV Templates ────────────────────────────────────────────────────────────
 
 export const getCVTemplates = (params?: Record<string, unknown>) =>
-  dashboardServerFetch<CVTemplate[]>("/admin/cms/cv-templates", { params });
+  dashboardServerFetch<ApiResponse<PaginatedResponse<CVTemplate>>>("/admin/cms/cv-templates", { params });
 
 export const getCVTemplate = (id: number) =>
   dashboardServerFetch<CVTemplate>(`/admin/cms/cv-templates/${id}`);
@@ -457,8 +457,8 @@ export const updateSettings = (data: Record<string, unknown>) =>
 
 // ─── Resources ───────────────────────────────────────────────────────────────
 
-export const getResources = () =>
-  dashboardServerFetch<ApiResponse<TeachingResource[]>>("/admin/cms/resources");
+export const getResources = (params?: Record<string, unknown>) =>
+  dashboardServerFetch<ApiResponse<PaginatedResponse<TeachingResource>>>("/admin/cms/resources", { params });
 
 export const createResource = (data: FormData) =>
   dashboardServerFetch<ApiResponse<TeachingResource>>("/admin/cms/resources", { method: "POST", data });
