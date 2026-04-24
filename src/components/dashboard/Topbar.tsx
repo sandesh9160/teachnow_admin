@@ -30,7 +30,7 @@ export default function Topbar({ onMenuToggle, collapsed }: TopbarProps) {
       className={clsx(
         "fixed top-0 right-0 h-14 z-30 transition-all duration-300",
         "bg-white border-b border-slate-100/80",
-        collapsed ? "left-[70px]" : "left-[240px]",
+        collapsed ? "left-[78px]" : "left-[240px]",
         "max-lg:left-0"
       )}
     >

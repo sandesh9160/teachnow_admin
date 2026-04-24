@@ -24,6 +24,8 @@ import { getFAQs, createFAQ, updateFAQ, deleteFAQ, toggleFAQStatus } from "@/ser
 import { FAQ } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
+import { TipTapEditor } from "@/components/ui/TipTapEditor";
+
 
 export default function FAQPage() {
   const [faqs, setFaqs] = useState<FAQ[]>([]);
@@ -231,10 +233,12 @@ export default function FAQPage() {
                     </div>
                     
                     {expandedId === faq.id && (
-                      <div className="mt-2 text-[12px] text-slate-600 leading-normal font-medium border-t border-slate-200/50 pt-2 animate-none">
-                        {faq.answer}
-                      </div>
+                      <div 
+                        className="mt-2 text-[12px] text-slate-600 leading-normal font-medium border-t border-slate-200/50 pt-2 animate-none prose prose-slate max-w-none"
+                        dangerouslySetInnerHTML={{ __html: faq.answer }}
+                      />
                     )}
+
                  </div>
               </div>
             </div>
@@ -271,14 +275,13 @@ export default function FAQPage() {
 
                   <div>
                       <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Answer</label>
-                      <textarea 
-                        required
-                        rows={4}
-                        value={formData.answer}
-                        onChange={e => setFormData({...formData, answer: e.target.value})}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold resize-none"
+                      <TipTapEditor 
+                        value={formData.answer || ""}
+                        onChange={(content) => setFormData({ ...formData, answer: content })}
                       />
+
                   </div>
+
 
                   <div className="grid grid-cols-2 gap-3">
                       <div>

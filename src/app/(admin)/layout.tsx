@@ -28,7 +28,7 @@ export default function AdminLayout({
       <main
         className={clsx(
           "transition-all duration-300 pt-16 min-h-screen",
-          collapsed ? "lg:pl-[70px]" : "lg:pl-[240px]"
+          collapsed ? "lg:pl-[78px]" : "lg:pl-[240px]"
         )}
       >
         <div className="p-4">{children}</div>

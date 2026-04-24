@@ -188,39 +188,38 @@ export default function Sidebar({
         className={clsx(
           "fixed top-0 left-0 h-full z-50 flex flex-col transition-all duration-300 ease-in-out shadow-sm",
           "bg-white border-r border-surface-200",
-          collapsed ? "w-[70px]" : "w-[240px]",
+          collapsed ? "w-[78px]" : "w-[240px]",
           "lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between h-14 px-5 border-b border-surface-100">
-          {!collapsed ? (
-            <div className="flex items-center justify-between w-full">
-                <Link href="/dashboard" className="flex items-center gap-3 active:scale-95 transition-transform">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                        <GraduationCap size={22} strokeWidth={2.5} />
-                    </div>
-                    <span className="text-surface-900 font-extrabold text-xl tracking-tight">
-                        TeachNow
-                    </span>
-                </Link>
-                <button 
-                    onClick={onToggle}
-                    className="p-2 rounded-lg text-surface-400 hover:bg-surface-50 hover:text-primary transition-all active:scale-95 hidden lg:flex"
-                >
-                    <ChevronLeft size={18} />
-                </button>
-            </div>
-          ) : (
-            <button 
-                onClick={onToggle}
-                className="mx-auto w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 hover:scale-105 transition-all active:scale-95"
-            >
-              <GraduationCap size={22} strokeWidth={2.5} />
-            </button>
-          )}
+        {/* Mobile close button */}
+        <div className="lg:hidden p-4 flex items-center justify-end">
+          <button
+            onClick={onMobileClose}
+            className="p-2 rounded-xl text-surface-400 hover:text-danger hover:bg-danger/5 transition-all"
+          >
+            <ChevronLeft size={20} className="rotate-180" />
+          </button>
         </div>
+
+        <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1 no-scrollbar">
+          {/* Compact Toggle - Standardized across all dashboards */}
+          <div className={clsx("mb-4 hidden lg:flex", collapsed ? "justify-center" : "justify-end")}>
+            <button
+              onClick={onToggle}
+              className="p-1.5 rounded-lg text-slate-300 hover:text-primary hover:bg-primary/5 transition-all duration-300"
+              title={collapsed ? "Expand" : "Collapse"}
+            >
+              {collapsed ? (
+                <div className="flex items-center justify-center w-6 h-6 rounded-lg bg-primary/10 text-primary">
+                   <ChevronDown className="-rotate-90" size={16} />
+                </div>
+              ) : (
+                <ChevronLeft size={18} />
+              )}
+            </button>
+          </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-1 no-scrollbar">
           {navGroups.map((group, groupIndex) => {
