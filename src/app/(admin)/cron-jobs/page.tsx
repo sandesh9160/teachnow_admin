@@ -52,79 +52,64 @@ export default function CronJobsPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // Fetch Template
-      const templateRes = await getCronTemplate("weekly");
-      if (templateRes && (templateRes.status === true || templateRes.data)) {
-        const data = templateRes.data || templateRes;
-        setTemplate({
-          id: data.id || data.type || "weekly",
-          type: data.type || "weekly",
-          subject: data.subject || "Latest Jobs for You 🚀",
-          html_template: data.html_template || "",
-          is_active: !!data.is_active
-        });
-      }
-
-      // Fetch Settings
-      const settingsRes = await getMailSettings();
-      if (settingsRes && (settingsRes.status === true || settingsRes.data)) {
-        const data = settingsRes.data || settingsRes;
-        if (data.day) {
+      
+      // Fetch Unified Settings (Setting + Template)
+      const res = await getMailSettings();
+      if (res && res.status === true && res.data) {
+        const { setting, template: apiTemplate } = res.data;
+        
+        if (setting) {
           setSchedule({
-            day: data.day,
-            time: data.time || "20:00:00",
-            is_active: !!data.is_active,
-            last_sent_at: data.last_sent_at
+            day: setting.day || "",
+            time: setting.time || "",
+            is_active: !!setting.is_active,
+            last_sent_at: setting.last_sent_at
+          });
+        }
+        
+        if (apiTemplate) {
+          setTemplate({
+            id: apiTemplate.id || "",
+            type: apiTemplate.type || "",
+            subject: apiTemplate.subject || "",
+            html_template: apiTemplate.html_template || "",
+            is_active: !!apiTemplate.is_active
           });
         }
       }
     } catch (error) {
-      console.error("Failed to load cron settings:", error);
-      toast.error("Failed to fetch cron settings");
+      console.error("Failed to load mail settings:", error);
+      toast.error("Failed to fetch mail settings");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSaveTemplate = async () => {
+  const handleSaveAll = async () => {
     try {
       setLoading(true);
-      const res = await saveCronTemplate({
-        type: template.type,
-        subject: template.subject,
-        html_template: template.html_template,
-        is_active: template.is_active
-      });
-      if (res?.status !== false) {
-        toast.success("Email template saved successfully");
-        fetchData();
-      } else {
-        toast.error("Failed to save template");
-      }
-    } catch (error) {
-      toast.error("An error occurred while saving template");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveSchedule = async () => {
-    try {
-      setLoading(true);
+      // The user requested to send the update to the same endpoint with PUT
       const res = await saveMailSettings({
-        day: schedule.day,
-        time: schedule.time,
-        is_active: schedule.is_active,
-        last_sent_at: schedule.last_sent_at
+        setting: {
+          day: schedule.day,
+          time: schedule.time,
+          is_active: schedule.is_active ? 1 : 0
+        },
+        template: {
+            subject: template.subject,
+            html_template: template.html_template,
+            is_active: template.is_active ? 1 : 0
+        }
       });
+      
       if (res?.status !== false) {
-        toast.success("Schedule settings saved successfully");
+        toast.success("System mail configuration synchronized");
         fetchData();
       } else {
-        toast.error("Failed to save schedule settings");
+        toast.error("Failed to sync configuration");
       }
     } catch (error) {
-      toast.error("An error occurred while saving schedule");
+      toast.error("An error occurred during synchronization");
     } finally {
       setLoading(false);
     }
@@ -238,12 +223,12 @@ export default function CronJobsPage() {
 
               <div className="pt-2 flex justify-end">
                 <button 
-                  onClick={handleSaveTemplate}
+                  onClick={handleSaveAll}
                   disabled={loading}
                   className="px-5 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold shadow-sm hover:bg-indigo-700 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-50"
                 >
                   {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                  Save Template
+                  Sync All Changes
                 </button>
               </div>
             </div>
@@ -313,12 +298,12 @@ export default function CronJobsPage() {
 
               <div className="pt-4 border-t border-slate-100 flex justify-end">
                 <button 
-                  onClick={handleSaveSchedule}
+                  onClick={handleSaveAll}
                   disabled={loading}
                   className="w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold shadow-sm hover:bg-slate-800 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                 >
                   {loading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-                  Save Configuration
+                  Synchronize System
                 </button>
               </div>
             </div>

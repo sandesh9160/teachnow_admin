@@ -9,7 +9,7 @@ import {
     RotateCcw, Loader2, ChevronDown, X, Star,
     ChevronLeft, ChevronRight
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getJobs, getCategories, getLocations, getEmployers } from "@/services/admin.service";
 import { Job, MasterDataItem, Employer } from "@/types";
 import { toast } from "sonner";
@@ -118,6 +118,9 @@ export default function JobsPage() {
         }
     }, [search]);
 
+    const searchParams = useSearchParams();
+    const employerIdParam = searchParams.get("employer_id");
+
     // Initial Boot
     useEffect(() => {
         const boot = async () => {
@@ -135,17 +138,28 @@ export default function JobsPage() {
                     return [];
                 };
 
+                const fetchedEmployers = extractData(employersRes);
                 setCategories(extractData(catsRes));
                 setLocations(extractData(locsRes));
-                setEmployers(extractData(employersRes));
+                setEmployers(fetchedEmployers);
 
-                await fetchJobs();
+                // Check for employer_id in URL to set initial filter
+                const initialParams: any = {};
+                if (employerIdParam) {
+                    const emp = fetchedEmployers.find((e: Employer) => String(e.id) === employerIdParam);
+                    if (emp) {
+                        setInstFilter({ id: emp.id, name: emp.company_name });
+                        initialParams.employer_id = emp.id;
+                    }
+                }
+
+                await fetchJobs(initialParams);
             } catch (e) {
                 console.error("Master data fetch failed", e);
             }
         };
         boot();
-    }, [fetchJobs]);
+    }, [fetchJobs, employerIdParam]);
 
     const resetFilters = () => {
         setSearch("");

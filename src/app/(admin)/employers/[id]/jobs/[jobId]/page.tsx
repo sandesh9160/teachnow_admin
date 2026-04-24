@@ -36,11 +36,10 @@ import { getJob, approveJob, rejectJob, featureJob, deleteJob, updateJobSEO, upd
 import { Job } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
+import { resolveMediaUrl } from "@/lib/media";
 import { TipTapEditor } from "@/components/ui/TipTapEditor";
 
-import { resolveMediaUrl } from "@/lib/media";
-
-export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function EmployerJobDetailPage({ params }: { params: Promise<{ id: string; jobId: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
   const [job, setJob] = useState<Job | null>(null);
@@ -52,12 +51,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   useEffect(() => {
     fetchJobDetails();
-  }, [resolvedParams.id]);
+  }, [resolvedParams.jobId]);
 
   const fetchJobDetails = async () => {
     try {
       setLoading(true);
-      const res = await getJob(Number(resolvedParams.id));
+      const res = await getJob(Number(resolvedParams.jobId));
       setJob(res.data);
     } catch (err) {
       toast.error("Failed to load job details");
@@ -78,7 +77,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       else if (action === "delete") {
         if (!confirm("Permanently delete this job?")) return;
         await deleteJob(job.id);
-        router.push("/jobs");
+        router.push(`/employers/${resolvedParams.id}`);
         return;
       }
       toast.success(`Job ${action}d successfully`);
@@ -170,10 +169,10 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
       {/* ─── Compact Breadcrumb & Actions ──────────────────────────────── */}
       <div className="flex items-center justify-between">
         <Link
-          href="/jobs"
+          href={`/employers/${resolvedParams.id}`}
           className="flex items-center gap-2 text-[12px] font-semibold text-slate-600 hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
         >
-          <ChevronLeft size={14} /> Back to Registry
+          <ChevronLeft size={14} /> Back to Organization Profile
         </Link>
         <div className="flex items-center gap-2.5">
           {/* Featured Toggle Switch */}

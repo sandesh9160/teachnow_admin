@@ -648,11 +648,11 @@ export const saveCronTemplate = (data: any) =>
 export const toggleCronTemplateStatus = (id: number, data: any) =>
   dashboardServerFetch<any>(`/admin/cms/corn/toggle/${id}`, { method: "POST", data });
 
-export const saveMailSettings = (data: any) =>
-  dashboardServerFetch<any>(`/admin/cms/mail/settings`, { method: "POST", data });
-
 export const getMailSettings = () =>
-  dashboardServerFetch<any>(`/admin/cms/mail/settings`);
+  dashboardServerFetch<any>("/admin/cms/mail/settings");
+
+export const saveMailSettings = (data: any) =>
+  dashboardServerFetch<any>("/admin/cms/mail/settings", { method: "PUT", data });
 
 export const getCMSResumes = (params?: Record<string, unknown>) =>
   dashboardServerFetch<CMSResumesResponse>("/admin/cms/resumes", { params: { ...params, _t: Date.now() } });

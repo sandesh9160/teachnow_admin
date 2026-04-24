@@ -327,7 +327,20 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
         )}
 
         {activeTab === "Jobs" && (
-          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="lg:col-span-3 space-y-4">
+            <div className="flex items-center justify-between px-2">
+              <div className="flex items-center gap-2">
+                <Briefcase size={16} className="text-primary" />
+                <h3 className="text-[14px] font-bold text-slate-900 tracking-tight">Active Opportunities</h3>
+              </div>
+              <Link 
+                href={`/jobs?employer_id=${employer.id}`}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[12px] font-bold rounded-xl hover:bg-indigo-100 transition-all shadow-sm active:scale-95"
+              >
+                <ExternalLink size={14} /> Manage Registry
+              </Link>
+            </div>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <DataTable compact
               columns={[
                 {
@@ -340,22 +353,41 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                 },
                 { key: "location", title: "Location", render: (v: any) => <span className="text-slate-500 font-semibold flex items-center gap-1"><MapPin size={11} />{v}</span> },
                 {
-                  key: "salary_min", title: "Compensation", render: (_: any, r: any) => (
-                    <span className="text-slate-800 font-bold">
-                      ₹{Number(r.salary_min).toLocaleString()} – ₹{Number(r.salary_max).toLocaleString()}
-                    </span>
-                  )
+                  key: "salary_min", title: "Compensation", render: (_: any, r: any) => {
+                    const min = Number(r.salary_min);
+                    const max = Number(r.salary_max);
+                    const hasSalary = min > 0 || max > 0;
+                    
+                    return (
+                      <span className={clsx("font-bold", hasSalary ? "text-slate-800" : "text-slate-400 italic")}>
+                        {hasSalary 
+                          ? `₹${min.toLocaleString()} – ₹${max.toLocaleString()}`
+                          : "Not Disclosed"
+                        }
+                      </span>
+                    );
+                  }
                 },
                 { key: "status", title: "Audit", render: (v: any) => <Badge variant={v === "approved" ? "success" : v === "pending" ? "warning" : "danger"} dot>{v}</Badge> },
                 { key: "job_status", title: "Status", render: (v: any) => <Badge variant={v === "open" ? "info" : "default"} dot>{v}</Badge> },
                 { key: "created_at", title: "Posted", render: (v: any) => <span className="text-[11px] font-bold text-slate-400">{fmt(v)}</span> },
+                {
+                  key: "id", title: "", render: (v: any) => (
+                    <div className="flex justify-end">
+                      <button className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[11px] font-bold rounded-lg hover:bg-indigo-100 transition-all shadow-sm active:scale-95">
+                        <ArrowUpRight size={14} /> View
+                      </button>
+                    </div>
+                  )
+                }
               ]}
               data={employer.jobs || []}
               emptyMessage="No active job records."
-              onRowClick={(row) => router.push(`/jobs/${row.id}`)}
+              onRowClick={(row) => router.push(`/employers/${employer.id}/jobs/${row.id}`)}
             />
           </div>
-        )}
+        </div>
+      )}
 
         {activeTab === "SEO" && (
           <div className="lg:col-span-3">

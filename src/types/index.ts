@@ -234,6 +234,7 @@ export interface Job {
   employer?: {
     id: number;
     company_name: string;
+    company_logo?: string;
   };
   category?: {
     id: number;
@@ -306,6 +307,7 @@ export interface Recruiter {
   employer?: {
     id: number;
     company_name: string;
+    company_logo?: string;
   };
   jobs_count?: number;
   jobs?: Job[];
