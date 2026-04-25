@@ -26,7 +26,8 @@ import {
   ShieldCheck,
   Clock,
   Mail,
-  FileSearch
+  FileSearch,
+  Newspaper
 } from "lucide-react";
 import { adminSignOut } from "@/lib/auth";
 import { clsx } from "clsx";
@@ -70,6 +71,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
     items: [
       { title: "Manage Plans", href: "/plans", icon: CreditCard },
       { title: "Master Data", href: "/master-data", icon: Database },
+      { title: "Blogs", href: "/content/blogs", icon: Newspaper },
       { title: "Reviews", href: "/reviews", icon: Star },
     ]
   },
@@ -112,6 +114,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
           { title: "Footer Links", href: "/cms/footer-links" },
           { title: "Company Title & Logo", href: "/cms/branding" },
           { title: "Popular Searches", href: "/cms/popular-searches" },
+          { title: "Blogs", href: "/content/blogs" },
           { title: "About Us", href: "/content/about" },
           { title: "Contact Us", href: "/content/contact" },
           { title: "FAQs", href: "/content/faqs" },
