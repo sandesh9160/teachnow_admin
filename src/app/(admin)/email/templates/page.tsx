@@ -12,7 +12,8 @@ import {
   Trash2,
   Clock,
   LibraryBig,
-  Layout
+  Layout,
+  Newspaper
 } from "lucide-react";
 import { 
   getEmailTemplates, 
@@ -273,6 +274,12 @@ export default function EmailTemplatesPage() {
                 className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-[11px] transition-all border border-slate-200 uppercase tracking-tight"
             >
                 <Layout size={16} /> Resumes
+            </a>
+            <a 
+                href="/content/blogs"
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-[11px] transition-all border border-slate-200 uppercase tracking-tight"
+            >
+                <Newspaper size={16} /> Blogs
             </a>
           </div>
           <button 

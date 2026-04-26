@@ -89,22 +89,22 @@ export const deleteSkill = (id: number) =>
 export const getJobs = (params?: Record<string, unknown>) =>
   dashboardServerFetch<PaginatedResponse<Job>>("/admin/jobs", { params });
 
-export const getJob = (id: number) => 
+export const getJob = (id: number) =>
   dashboardServerFetch<ApiResponse<Job>>(`/admin/jobs/${id}`);
 
 export const updateJob = (id: number, data: Partial<Job>) =>
   dashboardServerFetch(`/admin/jobs/${id}`, { method: "PUT", data });
 
-export const deleteJob = (id: number) => 
+export const deleteJob = (id: number) =>
   dashboardServerFetch(`/admin/jobs/${id}`, { method: "DELETE" });
 
-export const approveJob = (id: number) => 
+export const approveJob = (id: number) =>
   dashboardServerFetch(`/admin/jobs/${id}/approve`, { method: "PATCH" });
 
-export const rejectJob = (id: number) => 
+export const rejectJob = (id: number) =>
   dashboardServerFetch(`/admin/jobs/${id}/reject`, { method: "PATCH" });
 
-export const featureJob = (id: number) => 
+export const featureJob = (id: number) =>
   dashboardServerFetch(`/admin/jobs/${id}/feature`, { method: "PATCH" });
 
 // ─── Job Seekers ─────────────────────────────────────────────────────────────
@@ -116,8 +116,8 @@ export const getJobSeeker = (id: number) =>
   dashboardServerFetch<ApiResponse<JobSeeker>>(`/admin/jobseekers/${id}`);
 
 export const updateJobSeeker = (id: number, data: Partial<JobSeeker>) =>
-  dashboardServerFetch(`/admin/jobseekers/${id}`, { 
-    method: "POST", 
+  dashboardServerFetch(`/admin/jobseekers/${id}`, {
+    method: "POST",
     data,
     params: { _method: "PUT" }
   });
@@ -139,8 +139,8 @@ export const getRecruiter = async (id: number) => {
 };
 
 export const updateRecruiter = (id: number, data: Partial<Recruiter>) =>
-  dashboardServerFetch(`/admin/recruiters/${id}`, { 
-    method: "POST", 
+  dashboardServerFetch(`/admin/recruiters/${id}`, {
+    method: "POST",
     data,
     params: { _method: "PUT" }
   });
@@ -160,8 +160,8 @@ export const getEmployer = (id: number) =>
   dashboardServerFetch<ApiResponse<Employer>>(`/admin/employers/${id}`);
 
 export const updateEmployer = (id: number, data: Partial<Employer>) =>
-  dashboardServerFetch(`/admin/employers/${id}`, { 
-    method: "POST", 
+  dashboardServerFetch(`/admin/employers/${id}`, {
+    method: "POST",
     data,
     params: { _method: "PUT" }
   });
@@ -169,10 +169,10 @@ export const updateEmployer = (id: number, data: Partial<Employer>) =>
 export const deleteEmployer = (id: number) =>
   dashboardServerFetch(`/admin/employers/${id}`, { method: "DELETE" });
 
-export const verifyEmployer = (id: number) => 
+export const verifyEmployer = (id: number) =>
   dashboardServerFetch<ApiResponse<{ employer_verified: boolean }>>(`/admin/employers/${id}/verify`, { method: "POST", params: { _method: "PATCH" }, data: { status: "approved" } });
 
-export const featureEmployer = (id: number) => 
+export const featureEmployer = (id: number) =>
   dashboardServerFetch<ApiResponse<{ employer_featured: boolean }>>(`/admin/employers/${id}/feature`, { method: "POST", params: { _method: "PATCH" } });
 
 export const updateEmployerSEO = (id: number, data: any) =>
@@ -188,7 +188,7 @@ export const updateApplication = (id: number, data: Partial<Application>) =>
 
 // ─── Plans ───────────────────────────────────────────────────────────────────
 
-export const getPlans = () => 
+export const getPlans = () =>
   dashboardServerFetch<ApiResponse<Plan[]>>("/admin/plans");
 
 export const createPlan = (data: Partial<Plan>) =>
@@ -200,7 +200,7 @@ export const updatePlan = (id: number, data: Partial<Plan>) =>
 export const patchPlan = (id: number, data: Partial<Plan>) =>
   dashboardServerFetch(`/admin/plans/${id}`, { method: "PATCH", data });
 
-export const deletePlan = (id: number) => 
+export const deletePlan = (id: number) =>
   dashboardServerFetch(`/admin/plans/${id}`, { method: "DELETE" });
 
 // ─── CV Templates ────────────────────────────────────────────────────────────
@@ -212,15 +212,15 @@ export const getCVTemplate = (id: number) =>
   dashboardServerFetch<CVTemplate>(`/admin/cms/cv-templates/${id}`);
 
 export const createCVTemplate = (data: FormData | Partial<CVTemplate>) =>
-  dashboardServerFetch<CVTemplate>("/admin/cms/cv-templates", { 
-    method: "POST", 
+  dashboardServerFetch<CVTemplate>("/admin/cms/cv-templates", {
+    method: "POST",
     data,
     headers: data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : undefined
   });
 
 export const updateCVTemplate = (id: number, data: FormData | Partial<CVTemplate>) =>
-  dashboardServerFetch<CVTemplate>(`/admin/cms/cv-templates/${id}`, { 
-    method: "POST", 
+  dashboardServerFetch<CVTemplate>(`/admin/cms/cv-templates/${id}`, {
+    method: "POST",
     data,
     params: { _method: "PUT" },
     headers: data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : undefined
@@ -241,7 +241,7 @@ export const updateReview = (id: number, data: Partial<Review>) =>
 
 // ─── CMS ─────────────────────────────────────────────────────────────────────
 
-export const getCMSSections = () => 
+export const getCMSSections = () =>
   dashboardServerFetch<CMSSection[]>("/admin/cms");
 
 export const createCMSSection = (data: Partial<CMSSection>) =>
@@ -255,127 +255,127 @@ export const updateCMSSection = (id: number, data: Partial<CMSSection>) =>
   });
 
 // Navigation
-export const getCMSNavigations = () => 
+export const getCMSNavigations = () =>
   dashboardServerFetch<any[]>("/admin/cms/navigation");
 
-export const createCMSNavigation = (data: any) => 
+export const createCMSNavigation = (data: any) =>
   dashboardServerFetch("/admin/cms/navigation", { method: "POST", data });
 
-export const updateCMSNavigation = (id: number, data: any) => 
+export const updateCMSNavigation = (id: number, data: any) =>
   dashboardServerFetch(`/admin/cms/navigation/${id}`, { method: "PUT", data });
 
-export const deleteCMSNavigation = (id: number) => 
+export const deleteCMSNavigation = (id: number) =>
   dashboardServerFetch(`/admin/cms/navigation/${id}`, { method: "DELETE" });
 
-export const toggleCMSNavigationActive = (id: number) => 
+export const toggleCMSNavigationActive = (id: number) =>
   dashboardServerFetch(`/admin/cms/navigation/${id}/toggle-active`, { method: "PATCH" });
 
-export const toggleCMSNavigationNav = (id: number) => 
+export const toggleCMSNavigationNav = (id: number) =>
   dashboardServerFetch(`/admin/cms/navigation/${id}/toggle-nav`, { method: "PATCH" });
 // Footer Sections
-export const getCMSFooterSections = () => 
+export const getCMSFooterSections = () =>
   dashboardServerFetch<any[]>("/admin/cms/footer-sections");
 
-export const createCMSFooterSection = (data: any) => 
+export const createCMSFooterSection = (data: any) =>
   dashboardServerFetch("/admin/cms/footer-sections", { method: "POST", data });
 
-export const updateCMSFooterSection = (id: number, data: any) => 
+export const updateCMSFooterSection = (id: number, data: any) =>
   dashboardServerFetch(`/admin/cms/footer-sections/${id}`, {
     method: "POST",
     data,
     params: { _method: "PUT" },
   });
 
-export const deleteCMSFooterSection = (id: number) => 
+export const deleteCMSFooterSection = (id: number) =>
   dashboardServerFetch(`/admin/cms/footer-sections/${id}`, { method: "DELETE" });
 
-export const toggleCMSFooterSection = (id: number) => 
+export const toggleCMSFooterSection = (id: number) =>
   dashboardServerFetch(`/admin/cms/footer-sections/${id}/toggle`, { method: "PATCH" });
 
 // Footer Links
-export const getCMSFooterLinks = () => 
+export const getCMSFooterLinks = () =>
   dashboardServerFetch<any[]>("/admin/cms/footer-links");
 
-export const createCMSFooterLink = (data: any) => 
+export const createCMSFooterLink = (data: any) =>
   dashboardServerFetch("/admin/cms/footer-links", { method: "POST", data });
 
-export const updateCMSFooterLink = (id: number, data: any) => 
+export const updateCMSFooterLink = (id: number, data: any) =>
   dashboardServerFetch(`/admin/cms/footer-links/${id}`, {
     method: "POST",
     data,
     params: { _method: "PUT" },
   });
 
-export const deleteCMSFooterLink = (id: number) => 
+export const deleteCMSFooterLink = (id: number) =>
   dashboardServerFetch(`/admin/cms/footer-links/${id}`, { method: "DELETE" });
 
-export const toggleCMSFooterLink = (id: number) => 
+export const toggleCMSFooterLink = (id: number) =>
   dashboardServerFetch(`/admin/cms/footer-links/${id}/toggle`, { method: "PATCH" });
 
 // Company Logos / Branding
-export const getCMSCompanyLogos = () => 
+export const getCMSCompanyLogos = () =>
   dashboardServerFetch<any[]>("/admin/cms/company-logos");
 
-export const createCMSCompanyLogo = (data: FormData) => 
-  uploadAction("/admin/cms/company-logos", data, "POST");
+// export const createCMSCompanyLogo = (data: FormData) =>
+//   uploadAction("/admin/cms/company-logos", data, "POST");
 
-export const updateCMSCompanyLogo = (id: number, data: FormData) => 
-  uploadAction(`/admin/cms/company-logos/${id}`, data, "POST");
+export const updateCMSCompanyLogo = (id: number, data: FormData) =>
+  uploadAction(`/admin/cms/company-logos/${id}`, data, "PUT");
 
-export const deleteCMSCompanyLogo = (id: number) => 
+export const deleteCMSCompanyLogo = (id: number) =>
   dashboardServerFetch(`/admin/cms/company-logos/${id}`, { method: "DELETE" });
 
 // Hero Banner
-export const getCMSHero = () => 
+export const getCMSHero = () =>
   dashboardServerFetch<any>("/admin/cms/hero");
 
-export const updateCMSHero = (data: FormData) => 
+export const updateCMSHero = (data: FormData) =>
   uploadAction<any>("/admin/cms/hero", data, "POST");
 
 // Hero Stats
-export const getCMSStats = () => 
+export const getCMSStats = () =>
   dashboardServerFetch<any>("/admin/cms/stats");
 
-export const updateCMSStats = (data: any) => 
+export const updateCMSStats = (data: any) =>
   dashboardServerFetch<any>("/admin/cms/stats", { method: "POST", data });
 // CTA Blocks
-export const getCMSCTAs = () => 
+export const getCMSCTAs = () =>
   dashboardServerFetch<any>("/admin/cms/cta");
 
-export const createCMSCTA = (data: FormData) => 
+export const createCMSCTA = (data: FormData) =>
   uploadAction("/admin/cms/cta", data, "POST");
 
-export const updateCMSCTA = (id: number, data: FormData) => 
+export const updateCMSCTA = (id: number, data: FormData) =>
   uploadAction(`/admin/cms/cta/${id}`, data, "POST"); // POST correctly handles FormData with _method='PUT' on Laravel backend
 
-export const deleteCMSCTA = (id: number) => 
+export const deleteCMSCTA = (id: number) =>
   dashboardServerFetch(`/admin/cms/cta/${id}`, { method: "DELETE" });
 
-export const toggleCMSCTA = (id: number) => 
+export const toggleCMSCTA = (id: number) =>
   dashboardServerFetch(`/admin/cms/cta/${id}/toggle`, { method: "PATCH" });
 
 // Popular Searches
-export const getPopularSearches = (params?: Record<string, unknown>) => 
+export const getPopularSearches = (params?: Record<string, unknown>) =>
   dashboardServerFetch<PaginatedResponse<PopularSearch>>("/admin/cms/popular-searches", { params });
 
-export const createPopularSearch = (data: Partial<PopularSearch>) => 
+export const createPopularSearch = (data: Partial<PopularSearch>) =>
   dashboardServerFetch("/admin/cms/popular-searches", { method: "POST", data });
 
-export const updatePopularSearch = (id: number, data: Partial<PopularSearch>) => 
+export const updatePopularSearch = (id: number, data: Partial<PopularSearch>) =>
   dashboardServerFetch(`/admin/cms/popular-searches/${id}`, {
     method: "POST",
     data,
     params: { _method: "PUT" },
   });
 
-export const deletePopularSearch = (id: number) => 
+export const deletePopularSearch = (id: number) =>
   dashboardServerFetch(`/admin/cms/popular-searches/${id}`, { method: "DELETE" });
 
-export const togglePopularSearchFeatured = (id: number) => 
+export const togglePopularSearchFeatured = (id: number) =>
   dashboardServerFetch(`/admin/cms/popular-searches/${id}/toggle-featured`, { method: "PATCH" });
 
 // ─── SEO ─────────────────────────────────────────────────────────────────────
-export const getSEOSettings = () => 
+export const getSEOSettings = () =>
   dashboardServerFetch<SEOSetting[]>("/admin/seo");
 
 export const updateSEOSetting = (id: number, data: Partial<SEOSetting>) =>
@@ -438,18 +438,18 @@ export const rejectVerification = (id: number, reason: string) =>
   dashboardServerFetch(`/admin/verifications/${id}/reject`, { method: "POST", data: { reason } });
 
 // ─── Notifications ────────────────────────────────────────────────────────
-export const getNotifications = (params?: Record<string, unknown>) => 
+export const getNotifications = (params?: Record<string, unknown>) =>
   dashboardServerFetch("/admin/notifications", { params });
 
-export const readNotification = (id: number) => 
+export const readNotification = (id: number) =>
   dashboardServerFetch(`/admin/notifications/${id}/read`, { method: "POST", data: {} });
 
-export const readAllNotifications = () => 
+export const readAllNotifications = () =>
   dashboardServerFetch("/admin/notifications/read-all", { method: "POST", data: {} });
 
 // ─── Settings ────────────────────────────────────────────────────────────────
 
-export const getSettings = () => 
+export const getSettings = () =>
   dashboardServerFetch("/admin/settings");
 
 export const updateSettings = (data: Record<string, unknown>) =>
@@ -464,8 +464,8 @@ export const createResource = (data: FormData) =>
   dashboardServerFetch<ApiResponse<TeachingResource>>("/admin/cms/resources", { method: "POST", data });
 
 export const updateResource = (id: number, data: FormData) =>
-  dashboardServerFetch<ApiResponse<TeachingResource>>(`/admin/cms/resources/${id}`, { 
-    method: "POST", 
+  dashboardServerFetch<ApiResponse<TeachingResource>>(`/admin/cms/resources/${id}`, {
+    method: "POST",
     data,
     params: { _method: "PUT" },
     headers: { 'Content-Type': 'multipart/form-data' }
@@ -500,15 +500,15 @@ export const getTestimonials = (params?: Record<string, unknown>) =>
   dashboardServerFetch<ApiResponse<Testimonial[]>>("/admin/cms/testimonials", { params: { ...params, _t: Date.now() } });
 
 export const createTestimonial = (data: FormData) =>
-  dashboardServerFetch<ApiResponse<Testimonial>>("/admin/cms/testimonials", { 
-    method: "POST", 
+  dashboardServerFetch<ApiResponse<Testimonial>>("/admin/cms/testimonials", {
+    method: "POST",
     data,
     headers: { 'Content-Type': 'multipart/form-data' }
   });
 
 export const updateTestimonial = (id: number, data: FormData) =>
-  dashboardServerFetch<ApiResponse<Testimonial>>(`/admin/cms/testimonials/${id}`, { 
-    method: "POST", 
+  dashboardServerFetch<ApiResponse<Testimonial>>(`/admin/cms/testimonials/${id}`, {
+    method: "POST",
     data,
     params: { _method: "PUT" },
     headers: { 'Content-Type': 'multipart/form-data' }
@@ -532,8 +532,8 @@ export const createFAQ = (data: Partial<FAQ>) =>
   dashboardServerFetch<ApiResponse<FAQ>>("/admin/cms/faqs", { method: "POST", data });
 
 export const updateFAQ = (id: number, data: Partial<FAQ>) =>
-  dashboardServerFetch<ApiResponse<FAQ>>(`/admin/cms/faqs/${id}`, { 
-    method: "POST", 
+  dashboardServerFetch<ApiResponse<FAQ>>(`/admin/cms/faqs/${id}`, {
+    method: "POST",
     data,
     params: { _method: "PUT" }
   });
@@ -553,18 +553,16 @@ export const getBlogs = () =>
   dashboardServerFetch<any>("/admin/cms/blogs");
 
 export const createBlog = (data: FormData) =>
-  dashboardServerFetch<any>("/admin/cms/blogs", { 
-    method: "POST", 
-    data,
-    headers: { 'Content-Type': 'multipart/form-data' }
+  dashboardServerFetch<any>("/admin/cms/blogs", {
+    method: "POST",
+    data
   });
 
 export const updateBlog = (id: number, data: FormData) =>
-  dashboardServerFetch<any>(`/admin/cms/blogs/${id}`, { 
-    method: "POST", 
+  dashboardServerFetch<any>(`/admin/cms/blogs/${id}`, {
+    method: "POST",
     data,
-    params: { _method: "PUT" },
-    headers: { 'Content-Type': 'multipart/form-data' }
+    params: { _method: "PUT" }
   });
 
 export const deleteBlog = (id: number) =>
@@ -604,8 +602,8 @@ export const createPrivacyPolicy = (data: Partial<PrivacyPolicyItem>) =>
   dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>("/admin/cms/privacy-policy", { method: "POST", data });
 
 export const updatePrivacyPolicy = (id: number, data: Partial<PrivacyPolicyItem>) =>
-  dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>(`/admin/cms/privacy-policy/${id}`, { 
-    method: "POST", 
+  dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>(`/admin/cms/privacy-policy/${id}`, {
+    method: "POST",
     data,
     params: { _method: "PUT" }
   });
@@ -625,8 +623,8 @@ export const createTermsCondition = (data: Partial<PrivacyPolicyItem>) =>
   dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>("/admin/cms/terms-condition", { method: "POST", data });
 
 export const updateTermsCondition = (id: number, data: Partial<PrivacyPolicyItem>) =>
-  dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>(`/admin/cms/terms-condition/${id}`, { 
-    method: "POST", 
+  dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>(`/admin/cms/terms-condition/${id}`, {
+    method: "POST",
     data,
     params: { _method: "PUT" }
   });

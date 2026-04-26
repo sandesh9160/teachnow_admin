@@ -25,12 +25,11 @@ import {
 import Link from "next/link";
 import { 
   getCMSCompanyLogos, 
-  createCMSCompanyLogo, 
-  updateCMSCompanyLogo, 
+  // updateCMSCompanyLogo, 
   deleteCMSCompanyLogo 
 } from "@/services/admin.service";
 import { toast } from "sonner";
-import Badge from "@/components/ui/Badge";
+// import Badge from "@/components/ui/Badge";
 import CMSCompanyLogoModal from "@/components/modals/CMSCompanyLogoModal";
 import DataTable from "@/components/tables/DataTable";
 import { clsx } from "clsx";
@@ -176,14 +175,6 @@ export default function CMSBrandingPage() {
             </p>
           </div>
         </div>
-        
-        <button 
-            onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
-            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-[12px] font-bold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all active:scale-95 group"
-        >
-            <Plus size={16} className="group-hover:rotate-90 transition-transform" />
-            Add Asset
-        </button>
       </div>
 
       {/* --- Control Bar ----------------------------------------------------- */}

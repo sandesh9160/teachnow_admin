@@ -24,7 +24,8 @@ import {
   Image as ImageIcon,
   Save,
   LibraryBig,
-  Mail
+  Mail,
+  Newspaper
 } from "lucide-react";
 import { 
   getCVTemplates, 
@@ -562,6 +563,12 @@ export default function ManageCVTemplatesPage() {
                     className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-[11px] transition-all border border-slate-200 uppercase tracking-tight"
                 >
                     <Mail size={16} /> Emails
+                </a>
+                <a 
+                    href="/content/blogs"
+                    className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-[11px] transition-all border border-slate-200 uppercase tracking-tight"
+                >
+                    <Newspaper size={16} /> Blogs
                 </a>
              </div>
 

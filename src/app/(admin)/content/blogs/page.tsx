@@ -1,18 +1,57 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Loader2, FileText, ExternalLink, Calendar, Eye, EyeOff, Save, Pencil } from "lucide-react";
+import {
+  Loader2,
+  FileText,
+  ExternalLink,
+  Calendar,
+  Save,
+  Pencil,
+  Plus,
+  ArrowLeft,
+  Upload,
+  Image as ImageIcon,
+  Globe,
+  Search,
+  Layout,
+  X,
+  Trash2,
+  CheckCircle2,
+  AlertCircle
+} from "lucide-react";
 import { toast } from "sonner";
-import { getBlogs, toggleBlogStatus, deleteBlog, updateBlog } from "@/services/admin.service";
+import { getBlogs, toggleBlogStatus, deleteBlog, updateBlog, createBlog } from "@/services/admin.service";
 import { clsx } from "clsx";
 import { TipTapEditor } from "@/components/ui/TipTapEditor";
 
 export default function BlogsPage() {
+  const getImageUrl = (path: any) => {
+    if (!path || typeof path !== 'string') return undefined;
+    if (path.startsWith('http') || path.startsWith('data:')) return path;
+    const baseUrl = "https://teachnowbackend.jobsvedika.in";
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${baseUrl}${cleanPath}`;
+  };
+
   const [blogs, setBlogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editContent, setEditContent] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentBlog, setCurrentBlog] = useState<any>(null);
+
+  // Form states
+  const [formData, setFormData] = useState({
+    title: "",
+    slug: "",
+    content: "",
+    meta_title: "",
+    meta_description: "",
+    meta_keywords: "",
+    is_active: 1
+  });
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [saveLoading, setSaveLoading] = useState(false);
 
   useEffect(() => {
     fetchBlogs();
@@ -22,7 +61,6 @@ export default function BlogsPage() {
     try {
       setLoading(true);
       const res = await getBlogs();
-      // Adjust according to the API's actual response structure. Typically { status: boolean, data: [] }
       if (res && res.data) {
         setBlogs(res.data);
       } else {
@@ -51,196 +89,424 @@ export default function BlogsPage() {
   };
 
   const handleEdit = (blog: any) => {
-    setEditingId(blog.id);
-    setEditContent(blog.content || "");
-    setExpandedId(null);
+    setCurrentBlog(blog);
+    setFormData({
+      title: blog.title || "",
+      slug: blog.slug || "",
+      content: blog.content || "",
+      meta_title: blog.meta_title || "",
+      meta_description: blog.meta_description || "",
+      meta_keywords: blog.meta_keywords || "",
+      is_active: blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true ? 1 : 0
+    });
+    setPreview(blog.image || null);
+    setFile(null);
+    setIsEditing(true);
   };
 
-  const handleSave = async (blog: any) => {
-    try {
-      setLoading(true);
-      const formData = new FormData();
-      formData.append("content", editContent);
-      formData.append("_method", "PUT");
-      
-      await updateBlog(blog.id, formData);
-      
-      setBlogs((prev) =>
-        prev.map((b) => (b.id === blog.id ? { ...b, content: editContent } : b))
-      );
-      setEditingId(null);
-      toast.success("Blog content updated successfully");
-    } catch (error) {
-      console.error("Failed to update blog:", error);
-      toast.error("Failed to save blog content");
-    } finally {
-      setLoading(false);
+  const handleCreateNew = () => {
+    setCurrentBlog(null);
+    setFormData({
+      title: "",
+      slug: "",
+      content: "",
+      meta_title: "",
+      meta_description: "",
+      meta_keywords: "",
+      is_active: 1
+    });
+    setFile(null);
+    setPreview(null);
+    setIsEditing(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0];
+    if (selected) {
+      setFile(selected);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result as string);
+      reader.readAsDataURL(selected);
     }
   };
 
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditContent("");
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaveLoading(true);
+    try {
+      const data = new FormData();
+      data.append("title", formData.title);
+      data.append("slug", formData.slug);
+      data.append("content", formData.content);
+      data.append("meta_title", formData.meta_title);
+      data.append("meta_description", formData.meta_description);
+      data.append("meta_keywords", formData.meta_keywords);
+      data.append("is_active", String(formData.is_active));
+
+      if (file) {
+        data.append("featured_image", file);
+      }
+
+      if (currentBlog) {
+        await updateBlog(currentBlog.id, data);
+        toast.success("Blog updated successfully");
+      } else {
+        await createBlog(data);
+        toast.success("New blog published");
+      }
+
+      setIsEditing(false);
+      fetchBlogs();
+    } catch (error) {
+      console.error("Failed to save blog:", error);
+      toast.error("Operation failed");
+    } finally {
+      setSaveLoading(false);
+    }
   };
+
+  const handleDelete = async (blog: any) => {
+    if (!confirm(`Permanently remove "${blog.title}"?`)) return;
+    try {
+      await deleteBlog(blog.id);
+      setBlogs(prev => prev.filter(b => b.id !== blog.id));
+      toast.success("Blog deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete blog");
+    }
+  };
+
+  if (isEditing) {
+    return (
+      <div className="max-w-[1600px] mx-auto pb-12 animate-in fade-in slide-in-from-bottom-2 duration-300">
+        {/* Editor Header - Sticky */}
+        <div className="sticky top-0 z-[45] flex items-center justify-between bg-white/95 backdrop-blur-md p-4 rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsEditing(false)}
+              className="p-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-400 hover:text-indigo-600 transition-all"
+            >
+              <ArrowLeft size={18} />
+            </button>
+            <div>
+              <h1 className="text-lg font-semibold text-slate-900 leading-tight">
+                {currentBlog ? "Edit Article" : "Create Blog"}
+              </h1>
+              <p className="text-[11px] font-medium text-slate-500 uppercase tracking-tight">CMS & SEO Editor</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsEditing(false)}
+              className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-500 hover:bg-slate-50 transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saveLoading}
+              className="min-w-[140px] bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-[12px] font-semibold shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+            >
+              {saveLoading ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+              {currentBlog ? "Save" : "Publish"}
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-2">
+          {/* Sidebar Controls */}
+          <div className="lg:col-span-4 space-y-4">
+            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-6">
+              {/* Featured Image */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <ImageIcon size={14} className="text-indigo-600" />
+                  <h3 className="text-[10px] font-semibold text-slate-900 uppercase tracking-wider">Featured Image</h3>
+                </div>
+
+                <div className={clsx(
+                  "relative aspect-video w-full rounded-lg border-2 border-dashed flex flex-col items-center justify-center transition-all overflow-hidden bg-slate-50",
+                  file || preview ? "border-indigo-200" : "border-slate-200 hover:bg-white hover:border-indigo-300"
+                )}>
+                  {preview ? (
+                    <img src={getImageUrl(preview)} alt="Featured" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center text-slate-400 text-center px-4">
+                      <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center mb-2 shadow-sm">
+                        <Upload size={18} className="text-indigo-600" />
+                      </div>
+                      <p className="text-[10px] font-semibold text-slate-900 uppercase">Upload Image</p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="absolute inset-0 opacity-0 cursor-pointer"
+                  />
+                  {(file || preview) && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setPreview(null); setFile(null); }}
+                      className="absolute top-2 right-2 bg-white/90 backdrop-blur p-1.5 rounded-lg shadow text-rose-500 hover:bg-rose-500 hover:text-white transition-all"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Featured Image URL</label>
+                <input
+                  type="text"
+                  placeholder="https://unsplash.com/..."
+                  value={typeof preview === 'string' && !preview.startsWith('data:') ? preview : ""}
+                  onChange={e => {
+                    setPreview(e.target.value);
+                    setFile(null);
+                  }}
+                  className="w-full px-4 py-2 bg-slate-50 border border-slate-100 rounded-lg text-[11px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                />
+              </div>
+
+              {/* Metadata */}
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <div className="flex items-center gap-2">
+                  <Layout size={14} className="text-indigo-600" />
+                  <h3 className="text-[10px] font-semibold text-slate-900 uppercase tracking-wider">General</h3>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Title</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="Enter title..."
+                      value={formData.title}
+                      onChange={e => setFormData({ ...formData, title: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[12px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">URL Slug</label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="article-url-slug"
+                      value={formData.slug}
+                      onChange={e => {
+                        let val = e.target.value.toLowerCase().replace(/ /g, '-');
+                        setFormData({ ...formData, slug: val });
+                      }}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[12px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Status</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { val: 1, label: "Live", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
+                        { val: 0, label: "Draft", icon: AlertCircle, color: "text-slate-400", bg: "bg-slate-50" }
+                      ].map((opt) => (
+                        <button
+                          key={opt.val}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, is_active: opt.val })}
+                          className={clsx(
+                            "flex items-center justify-center gap-2 py-2 rounded-lg border transition-all font-semibold text-[11px] uppercase tracking-tight",
+                            formData.is_active === opt.val
+                              ? `${opt.bg} border-indigo-600 text-slate-900`
+                              : "border-slate-50 bg-slate-50 text-slate-400 hover:border-slate-200"
+                          )}
+                        >
+                          <opt.icon size={12} className={formData.is_active === opt.val ? opt.color : ""} />
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* SEO Gateway */}
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <div className="flex items-center gap-2">
+                  <Globe size={14} className="text-indigo-600" />
+                  <h3 className="text-[10px] font-semibold text-slate-900 uppercase tracking-wider">SEO Settings</h3>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Meta Title</label>
+                    <input
+                      type="text"
+                      placeholder="SEO Title"
+                      value={formData.meta_title}
+                      onChange={e => setFormData({ ...formData, meta_title: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[12px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Meta Keywords</label>
+                    <input
+                      type="text"
+                      placeholder="Keywords..."
+                      value={formData.meta_keywords}
+                      onChange={e => setFormData({ ...formData, meta_keywords: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[12px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Meta Description</label>
+                    <textarea
+                      placeholder="SEO description..."
+                      value={formData.meta_description}
+                      onChange={e => setFormData({ ...formData, meta_description: e.target.value })}
+                      className="w-full h-24 px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[12px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Editor Area */}
+          <div className="lg:col-span-8">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
+              <TipTapEditor
+                value={formData.content}
+                onChange={(val) => setFormData({ ...formData, content: val })}
+                stickyOffset={82}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading && blogs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
-        <Loader2 className="w-8 h-8 animate-spin mb-3 text-indigo-500" />
-        <p className="text-[12px] font-bold uppercase tracking-widest">Synchronizing Content...</p>
+        <Loader2 className="w-6 h-6 animate-spin mb-2 text-indigo-500" />
+        <p className="text-[10px] font-bold uppercase tracking-widest">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 pb-12 antialiased max-w-7xl mx-auto">
+    <div className="space-y-4 pb-12 antialiased max-w-7xl mx-auto">
       {/* ─── Header ────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-             <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/20">
-                <FileText size={16} />
-             </div>
-             <h4 className="text-[11px] font-bold text-indigo-600 tracking-wide uppercase">CMS Content Hub</h4>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/10">
+            <FileText size={20} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Manage Articles & Blogs</h1>
+          <div>
+            <h4 className="text-[9px] font-bold text-indigo-600 tracking-wider uppercase mb-0.5">CMS Hub</h4>
+            <h1 className="text-lg font-semibold text-slate-900 leading-none">Manage Blogs</h1>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleCreateNew}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-[13px] font-semibold transition-all active:scale-95 shadow-sm"
+          >
+            <Plus size={16} /> New Blog
+          </button>
         </div>
       </div>
 
       {/* ─── Blog List ────────────────────────────────────────── */}
       {(!blogs || blogs.length === 0) ? (
-        <div className="bg-white border text-center border-slate-200 rounded-2xl p-16 flex flex-col items-center">
-            <div className="w-16 h-16 bg-slate-50 flex items-center justify-center rounded-2xl text-slate-300 mb-4">
-               <FileText size={32} />
-            </div>
-            <h3 className="text-lg font-bold text-slate-900">No content found</h3>
-            <p className="text-sm text-slate-500 mt-1">There are currently no blog articles available in the system.</p>
+        <div className="bg-white border text-center border-slate-200 rounded-xl p-12 flex flex-col items-center">
+          <div className="w-12 h-12 bg-slate-50 flex items-center justify-center rounded-xl text-slate-300 mb-3">
+            <FileText size={24} />
+          </div>
+          <h3 className="text-base font-semibold text-slate-900">No content found</h3>
+          <p className="text-xs text-slate-500 mt-1">There are currently no blog articles available.</p>
+          <button
+            onClick={handleCreateNew}
+            className="mt-4 flex items-center gap-2 bg-slate-900 text-white px-5 py-2 rounded-lg text-xs font-semibold hover:bg-slate-800 transition-all"
+          >
+            <Plus size={16} /> Create Article
+          </button>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {blogs.map((blog) => (
-            <div key={blog.id} className="bg-white rounded-[1.2rem] border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-               
-               {/* Blog Meta Card Header */}
-               <div className="p-5 flex flex-col md:flex-row gap-5 items-start">
-                  
-                  {/* Thumbnail / Meta */}
-                  {blog.featured_image && (
-                    <div className="w-full md:w-48 h-32 shrink-0 rounded-xl overflow-hidden border border-slate-100">
-                      <img src={blog.featured_image} alt={blog.title} className="w-full h-full object-cover" />
-                    </div>
-                  )}
+            <div key={blog.id} className="group bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 flex flex-col">
 
-                  <div className="flex-1 min-w-0">
-                     <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                             <span className={clsx(
-                               "px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md",
-                               (blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true) 
-                                ? "bg-emerald-50 text-emerald-600" 
-                                : "bg-slate-100 text-slate-500"
-                             )}>
-                                {(blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true) ? "Published" : "Draft"}
-                             </span>
-                             <span className="text-[12px] font-medium text-slate-400 flex items-center gap-1">
-                                <Calendar size={12} />
-                                {new Date(blog.created_at || new Date()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                             </span>
-                          </div>
-                          <h2 className="text-lg font-bold text-slate-900 leading-snug">{blog.title}</h2>
-                          <div className="mt-1 flex items-center gap-2 text-[12px] font-medium text-slate-500">
-                             <ExternalLink size={12} className="text-indigo-400" />
-                             <span>{blog.slug}</span>
-                          </div>
-                          
-                          <p className="mt-3 text-[13px] text-slate-600 leading-relaxed max-w-3xl">
-                            {blog.meta_description}
-                          </p>
-                        </div>
-                     </div>
-                     
-                     <div className="flex items-center gap-3 mt-5">
-                       {editingId === blog.id ? (
-                         <>
-                           <button 
-                             onClick={() => handleSave(blog)}
-                             className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 text-white text-[12px] font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
-                           >
-                              <Save size={14} />
-                              Save Changes
-                           </button>
-                           <button 
-                             onClick={handleCancel}
-                             className="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-[12px] font-semibold rounded-lg hover:bg-slate-50 transition-colors"
-                           >
-                              Cancel
-                           </button>
-                         </>
-                       ) : (
-                         <>
-                           <button 
-                             onClick={() => handleEdit(blog)}
-                             className="flex items-center gap-1.5 px-4 py-2 bg-slate-900 text-white text-[12px] font-semibold rounded-lg hover:bg-slate-800 transition-colors"
-                           >
-                              <Pencil size={14} />
-                              Edit Content
-                           </button>
-                           <button 
-                             onClick={() => {
-                               setExpandedId(expandedId === blog.id ? null : blog.id);
-                               setEditingId(null);
-                             }}
-                             className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-[12px] font-semibold rounded-lg hover:bg-slate-50 transition-colors"
-                           >
-                              {expandedId === blog.id ? <EyeOff size={14} /> : <Eye size={14} />}
-                              {expandedId === blog.id ? "Hide Preview" : "Preview Content"}
-                           </button>
-                           <button 
-                             onClick={() => handleToggleStatus(blog)}
-                             className="px-4 py-2 bg-white border border-slate-200 text-slate-600 text-[12px] font-semibold rounded-lg hover:bg-slate-50 transition-colors"
-                           >
-                              Toggle Visibility
-                           </button>
-                         </>
-                       )}
-                     </div>
+              {/* Thumbnail */}
+              <div className="relative aspect-video bg-slate-100 overflow-hidden">
+                {blog.image ? (
+                  <img src={getImageUrl(blog.image)} alt={blog.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-300">
+                    <ImageIcon size={32} />
                   </div>
-               </div>
+                )}
+                <div className="absolute top-3 right-3">
+                  <span className={clsx(
+                    "px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-md backdrop-blur shadow-sm border",
+                    (blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true)
+                      ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                      : "bg-slate-500/10 text-slate-500 border-slate-500/20"
+                  )}>
+                    {(blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true) ? "Live" : "Draft"}
+                  </span>
+                </div>
+              </div>
 
-               {/* TipTap Editor Area */}
-               {editingId === blog.id && (
-                  <div className="border-t border-slate-100 bg-slate-50 p-6">
-                    <div className="mb-4 flex items-center justify-between">
-                       <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Rich Text Editor</h3>
-                       <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-tight bg-indigo-50 px-2 py-0.5 rounded">Tiptap v3 Enabled</span>
-                    </div>
-                    <TipTapEditor 
-                       value={editContent} 
-                       onChange={(val) => setEditContent(val)} 
-                       placeholder="Write your blog content here..."
-                    />
-                  </div>
-               )}
+              <div className="p-4 flex-1 flex flex-col">
+                <div className="flex items-center gap-1.5 text-[9px] font-semibold text-slate-400 uppercase tracking-tight mb-2">
+                  <Calendar size={10} />
+                  {new Date(blog.created_at || new Date()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </div>
 
-               {/* Dangerous HTML Render Area */}
-               {expandedId === blog.id && (
-                  <div className="border-t border-slate-100 bg-slate-50 p-6 relative">
-                     <div className="absolute top-0 right-0 py-1 px-3 bg-rose-100 text-rose-700 text-[10px] font-bold tracking-widest rounded-bl-xl uppercase border-b border-l border-rose-200 shadow-sm">
-                       Dangerous HTML Output
-                     </div>
-                     
-                     {/* 
-                        Notice: Since the API returns a structured HTML document containing global <style> tags, 
-                        using dangerouslySetInnerHTML directly may leak styles into the admin dashboard (e.g., overriding body fonts/margins).
-                        We scope it slightly by containing it physically, but raw dangerouslySetInnerHTML is exactly what was requested.
-                     */}
-                     <div 
-                        className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden" 
-                        dangerouslySetInnerHTML={{ __html: blog.content }} 
-                     />
+                <h2 className="text-base font-semibold text-slate-900 leading-snug line-clamp-2 mb-1.5 group-hover:text-indigo-600 transition-colors">{blog.title}</h2>
+
+                <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 mb-3 bg-slate-50 px-2 py-0.5 rounded-md self-start">
+                  <ExternalLink size={10} className="text-indigo-400" />
+                  <span className="truncate max-w-[150px]">{blog.slug}</span>
+                </div>
+
+                <p className="text-[12px] text-slate-500 leading-relaxed line-clamp-2 mb-4">
+                  {blog.meta_description || "No description provided."}
+                </p>
+
+                <div className="mt-auto pt-3 border-t border-slate-50 flex items-center justify-between">
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleEdit(blog)}
+                      className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                      title="Edit"
+                    >
+                      <Pencil size={16} />
+                    </button>
+                    <button
+                      onClick={() => handleToggleStatus(blog)}
+                      className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                      title="Toggle Visibility"
+                    >
+                      <Globe size={16} />
+                    </button>
                   </div>
-               )}
+                  <button
+                    onClick={() => handleDelete(blog)}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                    title="Delete"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>

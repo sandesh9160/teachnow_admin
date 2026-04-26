@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { X, Loader2, Image as ImageIcon, UploadCloud, Link as LinkIcon, Building } from "lucide-react";
 import { toast } from "sonner";
 import { clsx } from "clsx";
-import { createCMSCompanyLogo, updateCMSCompanyLogo } from "@/services/admin.service";
+import { updateCMSCompanyLogo } from "@/services/admin.service";
 
 interface CMSCompanyLogoModalProps {
   isOpen: boolean;
@@ -89,28 +89,29 @@ export default function CMSCompanyLogoModal({ isOpen, onClose, onSuccess, item }
       if (formData.meta_keywords) payload.append("meta_keywords", String(formData.meta_keywords));
 
       if (item?.id) {
-          payload.append("_method", "PUT");
+          payload.append("_method", "PATCH");
       }
 
       const file = fileInputRef.current?.files?.[0];
       if (file) {
+        console.log("[CMSCompanyLogoModal] Appending new logo file:", file.name, file.size);
         payload.append("company_logo", file);
-      } else if (!item && !file) {
-        toast.error("Please upload a company logo image");
-        setLoading(false);
-        return;
+      }
+
+      console.log("[CMSCompanyLogoModal] Preparing to submit with ID:", item?.id);
+      for (const pair of payload.entries()) {
+        console.log(`[FormData] ${pair[0]}: ${pair[1]}`);
       }
 
       if (item?.id) {
-        await updateCMSCompanyLogo(item.id, payload);
+        const response = await updateCMSCompanyLogo(item.id, payload);
+        console.log("[CMSCompanyLogoModal] Update API Response:", response);
         toast.success("Branding asset updated");
-      } else {
-        await createCMSCompanyLogo(payload);
-        toast.success("Branding asset created");
       }
       onSuccess();
       onClose();
     } catch (err) {
+      console.error("[CMSCompanyLogoModal] Error submitting form:", err);
       toast.error("Failed to save asset");
     } finally {
       setLoading(false);
@@ -128,7 +129,7 @@ export default function CMSCompanyLogoModal({ isOpen, onClose, onSuccess, item }
             </div>
             <div>
               <h2 className="text-[16px] font-bold text-slate-900 tracking-tight leading-none">
-                {item ? "Edit Primary Branding" : "Create Branding Asset"}
+                {item ? "Edit Primary Branding" : "Edit Primary Branding"}
               </h2>
               <p className="text-[12px] font-medium text-slate-500 mt-1">
                 Configure primary corporate assets and global SEO attributes.
@@ -282,8 +283,7 @@ export default function CMSCompanyLogoModal({ isOpen, onClose, onSuccess, item }
               disabled={loading}
               className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-[12px] font-bold text-white rounded-lg shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-0.5 active:scale-95 transition-all disabled:opacity-50"
             >
-              {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-              {item ? "Save Identity" : "Commit Asset"}
+              {item ? "Save Identity" : "Save Identity"}
             </button>
           </div>
         </form>

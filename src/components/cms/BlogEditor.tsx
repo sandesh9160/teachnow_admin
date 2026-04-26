@@ -180,7 +180,6 @@ export default function BlogEditor({ onBack, onSave, blog }: BlogEditorProps) {
                 value={formData.content}
                 onChange={(val) => setFormData(prev => ({ ...prev, content: val }))}
                 placeholder="Start writing your masterpiece here..."
-                blogId={blog?.id}
               />
             </div>
           </div>
