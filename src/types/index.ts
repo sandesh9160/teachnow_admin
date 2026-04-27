@@ -412,9 +412,10 @@ export interface Payment {
   employer_logo?: string;
   plan_name: string;
   amount: string;
-  payment_method: string;
+  currency?: string;
+  payment_method?: string;
   status: string;
-  transaction_id: string;
+  transaction_id: string | null;
   created_at: string;
 }
 
@@ -429,8 +430,9 @@ export interface PaymentDetails {
   };
   payment: {
     id: number;
-    transaction_id: string;
+    transaction_id: string | null;
     amount: string;
+    currency?: string;
     payment_method: string;
     status: string;
     created_at: string;

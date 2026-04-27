@@ -4,8 +4,7 @@ import React from "react";
 import { 
   X, 
   Building2, 
-  CreditCard, 
-  Calendar, 
+  CreditCard,  
   ShieldCheck, 
   Download, 
   ExternalLink,
@@ -14,7 +13,6 @@ import {
   MapPin,
   Clock,
   CheckCircle2,
-  AlertCircle,
   FileText,
   BadgeCheck,
   Zap
@@ -124,11 +122,11 @@ export default function PaymentDetailsModal({ isOpen, onClose, details }: Paymen
                       </div>
                    </div>
                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Method</p>
+                      <p className="text-[10px] font-bold text-slate-400">Method</p>
                       <p className="text-[13px] font-bold text-slate-700 capitalize">{payment.payment_method}</p>
                    </div>
                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Initiated At</p>
+                      <p className="text-[10px] font-bold text-slate-400 ">Initiated At</p>
                       <p className="text-[13px] font-bold text-slate-700">{new Date(payment.created_at).toLocaleString()}</p>
                    </div>
                 </div>

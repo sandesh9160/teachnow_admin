@@ -15,7 +15,8 @@ import {
   ChevronRight,
   Building2,
   Calendar,
-  Loader2
+  Loader2,
+  ShieldCheck
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
@@ -51,8 +52,12 @@ export default function PaymentsPage() {
       if (res) {
         const responseData = res as any;
         setPayments(responseData.data || []);
-        setTotalPages(responseData.last_page || 1);
         setTotalItems(responseData.total_payments || 0);
+        
+        // Use backend provided last_page, or calculate it from total_payments
+        const total = responseData.total_payments || 0;
+        const lastPage = responseData.last_page || Math.ceil(total / 10);
+        setTotalPages(lastPage || 1);
       }
     } catch (error) {
       console.error("Failed to fetch payments:", error);
@@ -77,7 +82,7 @@ export default function PaymentsPage() {
       key: "transaction_id",
       title: "Transaction ID",
       render: (val: any) => (
-        <span className="font-mono text-[12px] text-slate-500 font-bold uppercase tracking-wider">{val || "N/A"}</span>
+        <span className="font-mono text-[12px] text-indigo-900 font-bold tracking-normal">{val || "Draft"}</span>
       )
     },
     {
@@ -96,7 +101,9 @@ export default function PaymentsPage() {
           )}
           <div className="flex flex-col">
             <span className="text-[13px] font-bold text-slate-900 leading-tight">{val}</span>
-            <span className="text-[10px] text-slate-400 font-medium capitalize">{row.payment_method} Payment</span>
+            {row.payment_method && (
+              <span className="text-[10px] text-indigo-600 font-medium capitalize">{row.payment_method} payment</span>
+            )}
           </div>
         </div>
       )
@@ -116,10 +123,10 @@ export default function PaymentsPage() {
     {
       key: "amount",
       title: "Amount",
-      render: (val: any) => (
+      render: (val: any, row: Payment) => (
         <div className="flex flex-col">
-          <span className="text-[14px] font-extrabold text-slate-900">₹{Number(val).toLocaleString()}</span>
-          <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter">Tax Included</span>
+          <span className="text-[14px] font-extrabold text-slate-900">{row.currency || "₹"}{Number(val).toLocaleString()}</span>
+          <span className="text-[10px] font-bold text-emerald-600">Tax included</span>
         </div>
       )
     },
@@ -129,7 +136,7 @@ export default function PaymentsPage() {
       render: (val: any) => (
         <div className="flex flex-col">
           <span className="text-[13px] font-semibold text-slate-700">{new Date(val).toLocaleDateString()}</span>
-          <span className="text-[11px] text-slate-400 font-medium">{new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+          <span className="text-[11px] text-indigo-500 font-medium">{new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
       )
     },
@@ -137,17 +144,17 @@ export default function PaymentsPage() {
       key: "status",
       title: "Status",
       render: (val: any) => {
-        const s = val?.toLowerCase() || "pending";
+        const s = val?.toLowerCase() || "created";
         return (
           <div className={clsx(
-            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border shadow-sm",
-            s === "success" || s === "paid" || s === "completed"
+            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border shadow-sm",
+            s === "paid" || s === "success" || s === "completed"
               ? "bg-emerald-50 text-emerald-600 border-emerald-100"
               : s === "failed" || s === "rejected"
               ? "bg-rose-50 text-rose-600 border-rose-100"
               : "bg-amber-50 text-amber-600 border-amber-100"
           )}>
-            {s === "success" || s === "paid" || s === "completed" ? <CheckCircle2 size={12} /> : s === "failed" ? <XCircle size={12} /> : <Clock size={12} />}
+            {s === "paid" || s === "success" || s === "completed" ? <CheckCircle2 size={12} /> : s === "failed" ? <XCircle size={12} /> : <Clock size={12} />}
             {val}
           </div>
         );
@@ -177,24 +184,14 @@ export default function PaymentsPage() {
             </div>
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                 <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 uppercase tracking-tighter">Finance Hub</span>
+                 <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Payment records</span>
                  <span className="w-1 h-1 rounded-full bg-slate-300" />
-                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{totalItems} Records Found</span>
+                 <span className="text-[9px] font-bold text-indigo-900">{totalItems} records found</span>
               </div>
               <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-none">Employer Payments</h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-             <div className="hidden sm:flex flex-col items-end mr-2">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Volume</span>
-                <span className="text-lg font-black text-slate-900 leading-none">{totalItems}</span>
-             </div>
-             <button className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-[11px] font-bold transition-all active:scale-95 shadow-sm">
-                <Download size={14} />
-                Export CSV
-             </button>
-          </div>
         </div>
       </div>
 
@@ -209,6 +206,7 @@ export default function PaymentsPage() {
             placeholder="Search transactions..." 
             value={search}
             onChange={e => setSearch(e.target.value)}
+            suppressHydrationWarning
             className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-[12.5px] font-medium text-slate-900 placeholder:text-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all shadow-sm"
           />
         </form>
@@ -218,6 +216,7 @@ export default function PaymentsPage() {
               <button
                 key={opt}
                 onClick={() => setStatusFilter(opt)}
+                suppressHydrationWarning
                 className={clsx(
                   "px-4 py-1.5 text-[10px] font-bold rounded-lg transition-all capitalize",
                   statusFilter === opt 
@@ -241,18 +240,20 @@ export default function PaymentsPage() {
           emptyMessage="No financial transactions found for the selected criteria."
         />
         
-        {!loading && totalPages > 1 && (
-            <div className="mt-6 flex justify-center">
-                <div className="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
-                    <Pagination 
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={setCurrentPage}
-                    />
-                </div>
-            </div>
-        )}
+      {!loading && totalPages > 1 && (
+          <div className="mt-6 flex justify-center">
+              <div className="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
+                  <Pagination 
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={setCurrentPage}
+                  />
+              </div>
+          </div>
+      )}
       </div>
+
+
     </div>
   );
 }
