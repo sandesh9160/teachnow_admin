@@ -27,7 +27,8 @@ import {
   Clock,
   Mail,
   FileSearch,
-  Newspaper
+  Newspaper,
+  Banknote
 } from "lucide-react";
 import { adminSignOut } from "@/lib/auth";
 import { clsx } from "clsx";
@@ -70,6 +71,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
     headerIcon: null,
     items: [
       { title: "Manage Plans", href: "/plans", icon: CreditCard },
+      { title: "Payments", href: "/payments", icon: Banknote },
       { title: "Master Data", href: "/master-data", icon: Database },
       { title: "Reviews", href: "/reviews", icon: Star },
     ]

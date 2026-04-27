@@ -406,6 +406,56 @@ export interface Notification {
   data?: any;
 }
 
+export interface Payment {
+  id: number;
+  employer_name: string;
+  employer_logo?: string;
+  plan_name: string;
+  amount: string;
+  payment_method: string;
+  status: string;
+  transaction_id: string;
+  created_at: string;
+}
+
+export interface PaymentDetails {
+  employer: {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    logo?: string;
+    address?: string;
+  };
+  payment: {
+    id: number;
+    transaction_id: string;
+    amount: string;
+    payment_method: string;
+    status: string;
+    created_at: string;
+  };
+  subscription: {
+    id: number;
+    plan_name: string;
+    job_posts_total: number;
+    job_posts_used: number;
+    featured_jobs_total: number;
+    featured_jobs_used: number;
+    starts_at: string;
+    expires_at: string;
+    status: string;
+  };
+  invoice: {
+    id: number;
+    invoice_number: string;
+    amount: string;
+    currency: string;
+    invoice_date: string;
+    pdf_url: string;
+  };
+}
+
 // ─── Sidebar Types ───────────────────────────────────────────────────────────
 
 export interface SidebarItem {

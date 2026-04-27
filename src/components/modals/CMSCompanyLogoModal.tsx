@@ -17,6 +17,7 @@ export default function CMSCompanyLogoModal({ isOpen, onClose, onSuccess, item }
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     company_name: "",
+    slug: "",
     company_url: "/",
     display_order: 1,
     is_active: 1,
@@ -32,6 +33,7 @@ export default function CMSCompanyLogoModal({ isOpen, onClose, onSuccess, item }
       if (item) {
         setFormData({
           company_name: item.company_name || "",
+          slug: item.slug || "",
           company_url: item.company_url || "/",
           display_order: item.display_order || 1,
           is_active: item.is_active !== undefined ? Number(item.is_active) : 1,
@@ -51,6 +53,7 @@ export default function CMSCompanyLogoModal({ isOpen, onClose, onSuccess, item }
       } else {
         setFormData({
             company_name: "",
+            slug: "",
             company_url: "/",
             display_order: 1,
             is_active: 1,
@@ -80,17 +83,14 @@ export default function CMSCompanyLogoModal({ isOpen, onClose, onSuccess, item }
       setLoading(true);
       const payload = new FormData();
       payload.append("company_name", String(formData.company_name));
+      payload.append("slug", String(formData.slug));
       payload.append("company_url", String(formData.company_url));
       payload.append("display_order", String(formData.display_order));
       payload.append("is_active", String(formData.is_active));
       
-      if (formData.meta_title) payload.append("meta_title", String(formData.meta_title));
-      if (formData.meta_description) payload.append("meta_description", String(formData.meta_description));
-      if (formData.meta_keywords) payload.append("meta_keywords", String(formData.meta_keywords));
-
-      if (item?.id) {
-          payload.append("_method", "PATCH");
-      }
+      payload.append("meta_title", String(formData.meta_title));
+      payload.append("meta_description", String(formData.meta_description));
+      payload.append("meta_keywords", String(formData.meta_keywords));
 
       const file = fileInputRef.current?.files?.[0];
       if (file) {
@@ -165,6 +165,18 @@ export default function CMSCompanyLogoModal({ isOpen, onClose, onSuccess, item }
               </div>
 
               <div>
+                <label className="text-[11px] font-bold text-slate-500 mb-1 block">Slug Identifier</label>
+                <input 
+                  type="text"
+                  required
+                  value={formData.slug}
+                  onChange={e => setFormData({ ...formData, slug: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:font-medium placeholder:text-slate-300"
+                  placeholder="e.g. teach-now"
+                />
+              </div>
+
+              <div>
                 <label className="text-[11px] font-bold text-slate-500 mb-1 block">Root Destination URL</label>
                 <input 
                   type="text"
@@ -227,6 +239,17 @@ export default function CMSCompanyLogoModal({ isOpen, onClose, onSuccess, item }
                    onChange={e => setFormData({ ...formData, meta_description: e.target.value })}
                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none"
                    placeholder="Short SEO description..."
+                 />
+               </div>
+
+               <div>
+                 <label className="text-[11px] font-bold text-slate-500 mb-1 block">Meta Keywords</label>
+                 <textarea 
+                   rows={2}
+                   value={formData.meta_keywords}
+                   onChange={e => setFormData({ ...formData, meta_keywords: e.target.value })}
+                   className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none"
+                   placeholder="Keywords separated by commas..."
                  />
                </div>
             </div>
