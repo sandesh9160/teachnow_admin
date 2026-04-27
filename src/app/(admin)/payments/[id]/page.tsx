@@ -326,11 +326,11 @@ export default function PaymentDetailsPage() {
             <div className="space-y-2.5 px-1">
               <div className="flex justify-between items-center text-[13px]">
                 <span className="font-medium text-slate-500">Subtotal</span>
-                <span className="font-bold text-slate-800">₹{Number(payment.amount * 0.82).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                <span className="font-bold text-slate-800">₹{(Number(payment.amount) * 0.82).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
               </div>
               <div className="flex justify-between items-center text-[13px]">
                 <span className="font-medium text-slate-500">Tax (IGST 18%)</span>
-                <span className="font-bold text-slate-800">₹{Number(payment.amount * 0.18).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                <span className="font-bold text-slate-800">₹{(Number(payment.amount) * 0.18).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
               </div>
               <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                 <span className="text-[14px] font-bold text-slate-900">Total Paid</span>

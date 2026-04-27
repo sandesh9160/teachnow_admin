@@ -24,6 +24,8 @@ import type {
   PopularSearch,
   CMSResume,
   CMSResumesResponse,
+  PaymentsResponse,
+  PaymentDetails,
 } from "@/types";
 
 /**
@@ -664,4 +666,4 @@ export const getPayments = (params?: Record<string, unknown>) =>
   dashboardServerFetch<PaymentsResponse>("/admin/payments", { params: { ...params, _t: Date.now() } });
 
 export const getPayment = (id: number) =>
-  dashboardServerFetch<ApiResponse<any>>(`/admin/payments/${id}`);
+  dashboardServerFetch<ApiResponse<PaymentDetails>>(`/admin/payments/${id}`);
