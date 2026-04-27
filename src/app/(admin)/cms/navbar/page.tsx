@@ -89,25 +89,7 @@ export default function CMSNavbarPage() {
     }
   };
 
-  const handleToggleActive = async (id: number) => {
-    try {
-      await toggleCMSNavigationActive(id);
-      toast.success("Status updated");
-      fetchNavigations();
-    } catch (error) {
-      toast.error("Failed to update status");
-    }
-  };
 
-  const handleToggleNav = async (id: number) => {
-    try {
-      await toggleCMSNavigationNav(id);
-      toast.success("Visibility updated");
-      fetchNavigations();
-    } catch (error) {
-      toast.error("Failed to update visibility");
-    }
-  };
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this link?")) return;
@@ -168,20 +150,19 @@ export default function CMSNavbarPage() {
       key: "show_in_nav", 
       title: "Menu Location", 
       render: (v: any, item: any) => {
-        const isActive = v === 1 || v === true;
+        const isActive = v === 1 || v === true || v === "1" || v === "true";
         return (
-          <button 
-            onClick={() => handleToggleNav(item.id)}
+          <div 
             className={clsx(
-              "flex items-center gap-2 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all",
+              "inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider",
               isActive 
-                ? "bg-slate-900 text-white hover:bg-black shadow-sm" 
-                : "bg-slate-100 text-slate-500 border border-slate-200 hover:bg-slate-200"
+                ? "bg-slate-900 text-white shadow-sm" 
+                : "bg-slate-100 text-slate-500 border border-slate-200"
             )}
           >
             {isActive ? <Layout size={10} /> : <Menu size={10} />}
             {isActive ? "Top Menu" : "Hidden"}
-          </button>
+          </div>
         );
       }
     },
@@ -189,23 +170,22 @@ export default function CMSNavbarPage() {
       key: "is_active", 
       title: "Status", 
       render: (v: any, item: any) => {
-        const isActive = v === 1 || v === true;
+        const isActive = v === 1 || v === true || v === "1" || v === "true";
         return (
-          <button 
-            onClick={() => handleToggleActive(item.id)}
+          <div 
             className={clsx(
-              "flex items-center gap-2 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all",
+              "inline-flex items-center gap-2 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider",
               isActive 
-                ? "bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100" 
-                : "bg-slate-100 text-slate-400 border border-slate-200 hover:bg-slate-200"
+                ? "bg-emerald-50 text-emerald-600 border border-emerald-100" 
+                : "bg-slate-100 text-slate-400 border border-slate-200"
             )}
           >
             <div className={clsx(
-              "w-1.5 h-1.5 rounded-full transition-all", 
+              "w-1.5 h-1.5 rounded-full", 
               isActive ? "bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]" : "bg-slate-300"
             )} />
             {isActive ? "Active" : "Inactive"}
-          </button>
+          </div>
         );
       }
     },

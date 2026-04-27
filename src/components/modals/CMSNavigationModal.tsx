@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Loader2, Link2, Settings2, ChevronRight, Hash, Globe, Layers, Zap, Plus, Pencil } from "lucide-react";
+import { X, Loader2, Link2, Settings2, ChevronRight,  Plus, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import { createCMSNavigation, updateCMSNavigation } from "@/services/admin.service";
+import { createCMSNavigation, updateCMSNavigation, toggleCMSNavigationActive, toggleCMSNavigationNav } from "@/services/admin.service";
 import { clsx } from "clsx";
 
 interface CMSNavigationModalProps {
@@ -34,8 +34,8 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
           parent_id: item.parent_id ? String(item.parent_id) : "",
           url: item.url || "",
           display_order: item.display_order || 1,
-          is_active: item.is_active !== undefined ? (item.is_active ? 1 : 0) : 1,
-          show_in_nav: item.show_in_nav !== undefined ? (item.show_in_nav ? 1 : 0) : 1,
+          is_active: item.is_active !== undefined ? (item.is_active === 1 || item.is_active === true || item.is_active === "1" || item.is_active === "true" ? 1 : 0) : 1,
+          show_in_nav: item.show_in_nav !== undefined ? (item.show_in_nav === 1 || item.show_in_nav === true || item.show_in_nav === "1" || item.show_in_nav === "true" ? 1 : 0) : 1,
           slug: item.slug || ""
         });
       } else if (item?.parent_id) {
@@ -201,14 +201,26 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
             <div className="flex gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, is_active: formData.is_active ? 0 : 1 })}
+                onClick={async () => {
+                  const newState = formData.is_active ? 0 : 1;
+                  setFormData({ ...formData, is_active: newState });
+                  if (item?.id) {
+                    try {
+                      await toggleCMSNavigationActive(item.id, { is_active: newState });
+                      toast.success("Status updated");
+                      onSuccess();
+                    } catch (e) {
+                      toast.error("Failed to update status instantly");
+                    }
+                  }
+                }}
                 className={clsx(
                     "flex-1 flex flex-col items-start p-3 rounded-lg border transition-all text-left",
                     formData.is_active ? "bg-emerald-50 border-emerald-100" : "bg-slate-50 border-slate-200"
                 )}
               >
                 <div className="flex items-center justify-between w-full mb-1">
-                  <span className={clsx("text-[10px] font-bold uppercase tracking-wider", formData.is_active ? "text-emerald-600" : "text-slate-400")}>Active Status</span>
+                  <span className={clsx("text-[10px] font-bold uppercase tracking-wider", formData.is_active ? "text-emerald-600" : "text-slate-400")}>Status</span>
                   <div className={clsx(
                       "w-7 h-4 rounded-full relative transition-colors",
                       formData.is_active ? "bg-emerald-500" : "bg-slate-300"
@@ -220,13 +232,25 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
                   </div>
                 </div>
                 <span className="text-[9px] font-medium text-slate-500">
-                  {formData.is_active ? "Link is active" : "Link is inactive"}
+                  {formData.is_active ? "Active" : "Inactive"}
                 </span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, show_in_nav: formData.show_in_nav ? 0 : 1 })}
+                onClick={async () => {
+                  const newState = formData.show_in_nav ? 0 : 1;
+                  setFormData({ ...formData, show_in_nav: newState });
+                  if (item?.id) {
+                    try {
+                      await toggleCMSNavigationNav(item.id, { show_in_nav: newState });
+                      toast.success("Visibility updated");
+                      onSuccess();
+                    } catch (e) {
+                      toast.error("Failed to update visibility instantly");
+                    }
+                  }
+                }}
                 className={clsx(
                     "flex-1 flex flex-col items-start p-3 rounded-lg border transition-all text-left",
                     formData.show_in_nav ? "bg-indigo-50 border-indigo-100" : "bg-slate-50 border-slate-200"

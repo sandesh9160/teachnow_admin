@@ -76,10 +76,17 @@ export default function BlogsPage() {
 
   const handleToggleStatus = async (blog: any) => {
     try {
-      await toggleBlogStatus(blog.id);
+      const currentIsActive = blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true;
+      const res: any = await toggleBlogStatus(blog.id, { is_active: currentIsActive ? 0 : 1 });
+      
+      if (res?.status === false) {
+        toast.error(res.message || "Failed to update status");
+        return;
+      }
+      
       setBlogs((prev) =>
         prev.map((b) =>
-          b.id === blog.id ? { ...b, is_active: b.is_active === "1" || b.is_active === 1 || b.is_active === true ? 0 : 1 } : b
+          b.id === blog.id ? { ...b, is_active: currentIsActive ? 0 : 1 } : b
         )
       );
       toast.success("Blog visibility updated");
@@ -149,11 +156,19 @@ export default function BlogsPage() {
 
       if (currentBlog) {
         console.log("Frontend Blog Edit Request Payload:", Object.fromEntries(data.entries()));
-        const updateRes = await updateBlog(currentBlog.id, data);
+        const updateRes: any = await updateBlog(currentBlog.id, data);
+        if (updateRes?.status === false) {
+          toast.error(updateRes.message || "Failed to update blog");
+          return;
+        }
         console.log("Frontend Blog Edit Response:", updateRes);
         toast.success("Blog updated successfully");
       } else {
-        await createBlog(data);
+        const createRes: any = await createBlog(data);
+        if (createRes?.status === false) {
+          toast.error(createRes.message || "Failed to create blog");
+          return;
+        }
         toast.success("New blog published");
       }
 
@@ -317,7 +332,22 @@ export default function BlogsPage() {
                         <button
                           key={opt.val}
                           type="button"
-                          onClick={() => setFormData({ ...formData, is_active: opt.val })}
+                          onClick={async () => {
+                            setFormData({ ...formData, is_active: opt.val });
+                            if (currentBlog?.id && formData.is_active !== opt.val) {
+                              try {
+                                const res: any = await toggleBlogStatus(currentBlog.id, { is_active: opt.val });
+                                if (res?.status === false) {
+                                  toast.error(res.message || "Failed to update status");
+                                  return;
+                                }
+                                toast.success("Status updated instantly");
+                                fetchBlogs();
+                              } catch (e) {
+                                toast.error("Failed to update status instantly");
+                              }
+                            }
+                          }}
                           className={clsx(
                             "flex items-center justify-center gap-2 py-2 rounded-lg border transition-all font-semibold text-[11px] uppercase tracking-tight",
                             formData.is_active === opt.val
@@ -454,15 +484,22 @@ export default function BlogsPage() {
                     <ImageIcon size={32} />
                   </div>
                 )}
-                <div className="absolute top-3 right-3">
-                  <span className={clsx(
-                    "px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-md backdrop-blur shadow-sm border",
-                    (blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true)
-                      ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                      : "bg-slate-500/10 text-slate-500 border-slate-500/20"
-                  )}>
-                    {(blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true) ? "Live" : "Draft"}
-                  </span>
+                <div className="absolute top-3 right-3 z-10">
+                  <button 
+                    onClick={() => handleToggleStatus(blog)}
+                    className={clsx(
+                      "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all backdrop-blur-md border shadow-sm",
+                      (blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true)
+                        ? "bg-emerald-500/90 text-white border-emerald-500 hover:bg-emerald-600" 
+                        : "bg-slate-900/70 text-white border-slate-700 hover:bg-slate-900"
+                    )}
+                  >
+                    <div className={clsx(
+                      "w-1.5 h-1.5 rounded-full transition-all", 
+                      (blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true) ? "bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)]" : "bg-slate-400"
+                    )} />
+                    {(blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true) ? "Active" : "Inactive"}
+                  </button>
                 </div>
               </div>
 
@@ -492,13 +529,7 @@ export default function BlogsPage() {
                     >
                       <Pencil size={16} />
                     </button>
-                    <button
-                      onClick={() => handleToggleStatus(blog)}
-                      className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
-                      title="Toggle Visibility"
-                    >
-                      <Globe size={16} />
-                    </button>
+
                   </div>
                   <button
                     onClick={() => handleDelete(blog)}

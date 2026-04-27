@@ -262,7 +262,7 @@ export const updateCMSSection = (id: number, data: Partial<CMSSection>) =>
 
 // Navigation
 export const getCMSNavigations = () =>
-  dashboardServerFetch<any[]>("/admin/cms/navigation");
+  dashboardServerFetch<any[]>("/admin/cms/navigation", { params: { _t: Date.now() } });
 
 export const createCMSNavigation = (data: any) =>
   dashboardServerFetch("/admin/cms/navigation", { method: "POST", data });
@@ -273,11 +273,11 @@ export const updateCMSNavigation = (id: number, data: any) =>
 export const deleteCMSNavigation = (id: number) =>
   dashboardServerFetch(`/admin/cms/navigation/${id}`, { method: "DELETE" });
 
-export const toggleCMSNavigationActive = (id: number) =>
-  dashboardServerFetch(`/admin/cms/navigation/${id}/toggle-active`, { method: "PATCH" });
+export const toggleCMSNavigationActive = (id: number, data?: any) =>
+  dashboardServerFetch(`/admin/cms/navigation/${id}/toggle-active`, { method: "PATCH", data });
 
-export const toggleCMSNavigationNav = (id: number) =>
-  dashboardServerFetch(`/admin/cms/navigation/${id}/toggle-nav`, { method: "PATCH" });
+export const toggleCMSNavigationNav = (id: number, data?: any) =>
+  dashboardServerFetch(`/admin/cms/navigation/${id}/toggle-nav`, { method: "PATCH", data });
 // Footer Sections
 export const getCMSFooterSections = () =>
   dashboardServerFetch<any[]>("/admin/cms/footer-sections");
@@ -571,8 +571,8 @@ export const updateBlog = (id: number, data: FormData) => {
 export const deleteBlog = (id: number) =>
   dashboardServerFetch(`/admin/cms/blogs/${id}`, { method: "DELETE" });
 
-export const toggleBlogStatus = (id: number) =>
-  dashboardServerFetch(`/admin/cms/blogs/${id}/toggle`, { method: "PATCH" });
+export const toggleBlogStatus = (id: number, data?: any) =>
+  dashboardServerFetch(`/admin/cms/blogs/${id}/toggle`, { method: "PATCH", data });
 
 // ─── About Us ────────────────────────────────────────────────────────────────
 
