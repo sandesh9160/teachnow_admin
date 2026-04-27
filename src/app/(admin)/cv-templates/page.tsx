@@ -67,7 +67,6 @@ export default function ManageCVTemplatesPage() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [saveLoading, setSaveLoading] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   const [resumeLimit, setResumeLimit] = useState<number>(0);
   const [savingLimit, setSavingLimit] = useState(false);
 
@@ -77,30 +76,7 @@ export default function ManageCVTemplatesPage() {
     "portfolio_website", "dob"
   ];
 
-  const dummyData: any = {
-    name: "Sandesh Kumar",
-    email: "sandesh@teachnow.com",
-    phone: "+91 98765 43210",
-    location: "Hyderabad, India",
-    bio: "Passionate educator with over 10 years of experience in higher education and curriculum design. Specialized in STEM subjects and digital learning transformation.",
-    title: "Senior Academic Consultant",
-    experience_years: "12",
-    skills: "Mathematics, Physics, Digital Pedagogy, Leadership, Team Management",
-    experience: "12 years of professional teaching and admin experience",
-    education: "Ph.D. in Education Theory, IIT Delhi",
-    portfolio_website: "www.sandeshteach.in",
-    dob: "15th August 1990",
-  };
 
-  const renderPreview = (html: string) => {
-    if (!html) return "<div class='p-8 text-slate-400 font-medium italic'>No content to preview</div>";
-    let rendered = html;
-    COMMON_TAGS.forEach((tag) => {
-      const regex = new RegExp(`{{${tag}}}`, "g");
-      rendered = rendered.replace(regex, dummyData[tag] || "");
-    });
-    return rendered;
-  };
 
   useEffect(() => {
     fetchTemplates();
@@ -412,7 +388,6 @@ export default function ManageCVTemplatesPage() {
                               ...editorData,
                               html_template: editorData.html_template + ` {{${tag}}}`
                             });
-                            setShowPreview(false);
                           }
                         }}
                         className={clsx(
@@ -489,55 +464,24 @@ export default function ManageCVTemplatesPage() {
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                   <div className="w-px h-4 bg-slate-200 mx-2" />
                   <div className="flex items-center gap-2 text-slate-400">
-                    {showPreview ? <Eye size={14} className="text-indigo-600" /> : <Code2 size={14} />}
-                    <span className={clsx("text-[11px] font-semibold uppercase tracking-widest", showPreview ? "text-indigo-600" : "text-slate-400")}>
-                      {showPreview ? "Live Design Preview" : "HTML Blueprint Editor"}
+                    <Code2 size={14} />
+                    <span className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">
+                      HTML Blueprint Editor
                     </span>
                   </div>
-                </div>
-                <div className="flex items-center gap-1 p-1 bg-white rounded-lg border border-slate-200 shadow-sm">
-                  <button
-                    onClick={() => setShowPreview(false)}
-                    className={clsx(
-                      "flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-semibold uppercase transition-all",
-                      !showPreview ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" : "text-slate-400 hover:text-slate-900"
-                    )}
-                  >
-                    <Code2 size={12} /> Code
-                  </button>
-                  <button
-                    onClick={() => setShowPreview(true)}
-                    className={clsx(
-                      "flex items-center gap-2 px-4 py-1.5 rounded-lg text-[10px] font-semibold uppercase transition-all",
-                      showPreview ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "text-slate-400 hover:text-slate-900"
-                    )}
-                  >
-                    <Eye size={12} /> Preview
-                  </button>
                 </div>
               </div>
 
               <div className="flex-1 relative bg-white">
-                {!showPreview ? (
-                  <textarea
-                    required
-                    suppressHydrationWarning
-                    placeholder="<html>\n  <head>...</head>\n  <body>\n    <h1>{{name}}</h1>\n  </body>\n</html>"
-                    value={editorData.html_template}
-                    onChange={e => setEditorData({ ...editorData, html_template: e.target.value })}
-                    className="absolute inset-0 w-full h-full p-8 bg-white text-indigo-950 font-mono text-[14px] outline-none resize-none selection:bg-indigo-100 placeholder:text-slate-300"
-                    style={{ lineHeight: '1.8' }}
-                  />
-                ) : (
-                  <div className="absolute inset-0 overflow-auto bg-slate-100 p-8 flex justify-center">
-                    <div className="w-full max-w-[800px] bg-white shadow-2xl rounded-sm overflow-hidden min-h-full">
-                      <div
-                        dangerouslySetInnerHTML={{ __html: renderPreview(editorData.html_template) }}
-                        className="resume-preview-root"
-                      />
-                    </div>
-                  </div>
-                )}
+                <textarea
+                  required
+                  suppressHydrationWarning
+                  placeholder="<html>\n  <head>...</head>\n  <body>\n    <h1>{{name}}</h1>\n  </body>\n</html>"
+                  value={editorData.html_template}
+                  onChange={e => setEditorData({ ...editorData, html_template: e.target.value })}
+                  className="absolute inset-0 w-full h-full p-8 bg-white text-indigo-950 font-mono text-[14px] outline-none resize-none selection:bg-indigo-100 placeholder:text-slate-300"
+                  style={{ lineHeight: '1.8' }}
+                />
               </div>
 
               <div className="px-6 py-3 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between">
@@ -549,12 +493,6 @@ export default function ManageCVTemplatesPage() {
                     Lines: {editorData.html_template.split('\n').length}
                   </span>
                 </div>
-                {showPreview && (
-                  <div className="flex items-center gap-2 text-emerald-600">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-semibold uppercase tracking-widest">Real-time Rendering</span>
-                  </div>
-                )}
               </div>
             </div>
 
