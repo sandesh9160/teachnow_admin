@@ -76,14 +76,14 @@ export default function PaymentsPage() {
     {
       key: "transaction_id",
       title: "Transaction ID",
-      render: (val: string) => (
+      render: (val: any) => (
         <span className="font-mono text-[12px] text-slate-500 font-bold uppercase tracking-wider">{val || "N/A"}</span>
       )
     },
     {
       key: "employer_name",
       title: "Employer / Institute",
-      render: (val: string, row: Payment) => (
+      render: (val: any, row: Payment) => (
         <div className="flex items-center gap-3">
           {row.employer_logo ? (
             <div className="w-8 h-8 rounded-lg overflow-hidden border border-slate-100 shrink-0 bg-slate-50">
@@ -104,7 +104,7 @@ export default function PaymentsPage() {
     {
         key: "plan_name",
         title: "Plan Purchased",
-        render: (val: string) => (
+        render: (val: any) => (
             <div className="flex items-center gap-2">
                 <div className="p-1.5 bg-violet-50 text-violet-600 rounded-lg">
                     <CreditCard size={14} />
@@ -116,7 +116,7 @@ export default function PaymentsPage() {
     {
       key: "amount",
       title: "Amount",
-      render: (val: number | string) => (
+      render: (val: any) => (
         <div className="flex flex-col">
           <span className="text-[14px] font-extrabold text-slate-900">₹{Number(val).toLocaleString()}</span>
           <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tighter">Tax Included</span>
@@ -126,7 +126,7 @@ export default function PaymentsPage() {
     {
       key: "created_at",
       title: "Date",
-      render: (val: string) => (
+      render: (val: any) => (
         <div className="flex flex-col">
           <span className="text-[13px] font-semibold text-slate-700">{new Date(val).toLocaleDateString()}</span>
           <span className="text-[11px] text-slate-400 font-medium">{new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -136,7 +136,7 @@ export default function PaymentsPage() {
     {
       key: "status",
       title: "Status",
-      render: (val: string) => {
+      render: (val: any) => {
         const s = val?.toLowerCase() || "pending";
         return (
           <div className={clsx(
