@@ -21,7 +21,7 @@ import {
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import Pagination from "@/components/ui/Pagination";
-import type { PaginatedResponse, Payment } from "@/types";
+import type { PaginatedResponse, Payment, PaymentsResponse } from "@/types";
 
 export default function PaymentsPage() {
   const router = useRouter();
@@ -50,7 +50,7 @@ export default function PaymentsPage() {
 
       const res = await getPayments(params);
       if (res) {
-        const responseData = res as any;
+        const responseData = res as PaymentsResponse;
         setPayments(responseData.data || []);
         setTotalItems(responseData.total_payments || 0);
         
@@ -68,7 +68,11 @@ export default function PaymentsPage() {
   };
 
   const handleRowClick = (payment: Payment) => {
-    router.push(`/payments/${payment.id}`);
+    if (payment.payment_id) {
+        router.push(`/payments/${payment.payment_id}`);
+    } else {
+        toast.error("Detailed record only available for processed payments");
+    }
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -79,10 +83,17 @@ export default function PaymentsPage() {
 
   const columns = [
     {
+      key: "order_id",
+      title: "Order ID",
+      render: (val: any) => (
+        <span className="text-[13px] font-bold text-slate-700">#{val}</span>
+      )
+    },
+    {
       key: "transaction_id",
       title: "Transaction ID",
       render: (val: any) => (
-        <span className="font-mono text-[12px] text-indigo-900 font-bold tracking-normal">{val || "Draft"}</span>
+        <span className="font-mono text-[12px] text-indigo-900 font-bold tracking-normal">{val || "—"}</span>
       )
     },
     {
@@ -163,11 +174,11 @@ export default function PaymentsPage() {
     {
       key: "actions",
       title: "",
-      render: (_: any, row: any) => (
+      render: (_: any, row: Payment) => row.payment_id ? (
         <div className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-indigo-600 transition-all group">
           <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
         </div>
-      )
+      ) : null
     }
   ];
 

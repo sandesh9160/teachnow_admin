@@ -407,7 +407,9 @@ export interface Notification {
 }
 
 export interface Payment {
-  id: number;
+  id?: number;
+  order_id: number;
+  payment_id: number | null;
   employer_name: string;
   employer_logo?: string;
   plan_name: string;
@@ -419,12 +421,21 @@ export interface Payment {
   created_at: string;
 }
 
+export interface PaymentsResponse {
+  status: boolean;
+  total_payments: number;
+  data: Payment[];
+  current_page?: number;
+  last_page?: number;
+  per_page?: number;
+}
+
 export interface PaymentDetails {
   employer: {
     id: number;
     name: string;
-    email: string;
-    phone: string;
+    email?: string;
+    phone?: string;
     logo?: string;
     address?: string;
   };
@@ -446,6 +457,7 @@ export interface PaymentDetails {
     featured_jobs_used: number;
     starts_at: string;
     expires_at: string;
+    purchase_date?: string;
     status: string;
   };
   invoice: {

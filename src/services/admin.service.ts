@@ -661,7 +661,7 @@ export const getCMSResumes = (params?: Record<string, unknown>) =>
 // ─── Payments ────────────────────────────────────────────────────────────────
 
 export const getPayments = (params?: Record<string, unknown>) =>
-  dashboardServerFetch<PaginatedResponse<any>>("/admin/payments", { params: { ...params, _t: Date.now() } });
+  dashboardServerFetch<PaymentsResponse>("/admin/payments", { params: { ...params, _t: Date.now() } });
 
 export const getPayment = (id: number) =>
   dashboardServerFetch<ApiResponse<any>>(`/admin/payments/${id}`);

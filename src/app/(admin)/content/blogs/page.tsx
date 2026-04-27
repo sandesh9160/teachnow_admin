@@ -74,27 +74,6 @@ export default function BlogsPage() {
     }
   };
 
-  const handleToggleStatus = async (blog: any) => {
-    try {
-      const currentIsActive = blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true;
-      const res: any = await toggleBlogStatus(blog.id, { is_active: currentIsActive ? 0 : 1 });
-      
-      if (res?.status === false) {
-        toast.error(res.message || "Failed to update status");
-        return;
-      }
-      
-      setBlogs((prev) =>
-        prev.map((b) =>
-          b.id === blog.id ? { ...b, is_active: currentIsActive ? 0 : 1 } : b
-        )
-      );
-      toast.success("Blog visibility updated");
-    } catch (error) {
-      toast.error("Failed to update status");
-    }
-  };
-
   const handleEdit = (blog: any) => {
     setCurrentBlog(blog);
     setFormData({
@@ -206,10 +185,13 @@ export default function BlogsPage() {
               <ArrowLeft size={18} />
             </button>
             <div>
-              <h1 className="text-lg font-semibold text-slate-900 leading-tight">
-                {currentBlog ? "Edit Article" : "Create Blog"}
+              <h1 className="text-lg font-bold text-slate-900 leading-tight">
+                {currentBlog ? "Edit Article" : "New Article"}
               </h1>
-              <p className="text-[11px] font-medium text-slate-500 uppercase tracking-tight">CMS & SEO Editor</p>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">CMS & SEO Editor</p>
+              </div>
             </div>
           </div>
 
@@ -333,18 +315,31 @@ export default function BlogsPage() {
                           key={opt.val}
                           type="button"
                           onClick={async () => {
-                            setFormData({ ...formData, is_active: opt.val });
-                            if (currentBlog?.id && formData.is_active !== opt.val) {
+                            if (formData.is_active === opt.val) return;
+                            
+                            const previousVal = formData.is_active;
+                            const newVal = opt.val;
+                            
+                            // Update local form state immediately
+                            setFormData(prev => ({ ...prev, is_active: newVal }));
+                            
+                            if (currentBlog?.id) {
                               try {
-                                const res: any = await toggleBlogStatus(currentBlog.id, { is_active: opt.val });
+                                const res: any = await toggleBlogStatus(currentBlog.id, { is_active: newVal });
                                 if (res?.status === false) {
                                   toast.error(res.message || "Failed to update status");
+                                  setFormData(prev => ({ ...prev, is_active: previousVal }));
                                   return;
                                 }
-                                toast.success("Status updated instantly");
-                                fetchBlogs();
+                                toast.success(`Status changed to ${opt.label}`);
+                                
+                                // Update the blogs list locally to reflect in the header counts
+                                setBlogs(prev => prev.map(b => 
+                                  b.id === currentBlog.id ? { ...b, is_active: newVal } : b
+                                ));
                               } catch (e) {
-                                toast.error("Failed to update status instantly");
+                                toast.error("Connection failed");
+                                setFormData(prev => ({ ...prev, is_active: previousVal }));
                               }
                             }
                           }}
@@ -368,7 +363,7 @@ export default function BlogsPage() {
               <div className="space-y-4 pt-4 border-t border-slate-100">
                 <div className="flex items-center gap-2">
                   <Globe size={14} className="text-indigo-600" />
-                  <h3 className="text-[10px] font-semibold text-slate-900 uppercase tracking-wider">SEO Settings</h3>
+                  <h3 className="text-[10px] font-semibold text-slate-900 uppercase tracking-wider">CMS & SEO Editor</h3>
                 </div>
 
                 <div className="space-y-3">
@@ -442,7 +437,20 @@ export default function BlogsPage() {
           </div>
           <div>
             <h4 className="text-[9px] font-bold text-indigo-600 tracking-wider uppercase mb-0.5">CMS Hub</h4>
-            <h1 className="text-lg font-semibold text-slate-900 leading-none">Manage Blogs</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-lg font-semibold text-slate-900 leading-none">Manage Blogs</h1>
+              <div className="flex items-center gap-2 px-2 py-1 bg-slate-50 border border-slate-100 rounded-lg">
+                <div className="flex items-center gap-1.5 pr-2 border-r border-slate-200">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
+                  <span className="text-[10px] font-bold text-slate-600">
+                    {blogs.filter(b => b.is_active === "1" || b.is_active === 1 || b.is_active === true).length} Live
+                  </span>
+                </div>
+                <span className="text-[10px] font-bold text-slate-400">
+                  {blogs.length} Total
+                </span>
+              </div>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -484,23 +492,7 @@ export default function BlogsPage() {
                     <ImageIcon size={32} />
                   </div>
                 )}
-                <div className="absolute top-3 right-3 z-10">
-                  <button 
-                    onClick={() => handleToggleStatus(blog)}
-                    className={clsx(
-                      "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all backdrop-blur-md border shadow-sm",
-                      (blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true)
-                        ? "bg-emerald-500/90 text-white border-emerald-500 hover:bg-emerald-600" 
-                        : "bg-slate-900/70 text-white border-slate-700 hover:bg-slate-900"
-                    )}
-                  >
-                    <div className={clsx(
-                      "w-1.5 h-1.5 rounded-full transition-all", 
-                      (blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true) ? "bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)]" : "bg-slate-400"
-                    )} />
-                    {(blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true) ? "Active" : "Inactive"}
-                  </button>
-                </div>
+
               </div>
 
               <div className="p-4 flex-1 flex flex-col">
@@ -524,12 +516,11 @@ export default function BlogsPage() {
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleEdit(blog)}
-                      className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                      title="Edit"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all text-[11px] font-bold uppercase tracking-tight"
                     >
-                      <Pencil size={16} />
+                      <Pencil size={14} />
+                      Edit Article
                     </button>
-
                   </div>
                   <button
                     onClick={() => handleDelete(blog)}
