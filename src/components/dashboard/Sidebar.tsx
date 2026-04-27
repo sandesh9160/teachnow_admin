@@ -233,6 +233,7 @@ export default function Sidebar({
           <div className={clsx("mb-4 hidden lg:flex", collapsed ? "justify-center" : "justify-end")}>
             <button
               onClick={onToggle}
+              suppressHydrationWarning
               className="p-1.5 rounded-lg text-slate-300 hover:text-primary hover:bg-primary/5 transition-all duration-300"
               title={collapsed ? "Expand" : "Collapse"}
             >

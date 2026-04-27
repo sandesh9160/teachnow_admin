@@ -52,6 +52,7 @@ export default function Topbar({ onMenuToggle, collapsed }: TopbarProps) {
             />
             <input
               type="text"
+              suppressHydrationWarning
               placeholder="Search employers, jobs, seekers..."
               className={clsx(
                 "w-[420px] pl-10 pr-4 py-2 rounded-xl text-[13px] font-medium animate-in",

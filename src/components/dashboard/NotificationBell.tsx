@@ -50,6 +50,7 @@ export default function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
+        suppressHydrationWarning
         className={clsx(
             "relative p-2.5 rounded-xl text-surface-500 hover:bg-surface-100 transition-colors",
             isOpen && "bg-surface-100 text-primary-600"
