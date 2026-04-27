@@ -559,17 +559,14 @@ export const getBlogs = () =>
   dashboardServerFetch<any>("/admin/cms/blogs");
 
 export const createBlog = (data: FormData) =>
-  dashboardServerFetch<any>("/admin/cms/blogs", {
-    method: "POST",
-    data
-  });
+  uploadAction<any>("/admin/cms/blogs", data, "POST");
 
-export const updateBlog = (id: number, data: FormData) =>
-  dashboardServerFetch<any>(`/admin/cms/blogs/${id}`, {
-    method: "POST",
-    data,
-    params: { _method: "PUT" }
-  });
+export const updateBlog = (id: number, data: FormData) => {
+  if (!data.has('_method')) {
+    data.append('_method', 'PUT');
+  }
+  return uploadAction<any>(`/admin/cms/blogs/${id}`, data, "POST");
+};
 
 export const deleteBlog = (id: number) =>
   dashboardServerFetch(`/admin/cms/blogs/${id}`, { method: "DELETE" });

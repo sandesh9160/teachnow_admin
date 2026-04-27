@@ -79,8 +79,19 @@ export async function dashboardServerFetch<T = any>(
         }
 
         console.log(`[DashboardServerFetch] ${method.toUpperCase()} /${cleanEndpoint} status: ${response.status}`);
-        if (options?.data) console.log(`[DashboardServerFetch Payload]:`, JSON.stringify(options.data, null, 2));
-        console.log(`[DashboardServerFetch Response]:`, JSON.stringify(response.data, null, 2));
+        if (options?.data) {
+            if (options.data instanceof FormData) {
+                console.log(`[DashboardServerFetch Payload (FormData)]:`, Object.fromEntries(options.data.entries()));
+            } else {
+                console.log(`[DashboardServerFetch Payload]:`, JSON.stringify(options.data, null, 2));
+            }
+        }
+        
+        if (cleanEndpoint.includes('/cms/blogs') && (method === 'post' || method === 'put')) {
+            console.log(`[Backend Blog Update Response]:`, JSON.stringify(response.data, null, 2));
+        } else {
+            console.log(`[DashboardServerFetch Response]:`, JSON.stringify(response.data, null, 2));
+        }
         return response.data;
     } catch (error: any) {
         const errStatus = error?.response?.status;

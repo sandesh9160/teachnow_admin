@@ -13,7 +13,7 @@ import {
   Upload,
   Image as ImageIcon,
   Globe,
-  Search,
+  // Search,
   Layout,
   X,
   Trash2,
@@ -144,11 +144,13 @@ export default function BlogsPage() {
       data.append("is_active", String(formData.is_active));
 
       if (file) {
-        data.append("featured_image", file);
+        data.append("image", file);
       }
 
       if (currentBlog) {
-        await updateBlog(currentBlog.id, data);
+        console.log("Frontend Blog Edit Request Payload:", Object.fromEntries(data.entries()));
+        const updateRes = await updateBlog(currentBlog.id, data);
+        console.log("Frontend Blog Edit Response:", updateRes);
         toast.success("Blog updated successfully");
       } else {
         await createBlog(data);
