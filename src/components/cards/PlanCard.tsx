@@ -108,6 +108,13 @@ export default function PlanCard({
               <p className="text-[12px] font-bold text-slate-700 leading-tight mt-0.5">{plan.job_live_days || 0} Days</p>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <Crown size={12} className="text-purple-500" />
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase leading-none">Feature Days</p>
+              <p className="text-[12px] font-bold text-slate-700 leading-tight mt-0.5">{plan.feature_days || 0} Days</p>
+            </div>
+          </div>
         </div>
 
         {/* Feature Checklist */}

@@ -141,7 +141,17 @@ export default function PlanEditModal({
                         </SmartField>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <SmartField label="Feature Days" icon={Calendar}>
+                            <input
+                                type="number"
+                                value={form.feature_days || 0}
+                                onChange={(e) => handleChange("feature_days", Number(e.target.value))}
+                                className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
+                                placeholder="0"
+                            />
+                        </SmartField>
+
                         <SmartField label="Display Order" icon={ListOrdered}>
                             <input
                                 type="number"

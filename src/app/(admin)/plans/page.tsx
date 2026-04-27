@@ -94,7 +94,8 @@ export default function ManagePlansPage() {
       job_live_days: "",
       features: [],
       featured_jobs_limit: "",
-      company_featured: 0
+      company_featured: 0,
+      feature_days: ""
     };
     setEditingPlan(defaultNewPlan);
   };

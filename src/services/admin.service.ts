@@ -229,6 +229,12 @@ export const updateCVTemplate = (id: number, data: FormData | Partial<CVTemplate
 export const deleteCVTemplate = (id: number) =>
   dashboardServerFetch(`/admin/cms/cv-templates/${id}`, { method: "DELETE" });
 
+export const getResumeLimit = () =>
+  dashboardServerFetch<any>("/admin/cms/resume-limit", { params: { _t: Date.now() } });
+
+export const updateResumeLimit = (limit: number) =>
+  dashboardServerFetch<any>("/admin/cms/resume-limit", { method: "PUT", data: { limit } });
+
 // ─── Reviews ─────────────────────────────────────────────────────────────────
 
 export const getReviews = (params?: Record<string, unknown>) =>

@@ -27,11 +27,13 @@ import {
   Mail,
   Newspaper
 } from "lucide-react";
-import { 
+import {
   getCVTemplates, 
   createCVTemplate, 
   updateCVTemplate, 
-  deleteCVTemplate 
+  deleteCVTemplate,
+  getResumeLimit,
+  updateResumeLimit
 } from "@/services/admin.service";
 import CVTemplateCard from "@/components/cards/CVTemplateCard";
 import Pagination from "@/components/ui/Pagination";
@@ -66,6 +68,8 @@ export default function ManageCVTemplatesPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [saveLoading, setSaveLoading] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [resumeLimit, setResumeLimit] = useState<number>(0);
+  const [savingLimit, setSavingLimit] = useState(false);
 
   const COMMON_TAGS = [
     "name", "email", "phone", "location", "bio", "title", 
@@ -100,7 +104,63 @@ export default function ManageCVTemplatesPage() {
 
   useEffect(() => {
     fetchTemplates();
+    fetchResumeLimit();
   }, [currentPage, search, filter]);
+
+  const fetchResumeLimit = async () => {
+    try {
+      const res = await getResumeLimit();
+      if (!res) return;
+      
+      let fetchedLimit = 0;
+      if (res.Limit !== undefined && res.Limit !== null) {
+        fetchedLimit = Number(res.Limit);
+      } else if (res.limit !== undefined && res.limit !== null) {
+        fetchedLimit = Number(res.limit);
+      } else if (res.data?.Limit !== undefined && res.data?.Limit !== null) {
+        fetchedLimit = Number(res.data.Limit);
+      } else if (res.data?.limit !== undefined && res.data?.limit !== null) {
+        fetchedLimit = Number(res.data.limit);
+      } else if (typeof res.data === 'number' || typeof res.data === 'string') {
+        fetchedLimit = Number(res.data);
+      } else if (typeof res === 'number' || typeof res === 'string') {
+        fetchedLimit = Number(res);
+      }
+      
+      // Only set if we actually parsed a valid number
+      if (!isNaN(fetchedLimit)) {
+        setResumeLimit(fetchedLimit);
+      }
+    } catch (error) {
+      console.error("Failed to fetch resume limit:", error);
+    }
+  };
+
+  const handleSaveLimit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setSavingLimit(true);
+    try {
+      const res = await updateResumeLimit(resumeLimit);
+      if (res && res.status) {
+        toast.success("Monthly resume generation limit updated.");
+        if (res.Limit !== undefined && res.Limit !== null) {
+           setResumeLimit(Number(res.Limit));
+        } else if (res.limit !== undefined && res.limit !== null) {
+           setResumeLimit(Number(res.limit));
+        } else if (res.data?.Limit !== undefined && res.data?.Limit !== null) {
+           setResumeLimit(Number(res.data.Limit));
+        } else if (res.data?.limit !== undefined && res.data?.limit !== null) {
+           setResumeLimit(Number(res.data.limit));
+        }
+      } else {
+         toast.error(res.message || "Failed to update resume limit");
+      }
+    } catch (error) {
+      toast.error("Failed to update resume limit");
+    } finally {
+      setSavingLimit(false);
+    }
+  };
 
   const fetchTemplates = async () => {
     try {
@@ -335,7 +395,6 @@ export default function ManageCVTemplatesPage() {
                     {/* Variable Reference */}
                     <div className="space-y-4 pt-4 border-t border-slate-100">
                         <div className="flex items-center gap-2">
-                            <Sparkles size={16} className="text-amber-500" />
                             <h3 className="text-[12px] font-semibold text-slate-900 uppercase tracking-widest">Available Tags</h3>
                         </div>
                         <p className="text-[10px] font-medium text-slate-400 leading-relaxed mb-1">
@@ -538,39 +597,25 @@ export default function ManageCVTemplatesPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-             {/* Integrated Quick Stats */}
-             <div className="hidden xl:flex items-center gap-6 px-6 py-3 bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="flex flex-col">
-                   <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">Storage</span>
-                   <span className="text-[14px] font-bold text-slate-900">{(stats.total * 1.2).toFixed(1)}MB</span>
-                </div>
-                <div className="w-px h-8 bg-slate-200" />
-                <div className="flex flex-col">
-                   <span className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">Variants</span>
-                   <span className="text-[14px] font-bold text-slate-900">{stats.designs || 1} Types</span>
-                </div>
-             </div>
-
-             <div className="flex items-center gap-2">
-                <a 
-                    href="/resources"
-                    className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-[11px] transition-all border border-slate-200 uppercase tracking-tight"
+             {/* Resume Limit Form */}
+             <form suppressHydrationWarning onSubmit={handleSaveLimit} className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200 shadow-sm">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest pl-3 pr-1">Generation Limit:</span>
+                <input
+                    suppressHydrationWarning
+                    type="number"
+                    value={resumeLimit}
+                    onChange={(e) => setResumeLimit(Number(e.target.value))}
+                    className="w-16 px-2 py-1.5 bg-white border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 text-center focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/10 transition-all"
+                />
+                <button
+                    suppressHydrationWarning
+                    type="submit"
+                    disabled={savingLimit}
+                    className="flex items-center justify-center w-8 h-8 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all disabled:opacity-70 disabled:hover:bg-indigo-600"
                 >
-                    <LibraryBig size={16} /> Resources
-                </a>
-                <a 
-                    href="/email/templates"
-                    className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-[11px] transition-all border border-slate-200 uppercase tracking-tight"
-                >
-                    <Mail size={16} /> Emails
-                </a>
-                <a 
-                    href="/content/blogs"
-                    className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-[11px] transition-all border border-slate-200 uppercase tracking-tight"
-                >
-                    <Newspaper size={16} /> Blogs
-                </a>
-             </div>
+                    {savingLimit ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                </button>
+             </form>
 
              <button 
                 onClick={handleCreateNew}

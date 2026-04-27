@@ -116,6 +116,7 @@ export interface Plan {
   job_live_days?: number;
   featured_jobs_limit?: number;
   company_featured?: number | boolean;
+  feature_days?: number;
   original_price?: number | string;
   sale_price?: number | string;
   duration: string;

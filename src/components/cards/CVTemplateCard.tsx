@@ -100,7 +100,6 @@ export default function CVTemplateCard({
                   : "bg-emerald-50/50 text-emerald-600 border-emerald-100 hover:bg-emerald-100"
               )}
            >
-              <Sparkles size={12} />
               {template.is_active ? "Take Offline" : "Publish Live"}
            </button>
            <button 
