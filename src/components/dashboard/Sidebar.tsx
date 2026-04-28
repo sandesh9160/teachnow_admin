@@ -26,7 +26,6 @@ import {
   ShieldCheck,
   Clock,
   Mail,
-  FileSearch,
   Newspaper,
   Banknote
 } from "lucide-react";
@@ -74,6 +73,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
       { title: "Payments", href: "/payments", icon: Banknote },
       { title: "Master Data", href: "/master-data", icon: Database },
       { title: "Reviews", href: "/reviews", icon: Star },
+      { title: "Prompts", href: "/prompts", icon: FileText },
     ]
   },
   {

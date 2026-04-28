@@ -589,3 +589,13 @@ export interface CMSResumesResponse {
   resumes: PaginatedResponse<CMSResume>;
   generated_resumes: PaginatedResponse<CMSResume>;
 }
+
+export interface PromptItem {
+  id: number;
+  key: string;
+  title: string;
+  prompt: string;
+  is_active: number | boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
+}

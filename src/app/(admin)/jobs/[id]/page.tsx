@@ -32,8 +32,8 @@ import {
   Edit3,
   Coins
 } from "lucide-react";
-import { getJob, approveJob, rejectJob, featureJob, deleteJob, updateJobSEO, updateJob } from "@/services/admin.service";
-import { Job } from "@/types";
+import { getJob, approveJob, rejectJob, featureJob, deleteJob, updateJobSEO, updateJob, getJobApplications } from "@/services/admin.service";
+import { Job, Application } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 import { TipTapEditor } from "@/components/ui/TipTapEditor";
@@ -48,7 +48,29 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [processing, setProcessing] = useState(false);
 
   const [activeTab, setActiveTab] = useState("Overview");
-  const tabs = ["Overview", /* "Edit Content", */ "SEO Settings"];
+  const tabs = ["Overview", "Applicants", "SEO Settings"];
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [applicationsLoading, setApplicationsLoading] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === "Applicants" && applications.length === 0) {
+      fetchJobApps();
+    }
+  }, [activeTab, resolvedParams.id]);
+
+  const fetchJobApps = async () => {
+    try {
+      setApplicationsLoading(true);
+      const res = await getJobApplications(Number(resolvedParams.id));
+      // Handle either { data: [...] } structure or direct array
+      const apps = (res as any).data?.data || res.data || [];
+      setApplications(Array.isArray(apps) ? apps : []);
+    } catch (err) {
+      toast.error("Failed to load applicants");
+    } finally {
+      setApplicationsLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchJobDetails();
@@ -421,6 +443,100 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === "Applicants" && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-[16px] font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <Users size={18} className="text-primary" /> Applicants ({applications.length})
+                </h3>
+                <button
+                  onClick={fetchJobApps}
+                  className="px-3 py-1.5 bg-white border border-slate-200 text-slate-500 hover:text-primary hover:border-primary/30 rounded-lg text-[12px] font-medium transition-all flex items-center gap-2"
+                >
+                  <Clock size={14} /> Refresh
+                </button>
+              </div>
+
+              {applicationsLoading ? (
+                <div className="py-12 flex flex-col items-center justify-center gap-3 bg-slate-50/50 rounded-xl border border-slate-100">
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  <p className="text-[12px] font-medium text-slate-400">Loading applicants...</p>
+                </div>
+              ) : applications.length === 0 ? (
+                <div className="py-12 text-center bg-slate-50/50 rounded-xl border border-slate-100">
+                  <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-slate-300 mx-auto mb-3 shadow-sm border border-slate-100">
+                    <Users size={20} />
+                  </div>
+                  <p className="text-[14px] font-bold text-slate-700">No applicants yet</p>
+                  <p className="text-[12px] text-slate-500 mt-1">This job hasn't received any applications.</p>
+                </div>
+              ) : (
+                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                          <th className="px-5 py-4 whitespace-nowrap">Applicant</th>
+                          <th className="px-5 py-4 whitespace-nowrap">Email</th>
+                          <th className="px-5 py-4 whitespace-nowrap">Status</th>
+                          <th className="px-5 py-4 whitespace-nowrap">Contact Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {applications.map((app) => (
+                          <tr key={app.id} className="hover:bg-slate-50/50 transition-colors group">
+                            <td className="px-5 py-3 whitespace-nowrap">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center text-slate-400 font-bold text-[13px]">
+                                  {app.job_seeker?.profile_photo ? (
+                                    <img
+                                      src={resolveMediaUrl(app.job_seeker.profile_photo)}
+                                      alt={app.job_seeker?.user?.name || "Applicant"}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    (app.job_seeker?.user?.name || "U").charAt(0).toUpperCase()
+                                  )}
+                                </div>
+                                <span className="text-[13px] font-bold text-slate-900">
+                                  {app.job_seeker?.user?.name || "Unknown User"}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-5 py-3 whitespace-nowrap">
+                              <span className="text-[13px] font-medium text-slate-500">
+                                {app.job_seeker?.user?.email || "-"}
+                              </span>
+                            </td>
+                            <td className="px-5 py-3 whitespace-nowrap">
+                              <div className={clsx(
+                                "inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold border",
+                                app.status === 'applied' ? "bg-blue-50 text-blue-600 border-blue-100" :
+                                app.status === 'shortlisted' ? "bg-amber-50 text-amber-600 border-amber-100" :
+                                app.status === 'hired' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                                "bg-slate-50 text-slate-600 border-slate-200"
+                              )}>
+                                <span className="capitalize">{app.status}</span>
+                              </div>
+                            </td>
+                            <td className="px-5 py-3 whitespace-nowrap">
+                              <span className={clsx(
+                                "text-[13px] font-semibold",
+                                app.contact_status ? "text-slate-700 capitalize" : "text-slate-400"
+                              )}>
+                                {app.contact_status || "Pending"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

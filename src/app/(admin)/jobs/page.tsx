@@ -381,10 +381,6 @@ export default function JobsPage() {
                                                 </div>
                                                 <div className="min-w-0">
                                                     <p className="text-[13px] font-semibold text-slate-800 leading-tight group-hover:text-primary transition-colors truncate">{j.title}</p>
-                                                    <div className="flex items-center gap-1 mt-0.5 text-[10px] text-slate-400 font-medium">
-                                                        <Users size={9} />
-                                                        <span>{applicants} applicants</span>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </td>

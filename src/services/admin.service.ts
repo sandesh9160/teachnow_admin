@@ -109,6 +109,10 @@ export const rejectJob = (id: number) =>
 export const featureJob = (id: number) =>
   dashboardServerFetch(`/admin/jobs/${id}/feature`, { method: "PATCH" });
 
+export const getJobApplications = (jobId: number, params?: Record<string, unknown>) =>
+  dashboardServerFetch<PaginatedResponse<Application>>(`/admin/jobs/${jobId}/applications`, { params });
+
+
 // ─── Job Seekers ─────────────────────────────────────────────────────────────
 
 export const getJobSeekers = (params?: Record<string, unknown>) =>
@@ -667,3 +671,18 @@ export const getPayments = (params?: Record<string, unknown>) =>
 
 export const getPayment = (id: number) =>
   dashboardServerFetch<ApiResponse<PaymentDetails>>(`/admin/payments/${id}`);
+
+// ─── Prompts ─────────────────────────────────────────────────────────────────
+
+export const getPrompts = (params?: Record<string, unknown>) =>
+  dashboardServerFetch<any>("/admin/cms/prompts", { params: { ...params, _t: Date.now() } });
+
+export const getPrompt = (id: number) =>
+  dashboardServerFetch<ApiResponse<any>>(`/admin/cms/prompts/${id}`);
+
+export const updatePrompt = (id: number, data: any) =>
+  dashboardServerFetch<ApiResponse<any>>(`/admin/cms/prompts/${id}`, {
+    method: "POST",
+    data,
+    params: { _method: "PUT" },
+  });
