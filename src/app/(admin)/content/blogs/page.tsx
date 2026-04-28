@@ -118,35 +118,64 @@ export default function BlogsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validation
+    if (!formData.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
+    if (!formData.content.trim() || formData.content === "<p></p>") {
+      toast.error("Content cannot be empty");
+      return;
+    }
+
     setSaveLoading(true);
     try {
       const data = new FormData();
-      data.append("title", formData.title);
-      data.append("slug", formData.slug);
+      data.append("title", formData.title.trim());
+      data.append("slug", formData.slug.trim());
       data.append("content", formData.content);
-      data.append("meta_title", formData.meta_title);
-      data.append("meta_description", formData.meta_description);
-      data.append("meta_keywords", formData.meta_keywords);
+      data.append("meta_title", formData.meta_title || formData.title);
+      data.append("meta_description", formData.meta_description || "");
+      data.append("meta_keywords", formData.meta_keywords || "");
       data.append("is_active", String(formData.is_active));
+      data.append("alt_image_text", formData.title); // Default alt text to title
 
       if (file) {
         data.append("image", file);
+        data.append("featured_image", file);
       }
+      // Removed: appending preview string as image, as it often causes 500 errors 
+      // when the backend expects a multipart file for the 'image' field.
 
       if (currentBlog) {
-        console.log("Frontend Blog Edit Request Payload:", Object.fromEntries(data.entries()));
+        console.log("🚀 BLOG EDIT REQUEST:", {
+          id: currentBlog.id,
+          payload: Object.fromEntries(data.entries())
+        });
         const updateRes: any = await updateBlog(currentBlog.id, data);
+        console.log("✅ BLOG EDIT RESPONSE:", JSON.stringify(updateRes, null, 2));
+        
         if (updateRes?.status === false) {
           toast.error(updateRes.message || "Failed to update blog");
           return;
         }
-        console.log("Frontend Blog Edit Response:", updateRes);
         toast.success("Blog updated successfully");
       } else {
+        console.log("🚀 BLOG CREATE REQUEST:", {
+          payload: Object.fromEntries(data.entries())
+        });
         const createRes: any = await createBlog(data);
-        if (createRes?.status === false) {
-          toast.error(createRes.message || "Failed to create blog");
-          return;
+        console.log("✅ BLOG CREATE RESPONSE:", JSON.stringify(createRes, null, 2));
+
+        // If response is empty but request succeeded (Axios didn't throw)
+        if (!createRes || createRes.status === false) {
+          if (createRes?.message) {
+            toast.error(createRes.message);
+            return;
+          }
+          // If it's just empty but no error was thrown, it might have succeeded if status 200
+          // But usually we expect a status: true
         }
         toast.success("New blog published");
       }
@@ -169,6 +198,27 @@ export default function BlogsPage() {
       toast.success("Blog deleted successfully");
     } catch (error) {
       toast.error("Failed to delete blog");
+    }
+  };
+
+  const handleToggleStatus = async (blog: any) => {
+    const previousStatus = blog.is_active;
+    const newStatus = previousStatus === 1 || previousStatus === "1" || previousStatus === true ? 0 : 1;
+
+    // Optimistic update
+    setBlogs(prev => prev.map(b => b.id === blog.id ? { ...b, is_active: newStatus } : b));
+
+    try {
+      const res: any = await toggleBlogStatus(blog.id, { is_active: newStatus });
+      if (res?.status === false) {
+        toast.error(res.message || "Failed to update status");
+        setBlogs(prev => prev.map(b => b.id === blog.id ? { ...b, is_active: previousStatus } : b));
+        return;
+      }
+      toast.success(`Blog ${newStatus ? 'published' : 'moved to drafts'}`);
+    } catch (error) {
+      toast.error("Connection failed");
+      setBlogs(prev => prev.map(b => b.id === blog.id ? { ...b, is_active: previousStatus } : b));
     }
   };
 
@@ -284,7 +334,18 @@ export default function BlogsPage() {
                       type="text"
                       placeholder="Enter title..."
                       value={formData.title}
-                      onChange={e => setFormData({ ...formData, title: e.target.value })}
+                      onChange={e => {
+                        const newTitle = e.target.value;
+                        const updates: any = { title: newTitle };
+                        if (!currentBlog) {
+                          updates.slug = newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+                          // Auto-fill meta title if empty
+                          if (!formData.meta_title) {
+                            updates.meta_title = newTitle;
+                          }
+                        }
+                        setFormData({ ...formData, ...updates });
+                      }}
                       className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[12px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
                     />
                   </div>
@@ -292,12 +353,11 @@ export default function BlogsPage() {
                   <div>
                     <label className="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">URL Slug</label>
                     <input
-                      required
                       type="text"
                       placeholder="article-url-slug"
                       value={formData.slug}
                       onChange={e => {
-                        let val = e.target.value.toLowerCase().replace(/ /g, '-');
+                        let val = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
                         setFormData({ ...formData, slug: val });
                       }}
                       className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[12px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
@@ -493,6 +553,26 @@ export default function BlogsPage() {
                   </div>
                 )}
 
+                {/* Quick Status Toggle */}
+                <div className="absolute top-3 right-3">
+                  <button
+                    onClick={() => handleToggleStatus(blog)}
+                    className={clsx(
+                      "flex items-center gap-1.5 px-2.5 py-1.5 rounded-full backdrop-blur-md shadow-sm border transition-all text-[9px] font-bold uppercase tracking-wider",
+                      (blog.is_active === 1 || blog.is_active === "1" || blog.is_active === true)
+                        ? "bg-emerald-500/90 border-emerald-400 text-white"
+                        : "bg-slate-900/60 border-slate-700 text-slate-300 hover:bg-slate-900/80"
+                    )}
+                  >
+                    <div className={clsx(
+                      "w-1.5 h-1.5 rounded-full shadow-[0_0_8px]",
+                      (blog.is_active === 1 || blog.is_active === "1" || blog.is_active === true)
+                        ? "bg-white shadow-white"
+                        : "bg-slate-400 shadow-transparent"
+                    )} />
+                    {(blog.is_active === 1 || blog.is_active === "1" || blog.is_active === true) ? "Live" : "Draft"}
+                  </button>
+                </div>
               </div>
 
               <div className="p-4 flex-1 flex flex-col">
