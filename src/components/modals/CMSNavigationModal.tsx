@@ -23,7 +23,10 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
     display_order: 1,
     is_active: 1,
     show_in_nav: 1,
-    slug: ""
+    slug: "",
+    meta_title: "",
+    meta_description: "",
+    meta_keywords: ""
   });
 
   useEffect(() => {
@@ -36,7 +39,10 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
           display_order: item.display_order || 1,
           is_active: item.is_active !== undefined ? (item.is_active === 1 || item.is_active === true || item.is_active === "1" || item.is_active === "true" ? 1 : 0) : 1,
           show_in_nav: item.show_in_nav !== undefined ? (item.show_in_nav === 1 || item.show_in_nav === true || item.show_in_nav === "1" || item.show_in_nav === "true" ? 1 : 0) : 1,
-          slug: item.slug || ""
+          slug: item.slug || "",
+          meta_title: item.meta_title || "",
+          meta_description: item.meta_description || "",
+          meta_keywords: item.meta_keywords || ""
         });
       } else if (item?.parent_id) {
         setFormData({
@@ -46,7 +52,10 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
           display_order: 1,
           is_active: 1,
           show_in_nav: 1,
-          slug: ""
+          slug: "",
+          meta_title: "",
+          meta_description: "",
+          meta_keywords: ""
         });
       } else {
         setFormData({
@@ -56,7 +65,10 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
           display_order: 1,
           is_active: 1,
           show_in_nav: 1,
-          slug: ""
+          slug: "",
+          meta_title: "",
+          meta_description: "",
+          meta_keywords: ""
         });
       }
     }
@@ -75,7 +87,10 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
         display_order: parseInt(String(formData.display_order)),
         is_active: formData.is_active,
         show_in_nav: formData.show_in_nav,
-        slug: formData.slug
+        slug: formData.slug,
+        meta_title: formData.meta_title,
+        meta_description: formData.meta_description,
+        meta_keywords: formData.meta_keywords
       };
 
       if (item?.id) {
@@ -102,7 +117,7 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
         onClick={onClose}
       />
       
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
+      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
@@ -120,7 +135,7 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
           <div className="space-y-4">
             <div>
               <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
@@ -196,6 +211,52 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-mono text-slate-500 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-sm"
                 placeholder="faqs"
               />
+            </div>
+
+            <div className="pt-2 border-t border-slate-100 mt-4">
+              <h3 className="text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <Settings2 size={14} className="text-indigo-500" /> SEO Settings
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+                     Meta Title
+                  </label>
+                  <input 
+                    type="text"
+                    value={formData.meta_title}
+                    onChange={e => setFormData({ ...formData, meta_title: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-medium text-slate-900 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-sm"
+                    placeholder="SEO Title"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+                     Meta Description
+                  </label>
+                  <textarea 
+                    value={formData.meta_description}
+                    onChange={e => setFormData({ ...formData, meta_description: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-medium text-slate-900 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-sm min-h-[80px] resize-none"
+                    placeholder="Short description for SEO..."
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+                     Meta Keywords
+                  </label>
+                  <input 
+                    type="text"
+                    value={formData.meta_keywords}
+                    onChange={e => setFormData({ ...formData, meta_keywords: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-medium text-slate-900 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-sm"
+                    placeholder="keywords, comma, separated"
+                  />
+                </div>
+              </div>
             </div>
             
             <div className="flex gap-3 pt-2">

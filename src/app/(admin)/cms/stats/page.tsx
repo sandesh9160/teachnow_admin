@@ -87,7 +87,7 @@ export default function CMSStatsPage() {
           </div>
         </div>
 
-        <button 
+        <button
           onClick={handleSave}
           disabled={saving}
           className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white text-[12px] font-bold rounded-xl shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50"
@@ -98,7 +98,7 @@ export default function CMSStatsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Left Form Panel */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
@@ -111,11 +111,11 @@ export default function CMSStatsPage() {
                 <label className="text-[11px] font-bold text-slate-500 mb-1.5 flex items-center gap-1.5">
                   <Briefcase size={12} className="text-indigo-500" /> Total Jobs Displayed
                 </label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   min="0"
                   value={data.total_jobs}
-                  onChange={e => setData({...data, total_jobs: parseInt(e.target.value) || 0})}
+                  onChange={e => setData({ ...data, total_jobs: parseInt(e.target.value) || 0 })}
                   className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   placeholder="e.g. 12000"
                 />
@@ -125,11 +125,11 @@ export default function CMSStatsPage() {
                 <label className="text-[11px] font-bold text-slate-500 mb-1.5 flex items-center gap-1.5">
                   <Building2 size={12} className="text-rose-500" /> Registered Companies
                 </label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   min="0"
                   value={data.total_companies}
-                  onChange={e => setData({...data, total_companies: parseInt(e.target.value) || 0})}
+                  onChange={e => setData({ ...data, total_companies: parseInt(e.target.value) || 0 })}
                   className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   placeholder="e.g. 500"
                 />
@@ -139,11 +139,11 @@ export default function CMSStatsPage() {
                 <label className="text-[11px] font-bold text-slate-500 mb-1.5 flex items-center gap-1.5">
                   <Users size={12} className="text-amber-500" /> Active Candidates
                 </label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   min="0"
                   value={data.total_candidates}
-                  onChange={e => setData({...data, total_candidates: parseInt(e.target.value) || 0})}
+                  onChange={e => setData({ ...data, total_candidates: parseInt(e.target.value) || 0 })}
                   className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   placeholder="e.g. 90000"
                 />
@@ -151,13 +151,13 @@ export default function CMSStatsPage() {
 
               <div>
                 <label className="text-[11px] font-bold text-slate-500 mb-1.5 flex items-center gap-1.5">
-                  <UserCheck size={12} className="text-cyan-500" /> Elite Recruiters
+                  <UserCheck size={12} className="text-cyan-500" /> Total Cities
                 </label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   min="0"
                   value={data.total_recruiters}
-                  onChange={e => setData({...data, total_recruiters: parseInt(e.target.value) || 0})}
+                  onChange={e => setData({ ...data, total_recruiters: parseInt(e.target.value) || 0 })}
                   className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
                   placeholder="e.g. 300"
                 />

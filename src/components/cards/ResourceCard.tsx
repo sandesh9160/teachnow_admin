@@ -2,7 +2,7 @@
 
 import React from "react";
 import { clsx } from "clsx";
-import { Pencil, Trash2, Eye, Layout, FileText, Clock, User, BookOpen } from "lucide-react";
+import { Pencil, Trash2, Eye, Layout, FileText, Clock, User, BookOpen, Star } from "lucide-react";
 import type { TeachingResource } from "@/types";
 
 interface ResourceCardProps {
@@ -72,9 +72,19 @@ export default function ResourceCard({
                     <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 mt-2 bg-slate-100/30 rounded-md p-1.5">
                         <div className="flex items-center gap-1" title="Pages"><FileText size={12} className="text-indigo-400" /> {resource.total_pages} pg</div>
                         <div className="flex items-center gap-1" title="Read Time"><Clock size={12} className="text-amber-400" /> {resource.read_time}m</div>
-                        <div className="flex items-center gap-1" title="Answers Included?"><BookOpen size={12} className={resource.answer_include === "included" ? "text-emerald-500" : "text-rose-400"} /> {resource.answer_include === "included" ? "With Ans" : "No Ans"}</div>
+                        <div className="flex items-center gap-1" title="Answers Included?">
+                            <BookOpen size={12} className={(resource.answer_include === "included" || resource.answer_include === "Yes") ? "text-emerald-500" : "text-rose-400"} /> 
+                            {(resource.answer_include === "included" || resource.answer_include === "Yes") ? "With Ans" : "No Ans"}
+                        </div>
                     </div>
                 </div>
+
+                {/* Featured Badge */}
+                {resource.is_featured === 1 && (
+                    <div className="absolute top-2 right-2 bg-amber-400 text-white p-1 rounded-full shadow-sm z-10 border border-amber-500 animate-pulse">
+                        <Star size={10} className="fill-white" />
+                    </div>
+                )}
             </div>
 
             {/* ─── Always Visible Action Bar ─────────────────────────────────── */}
@@ -103,11 +113,11 @@ export default function ResourceCard({
                     className={clsx(
                         "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all border shadow-xs active:scale-95",
                         resource.is_visible
-                            ? "bg-amber-50 text-amber-600 border-amber-100/50"
+                            ? "bg-rose-50 text-rose-600 border-rose-100/50"
                             : "bg-emerald-50 text-emerald-600 border-emerald-100/50"
                     )}
                 >
-                    {resource.is_visible ? "Offline" : "Go Live"}
+                    {resource.is_visible ? "Hide" : "Show"}
                 </button>
             </div>
         </div>

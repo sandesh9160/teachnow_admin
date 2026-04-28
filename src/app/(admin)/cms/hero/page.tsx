@@ -13,9 +13,6 @@ export default function CMSHeroPage() {
   const [data, setData] = useState({
     title: "",
     subtitle: "",
-    button_text: "",
-    button_link: "",
-    trust_text: "",
     is_active: 1,
   });
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -34,9 +31,6 @@ export default function CMSHeroPage() {
         setData({
           title: hero.title || "",
           subtitle: hero.subtitle || "",
-          button_text: hero.button_text || "",
-          button_link: hero.button_link || "",
-          trust_text: hero.trust_text || "",
           is_active: hero.is_active !== undefined ? hero.is_active : 1,
         });
         if (hero.background_image) {
@@ -69,9 +63,6 @@ export default function CMSHeroPage() {
       const formData = new FormData();
       formData.append("title", data.title);
       formData.append("subtitle", data.subtitle);
-      formData.append("button_text", data.button_text || "");
-      formData.append("button_link", data.button_link || "");
-      formData.append("trust_text", data.trust_text || "");
       formData.append("is_active", "1");
       
       const file = fileInputRef.current?.files?.[0];
@@ -155,44 +146,9 @@ export default function CMSHeroPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[11px] font-bold text-slate-500 mb-1.5 block">Button Text</label>
-                  <input 
-                    type="text" 
-                    value={data.button_text}
-                    onChange={e => setData({...data, button_text: e.target.value})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                    placeholder="e.g. Browse Jobs"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-slate-500 mb-1.5 block">Button Link (URL)</label>
-                  <input 
-                    type="text" 
-                    value={data.button_link}
-                    onChange={e => setData({...data, button_link: e.target.value})}
-                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-mono text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-                    placeholder="e.g. /jobs"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-slate-500 mb-1.5 flex items-center gap-1.5">
-                  <ShieldCheck size={13} className="text-cyan-500" /> Trust Indicator Text
-                </label>
-                <input 
-                  type="text" 
-                  value={data.trust_text}
-                  onChange={e => setData({...data, trust_text: e.target.value})}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 transition-all"
-                  placeholder="e.g. 6000+ active institutes and 4000+ job seekers..."
-                />
               </div>
             </div>
           </div>
-        </div>
 
         {/* Right Settings Panel */}
         <div className="space-y-6">

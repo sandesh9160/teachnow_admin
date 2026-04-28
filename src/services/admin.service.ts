@@ -476,7 +476,7 @@ export const createResource = (data: FormData) =>
   dashboardServerFetch<ApiResponse<TeachingResource>>("/admin/cms/resources", { method: "POST", data });
 
 export const updateResource = (id: number, data: FormData) =>
-  dashboardServerFetch<ApiResponse<TeachingResource>>(`/admin/cms/resources/${id}`, {
+  dashboardServerFetch<ApiResponse<TeachingResource>>(`/admin/cms/resources/update/${id}`, {
     method: "POST",
     data,
     params: { _method: "PUT" },
@@ -626,23 +626,23 @@ export const togglePrivacyPolicyStatus = (id: number) =>
 // ─── Terms and Conditions ─────────────────────────────────────────────────────
 
 export const getTermsConditions = () =>
-  dashboardServerFetch<PrivacyPolicyResponse>("/admin/cms/terms-condition");
+  dashboardServerFetch<PrivacyPolicyResponse>("/admin/cms/terms-and-conditions");
 
 export const createTermsCondition = (data: Partial<PrivacyPolicyItem>) =>
-  dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>("/admin/cms/terms-condition", { method: "POST", data });
+  dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>("/admin/cms/terms-and-conditions", { method: "POST", data });
 
 export const updateTermsCondition = (id: number, data: Partial<PrivacyPolicyItem>) =>
-  dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>(`/admin/cms/terms-condition/${id}`, {
+  dashboardServerFetch<ApiResponse<PrivacyPolicyItem>>(`/admin/cms/terms-and-conditions/${id}`, {
     method: "POST",
     data,
     params: { _method: "PUT" }
   });
 
 export const deleteTermsCondition = (id: number) =>
-  dashboardServerFetch(`/admin/cms/terms-condition/${id}`, { method: "DELETE" });
+  dashboardServerFetch(`/admin/cms/terms-and-conditions/${id}`, { method: "DELETE" });
 
 export const toggleTermsConditionStatus = (id: number) =>
-  dashboardServerFetch(`/admin/cms/terms-condition/${id}/toggle`, { method: "PATCH" });
+  dashboardServerFetch(`/admin/cms/terms-and-conditions/${id}/toggle`, { method: "PATCH" });
 
 // ─── Cron Jobs & Mail Settings ──────────────────────────────────────────────────
 

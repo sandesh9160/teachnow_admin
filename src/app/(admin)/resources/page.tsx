@@ -23,7 +23,10 @@ import {
   Calendar,
   BookOpen,
   User as UserIcon,
-  Layers
+  Layers,
+  Star,
+  FileBadge,
+  CheckCircle,
 } from "lucide-react";
 import {
   getResources,
@@ -66,7 +69,7 @@ export default function ManageResourcesPage() {
     description: "",
     author_name: "",
     total_pages: "",
-    answer_include: "included",
+    answer_include: "not_included",
     read_time: "",
     meta_title: "",
     meta_description: "",
@@ -134,7 +137,7 @@ export default function ManageResourcesPage() {
       description: "",
       author_name: "",
       total_pages: "",
-      answer_include: "included",
+      answer_include: "not_included",
       read_time: "",
       meta_title: "",
       meta_description: "",
@@ -155,7 +158,7 @@ export default function ManageResourcesPage() {
       description: resource.description || "",
       author_name: resource.author_name || "",
       total_pages: resource.total_pages ? resource.total_pages.toString() : "",
-      answer_include: resource.answer_include || "included",
+      answer_include: resource.answer_include || "not_included",
       read_time: resource.read_time ? resource.read_time.toString() : "",
       meta_title: resource.meta_title || "",
       meta_description: resource.meta_description || "",
@@ -208,17 +211,23 @@ export default function ManageResourcesPage() {
       if (currentResource) {
         // Use POST with _method PUT for Laravel compatibility with file uploads
         data.append("_method", "PUT");
-        await updateResource(currentResource.id, data);
+        const res = await updateResource(currentResource.id, data);
+        if ((res as any).status === false) {
+          throw new Error((res as any).message || "Update failed");
+        }
         toast.success("Resource updated");
       } else {
-        await createResource(data);
+        const res = await createResource(data);
+        if ((res as any).status === false) {
+          throw new Error((res as any).message || "Creation failed");
+        }
         toast.success("New resource published");
       }
 
       setIsEditing(false);
       fetchResources();
-    } catch (error) {
-      toast.error("Failed to save resource");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to save resource");
     } finally {
       setSaveLoading(false);
     }
@@ -293,7 +302,7 @@ export default function ManageResourcesPage() {
                         <Layers size={16} className="text-indigo-600" />
                         <h3 className="text-[12px] font-semibold text-slate-900 uppercase tracking-widest">Resource Config</h3>
                     </div>
-
+ 
                     <div className="space-y-4">
                         <div>
                             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Resource Title</label>
@@ -302,11 +311,26 @@ export default function ManageResourcesPage() {
                                 type="text"
                                 placeholder="e.g. Physics Class 10 Notes"
                                 value={formData.title}
-                                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                onChange={e => {
+                                  const title = e.target.value;
+                                  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                                  setFormData({ ...formData, title, slug: currentResource ? formData.slug : slug });
+                                }}
                                 className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[14px] font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
-
+ 
+                        <div>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">URL Slug</label>
+                            <input
+                                type="text"
+                                placeholder="physics-class-10-notes"
+                                value={formData.slug}
+                                onChange={e => setFormData({ ...formData, slug: e.target.value })}
+                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                            />
+                        </div>
+ 
                         <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Total Pages</label>
@@ -329,12 +353,42 @@ export default function ManageResourcesPage() {
                                 />
                             </div>
                         </div>
-
+ 
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Answer Key</label>
+                                <select
+                                    value={formData.answer_include}
+                                    onChange={e => setFormData({ ...formData, answer_include: e.target.value })}
+                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all appearance-none"
+                                >
+                                    <option value="included">Included</option>
+                                    <option value="not_included">Not Included</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Featured</label>
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, is_featured: formData.is_featured ? 0 : 1 })}
+                                    className={clsx(
+                                        "w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border transition-all font-bold text-[11px] uppercase tracking-tight",
+                                        formData.is_featured
+                                            ? "bg-amber-50 border-amber-200 text-amber-600 shadow-sm"
+                                            : "border-slate-50 bg-slate-50 text-slate-400 hover:border-slate-200"
+                                    )}
+                                >
+                                    <Star size={14} className={formData.is_featured ? "fill-amber-500" : ""} />
+                                    {formData.is_featured ? "Featured" : "Regular"}
+                                </button>
+                            </div>
+                        </div>
+ 
                         <div>
                             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Visibility Status</label>
                             <div className="grid grid-cols-2 gap-3">
                                 {[
-                                    { val: 1, label: "Visible", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
+                                    { val: 1, label: "Visible", icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50" },
                                     { val: 0, label: "Hidden", icon: AlertCircle, color: "text-slate-400", bg: "bg-slate-50" }
                                 ].map((opt) => (
                                     <button
@@ -356,7 +410,7 @@ export default function ManageResourcesPage() {
                         </div>
                     </div>
                 </div>
-
+ 
                 {/* Author Info */}
                 <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-5">
                     <div className="flex items-center gap-2">
@@ -375,15 +429,15 @@ export default function ManageResourcesPage() {
                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
-
+ 
                         <div>
                             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Author Photo</label>
                             <div className="flex items-center gap-4">
-                                <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-200 flex-shrink-0 overflow-hidden shadow-sm">
+                                <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-200 flex-shrink-0 overflow-hidden shadow-sm">
                                     {previews.author ? (
                                         <img src={getImageUrl(previews.author)} alt="Author" className="w-full h-full object-cover" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                        <div className="w-full h-full flex items-center justify-center text-slate-300 bg-slate-50/50">
                                             <UserIcon size={24} />
                                         </div>
                                     )}
@@ -395,8 +449,11 @@ export default function ManageResourcesPage() {
                                         onChange={e => handleFileChange(e, 'author_photo')}
                                         className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                     />
-                                    <div className="w-full px-4 py-3 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl text-[10px] font-bold text-slate-500 text-center uppercase tracking-widest group-hover:border-indigo-400 group-hover:bg-indigo-50 transition-all">
-                                        {files.author_photo ? files.author_photo.name : "Change Photo"}
+                                    <div className="w-full px-4 py-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center gap-1 group-hover:border-indigo-400 group-hover:bg-indigo-50/30 transition-all">
+                                        <Upload size={14} className="text-slate-400 group-hover:text-indigo-500" />
+                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                            {files.author_photo ? "Photo Selected" : "Upload Photo"}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

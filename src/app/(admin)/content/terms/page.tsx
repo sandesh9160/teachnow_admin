@@ -45,6 +45,9 @@ export default function TermsAndConditionsPage() {
     try {
       setLoading(true);
       const res = await getTermsConditions();
+      if ((res as any).status === false) {
+        throw new Error((res as any).message || "Resource fetch failed");
+      }
       if (res && res.data) {
         setPolicies(res.data);
         if (res.data.length > 0) {
@@ -54,8 +57,8 @@ export default function TermsAndConditionsPage() {
             loadIntoEditor(item);
         }
       }
-    } catch (err) {
-      toast.error("Resource fetch failed");
+    } catch (err: any) {
+      toast.error(err?.message || "Resource fetch failed");
     } finally {
       setLoading(false);
     }
@@ -74,11 +77,14 @@ export default function TermsAndConditionsPage() {
     if (!activeId) return;
     try {
       setSaving(true);
-      await updateTermsCondition(activeId, editorData);
+      const res = await updateTermsCondition(activeId, editorData);
+      if ((res as any).status === false) {
+        throw new Error((res as any).message || "Save failed");
+      }
       toast.success("Terms section synchronized");
       fetchPolicies(activeId);
-    } catch (err) {
-      toast.error("Save failed");
+    } catch (err: any) {
+      toast.error(err?.message || "Save failed");
     } finally {
       setSaving(false);
     }
@@ -93,10 +99,13 @@ export default function TermsAndConditionsPage() {
         display_order: policies.length + 1,
         is_active: true
       });
+      if ((res as any).status === false) {
+        throw new Error((res as any).message || "Creation failed");
+      }
       toast.success("New node created");
       fetchPolicies(res.data.id);
-    } catch (err) {
-      toast.error("Creation failed");
+    } catch (err: any) {
+      toast.error(err?.message || "Creation failed");
     } finally {
       setSaving(false);
     }

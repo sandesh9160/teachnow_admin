@@ -7,16 +7,12 @@ import {
   Search, 
   RotateCcw, 
   Trash2, 
-  ExternalLink,
   ChevronRight,
   Pencil,
   Loader2,
   Columns,
   Link2,
-  Zap,
-  Globe,
-  Layout,
-  Clock
+  Globe
 } from "lucide-react";
 import Link from "next/link";
 import { 
@@ -80,10 +76,18 @@ export default function CMSFooterLinksPage() {
     }
   };
 
-  const filtered = items.filter(item => 
-    item.title?.toLowerCase().includes(search.toLowerCase()) ||
-    item.section?.title?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = items
+    .filter(item =>
+      item.title?.toLowerCase().includes(search.toLowerCase()) ||
+      item.section?.title?.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => {
+      const sectionA = (a.section?.title || "").toLowerCase();
+      const sectionB = (b.section?.title || "").toLowerCase();
+      if (sectionA < sectionB) return -1;
+      if (sectionA > sectionB) return 1;
+      return (a.display_order || 0) - (b.display_order || 0);
+    });
 
   const columns = [
     { 
@@ -102,34 +106,6 @@ export default function CMSFooterLinksPage() {
       key: "title", 
       title: "Link Target", 
       render: (v: unknown) => <span className="font-bold text-slate-700 text-[13px]">{typeof v === "string" && v ? v : "Untitled Link"}</span> 
-    },
-    { 
-      key: "url", 
-      title: "URL Path", 
-      render: (v: unknown) => (
-        <div className="flex items-center gap-2">
-            <code className="bg-slate-50 px-2 py-0.5 rounded-lg text-[11px] font-mono font-bold text-indigo-600 border border-slate-100 shadow-inner">
-                {typeof v === "string" && v ? v : "/"}
-            </code>
-            <ExternalLink size={12} className="text-slate-400" />
-        </div>
-      ) 
-    },
-    { 
-      key: "is_active", 
-      title: "VISIBILITY", 
-      render: (v: unknown, item: any) => (
-        <button 
-          onClick={() => handleToggle(item.id)}
-          className={clsx(
-            "px-3 py-1 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2",
-            Boolean(v) ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-slate-50 text-slate-400 border border-slate-100"
-          )}
-        >
-          <div className={clsx("w-1.5 h-1.5 rounded-full", Boolean(v) ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.3)]" : "bg-slate-300")} />
-          {Boolean(v) ? "Live" : "Draft"}
-        </button>
-      ) 
     },
     { 
         key: "actions", 
@@ -155,71 +131,72 @@ export default function CMSFooterLinksPage() {
   ];
 
   return (
-    <div className="space-y-8 pb-16 antialiased">
-      {/* ─── Header Section ────────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="flex items-start gap-4">
-          <Link href="/dashboard" className="mt-1 w-10 h-10 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-all shadow-sm hover:shadow-xl hover:-translate-x-1 active:scale-90">
+    <div className="space-y-5 pb-10 antialiased max-w-[1100px] mx-auto px-4 md:px-0">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pt-4">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/dashboard"
+            className="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm active:scale-90"
+          >
             <ArrowLeft size={18} />
           </Link>
           <div>
-            <div className="flex items-center gap-2 mb-2">
-               <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100/50">Content Management</span>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 uppercase tracking-tight">CMS Management</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight leading-none">Footer Links</h1>
-            <p className="text-[13px] text-slate-500 font-medium mt-2.5 flex items-center gap-2">
-               <Globe size={14} className="text-emerald-500" /> Manage standard global footer links and social profiles
-            </p>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-none">Footer Links</h1>
           </div>
         </div>
-        
-        <button 
-           onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
-           className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-[12px] font-bold shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all active:scale-95 group"
+
+        <button
+          onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
+          className="h-10 flex items-center gap-2 px-5 bg-indigo-600 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
         >
-          <Plus size={16} className="group-hover:rotate-90 transition-transform" />
-          Add Link
+          <Plus size={16} />
+          <span>Add New Link</span>
         </button>
       </div>
 
-      {/* ─── Control Bar ───────────────────────────────────────────────────── */}
-      <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="relative flex-1 w-full max-w-md">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
-          <input 
-            type="text" 
-            placeholder="Search column mappings or link targets..." 
-            value={search} 
-            onChange={(e) => setSearch(e.target.value)} 
-            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[13px] text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium placeholder:text-slate-300" 
+      {/* Control Bar */}
+      <div className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="relative flex-1 w-full max-w-sm">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search links or columns..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-100 rounded-lg text-[12px] text-slate-700 outline-none focus:ring-2 focus:ring-indigo-600/5 focus:border-indigo-400 transition-all font-semibold placeholder:text-slate-400"
           />
         </div>
         <div className="flex items-center gap-3 pr-2">
-            <button 
-                onClick={fetchFooterLinks}
-                disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 text-[12px] font-bold text-slate-400 hover:text-indigo-600 transition-all group"
-            >
-                <RotateCcw size={14} className={clsx("group-hover:-rotate-45 transition-transform", loading && "animate-spin")} />
-                Refresh
-            </button>
+          <button
+            onClick={fetchFooterLinks}
+            disabled={loading}
+            className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 hover:text-indigo-600 transition-all group"
+          >
+            <RotateCcw size={13} className={clsx("group-hover:-rotate-45 transition-transform", loading && "animate-spin")} />
+            Refresh
+          </button>
+          <div className="text-slate-400 text-[10px] font-bold uppercase">
+            Total: {filtered.length} Links
+          </div>
         </div>
       </div>
 
-      {/* ─── Data Landscape ────────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden transition-all hover:shadow-xl hover:shadow-slate-100/50">
-        <DataTable 
+      {/* Table */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <DataTable
           compact
-          columns={columns} 
-          data={filtered} 
+          columns={columns}
+          data={filtered}
           loading={loading}
-          emptyMessage="No static footer links configured."
+          emptyMessage="No footer links configured. Click 'Add New Link' to start."
         />
       </div>
 
-
-
-      <CMSFooterLinkModal 
+      <CMSFooterLinkModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={fetchFooterLinks}
