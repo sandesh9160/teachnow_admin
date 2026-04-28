@@ -49,6 +49,9 @@ export async function uploadAction<T = any>(
         console.log(`[uploadAction] Success /${cleanEndpoint} status: ${response.status}`);
         return response.data;
     } catch (error: any) {
+        console.error("[uploadAction Error Status]:", error?.response?.status);
+        console.error("[uploadAction Error Message]:", error?.message);
+        console.error("[uploadAction Error Data]:", JSON.stringify(error?.response?.data, null, 2));
         console.error("[uploadAction Error]:", error?.message || error, error?.response?.data || "");
         
         return {
