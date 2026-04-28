@@ -87,15 +87,16 @@ export default function ManagePlansPage() {
   const handleCreatePlan = () => {
     const defaultNewPlan: any = {
       name: "",
-      actual_price: "",
-      offer_price: "",
-      job_posts_limit: "",
-      validity_days: "",
-      job_live_days: "",
+      actual_price: 0,
+      offer_price: 0,
+      job_posts_limit: 0,
+      validity_days: 0,
+      job_live_days: 0,
       features: [],
-      featured_jobs_limit: "",
+      featured_jobs_limit: 0,
       company_featured: 0,
-      feature_days: ""
+      feature_days: 0,
+      display_order: 0
     };
     setEditingPlan(defaultNewPlan);
   };

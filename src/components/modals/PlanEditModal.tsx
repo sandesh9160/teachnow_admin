@@ -27,7 +27,20 @@ export default function PlanEditModal({
   const [form, setForm] = useState<Plan | null>(null);
 
   useEffect(() => {
-    if (plan) setForm({ ...plan });
+    if (plan) {
+      setForm({
+        ...plan,
+        actual_price: plan.actual_price ?? plan.price ?? 0,
+        offer_price: plan.offer_price ?? 0,
+        job_posts_limit: plan.job_posts_limit ?? 0,
+        validity_days: plan.validity_days ?? 0,
+        job_live_days: plan.job_live_days ?? 0,
+        featured_jobs_limit: plan.featured_jobs_limit ?? 0,
+        feature_days: plan.feature_days ?? 0,
+        display_order: plan.display_order ?? 0,
+        company_featured: plan.company_featured ?? 0,
+      });
+    }
   }, [plan]);
 
   if (!isOpen || !form) return null;
@@ -105,7 +118,7 @@ export default function PlanEditModal({
                         <SmartField label="Job Posts Limit" icon={Briefcase}>
                             <input
                                 type="number"
-                                value={form.job_posts_limit || 0}
+                                value={form.job_posts_limit ?? 0}
                                 onChange={(e) => handleChange("job_posts_limit", Number(e.target.value))}
                                 className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
                             />
@@ -114,7 +127,7 @@ export default function PlanEditModal({
                         <SmartField label="Featured Jobs" icon={Star}>
                             <input
                                 type="number"
-                                value={form.featured_jobs_limit || 0}
+                                value={form.featured_jobs_limit ?? 0}
                                 onChange={(e) => handleChange("featured_jobs_limit", Number(e.target.value))}
                                 className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
                             />
@@ -125,7 +138,7 @@ export default function PlanEditModal({
                         <SmartField label="Validity (Days)" icon={Calendar}>
                             <input
                                 type="number"
-                                value={form.validity_days || 0}
+                                value={form.validity_days ?? 0}
                                 onChange={(e) => handleChange("validity_days", Number(e.target.value))}
                                 className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
                             />
@@ -134,7 +147,7 @@ export default function PlanEditModal({
                         <SmartField label="Live Duration" icon={Zap}>
                             <input
                                 type="number"
-                                value={form.job_live_days || 0}
+                                value={form.job_live_days ?? 0}
                                 onChange={(e) => handleChange("job_live_days", Number(e.target.value))}
                                 className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
                             />
@@ -145,7 +158,7 @@ export default function PlanEditModal({
                         <SmartField label="Feature Days" icon={Calendar}>
                             <input
                                 type="number"
-                                value={form.feature_days || 0}
+                                value={form.feature_days ?? 0}
                                 onChange={(e) => handleChange("feature_days", Number(e.target.value))}
                                 className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
                                 placeholder="0"
@@ -155,7 +168,7 @@ export default function PlanEditModal({
                         <SmartField label="Display Order" icon={ListOrdered}>
                             <input
                                 type="number"
-                                value={form.display_order || 0}
+                                value={form.display_order ?? 0}
                                 onChange={(e) => handleChange("display_order", Number(e.target.value))}
                                 className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
                                 placeholder="0"
