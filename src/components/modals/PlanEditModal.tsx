@@ -80,8 +80,8 @@ export default function PlanEditModal({
                             <div className="relative">
                                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] font-bold text-slate-400">₹</span>
                                 <input
-                                    type="number"
-                                    value={form.actual_price || form.price || 0}
+                                    type="text"
+                                    value={form.actual_price ?? form.price ?? 0}
                                     onChange={(e) => handleChange("actual_price", e.target.value)}
                                     className="w-full bg-white border border-slate-200 rounded-lg pl-7 pr-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
                                 />
@@ -92,8 +92,8 @@ export default function PlanEditModal({
                             <div className="relative">
                                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] font-bold text-blue-500">₹</span>
                                 <input
-                                    type="number"
-                                    value={form.offer_price || 0}
+                                    type="text"
+                                    value={form.offer_price ?? 0}
                                     onChange={(e) => handleChange("offer_price", e.target.value)}
                                     className="w-full bg-white border border-slate-200 rounded-lg pl-7 pr-4 py-2 text-[14px] font-bold text-blue-600 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
                                 />

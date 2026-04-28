@@ -71,7 +71,7 @@ export default function PlanCard({
         <div className="mb-4">
           <div className="flex items-baseline gap-2">
             <span className="text-2xl font-extrabold text-slate-900">₹{Number(plan.offer_price ?? plan.price ?? 0).toLocaleString()}</span>
-            {plan.actual_price && Number(plan.actual_price) > Number(plan.offer_price) && (
+            {(plan.actual_price !== null && plan.actual_price !== undefined && plan.actual_price !== "") && Number(plan.actual_price) > Number(plan.offer_price) && (
               <span className="text-[14px] font-bold text-slate-300 line-through">₹{Number(plan.actual_price).toLocaleString()}</span>
             )}
             <span className="text-[12px] font-bold text-slate-400">/ {plan.duration || 'month'}</span>
