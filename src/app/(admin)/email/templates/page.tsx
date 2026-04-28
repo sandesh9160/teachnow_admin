@@ -58,23 +58,34 @@ export default function EmailTemplatesPage() {
         page: currentPage, 
         search, 
         active: showOnlyActive ? 1 : undefined 
-      });
+      }) as any;
       
-      const responseData = res.data;
-      
-      if (responseData && 'current_page' in responseData) {
-        // It's a paginated response
-        const paginated = responseData as PaginatedResponse<EmailTemplate>;
-        setTemplates(paginated.data || []);
-        setTotalPages(paginated.last_page || 1);
-        setTotalItems(paginated.total || 0);
+      let list = [];
+      let totalPgs = 1;
+      let totalItms = 0;
+
+      // Handle the different response formats
+      if (res && typeof res === 'object' && 'current_page' in res) {
+        // Flat paginated response (like the example provided by the user)
+        list = res.data || [];
+        totalPgs = res.last_page || 1;
+        totalItms = res.total || 0;
+      } else if (res?.data && typeof res.data === 'object' && 'current_page' in res.data) {
+        // Nested paginated response (ApiResponse<PaginatedResponse<T>>)
+        list = res.data.data || [];
+        totalPgs = res.data.last_page || 1;
+        totalItms = res.data.total || 0;
       } else {
-        // Fallback for non-paginated array response
-        const data = Array.isArray(responseData) ? responseData : [];
-        setTemplates(data);
-        setTotalPages(1);
-        setTotalItems(data.length);
+        // Simple array response or fallback
+        const data = res?.data || res;
+        list = Array.isArray(data) ? data : [];
+        totalPgs = 1;
+        totalItms = list.length;
       }
+
+      setTemplates(list);
+      setTotalPages(totalPgs);
+      setTotalItems(totalItms);
     } catch (error) {
       console.error("Failed to fetch email templates:", error);
       toast.error("Unable to load email templates");
