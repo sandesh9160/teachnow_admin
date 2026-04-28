@@ -176,7 +176,7 @@ export default function PlanEditModal({
                         </SmartField>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
                         <div className="p-4 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center">
@@ -198,31 +198,6 @@ export default function PlanEditModal({
                                 <div className={clsx(
                                     "absolute top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200",
                                     form.company_featured ? "translate-x-6" : "translate-x-1"
-                                )} />
-                            </button>
-                        </div>
-
-                        <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-amber-500 text-white flex items-center justify-center">
-                                    <Star size={16} />
-                                </div>
-                                <div>
-                                    <p className="text-[13px] font-bold text-slate-900">Highlighted</p>
-                                    <p className="text-[11px] text-amber-600 font-medium">Most popular tag</p>
-                                </div>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => handleChange("is_highlighted", !form.is_highlighted)}
-                                className={clsx(
-                                    "w-10 h-5 rounded-full relative transition-colors duration-200 outline-none",
-                                    form.is_highlighted ? "bg-amber-500" : "bg-slate-300"
-                                )}
-                            >
-                                <div className={clsx(
-                                    "absolute top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200",
-                                    form.is_highlighted ? "translate-x-6" : "translate-x-1"
                                 )} />
                             </button>
                         </div>

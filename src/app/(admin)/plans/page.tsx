@@ -59,19 +59,7 @@ export default function ManagePlansPage() {
     }
   };
 
-  const handleToggleHighlight = async (plan: Plan) => {
-    try {
-      const isHighlighted = !plan.is_highlighted;
-      await updatePlan(plan.id, { is_highlighted: isHighlighted });
-      setPlans(prev => prev.map(p => ({
-        ...p,
-        is_highlighted: p.id === plan.id ? isHighlighted : (isHighlighted ? false : p.is_highlighted)
-      })));
-      toast.success(isHighlighted ? "Plan highlighted" : "Highlight removed");
-    } catch (error) {
-      toast.error("Failed to update plan");
-    }
-  };
+
 
   const handleToggleStatus = async (plan: Plan) => {
     try {
@@ -155,7 +143,6 @@ export default function ManagePlansPage() {
               onEdit={() => setEditingPlan(plan)}
               onSave={handleSavePlan}
               onCancel={() => setEditingPlan(null)}
-              onToggleHighlight={handleToggleHighlight}
               onToggleStatus={handleToggleStatus}
             />
           ))}

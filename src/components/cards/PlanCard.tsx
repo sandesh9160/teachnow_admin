@@ -11,7 +11,6 @@ interface PlanCardProps {
   onEdit?: (plan: Plan) => void;
   onSave?: (plan: Plan) => void;
   onCancel?: () => void;
-  onToggleHighlight?: (plan: Plan) => void;
   onToggleStatus?: (plan: Plan) => void;
 }
 
@@ -28,29 +27,13 @@ const getPlanTheme = (slug: string) => {
 export default function PlanCard({
   plan,
   onEdit,
-  onToggleHighlight,
   onToggleStatus
 }: PlanCardProps) {
   const theme = getPlanTheme(plan.slug);
 
   return (
-    <div
-      className={clsx(
-        "relative rounded-xl border transition-all duration-300 bg-white overflow-hidden flex flex-col group shadow-sm hover:shadow-md",
-        plan.is_highlighted ? "border-blue-500 ring-1 ring-blue-500" : "border-slate-200"
-      )}
-    >
-      {plan.is_highlighted ? (
-        <div className="bg-[#2563EB] py-1 text-center">
-          <span className="text-[11px] font-bold text-white tracking-wide">
-            Most Popular
-          </span>
-        </div>
-      ) : (
-        <div className="py-4">
-
-        </div>
-      )}
+    <div className="relative rounded-xl border border-slate-200 transition-all duration-300 bg-white overflow-hidden flex flex-col group shadow-sm hover:shadow-md">
+        <div className="py-4"></div>
 
       <div className="p-5 flex flex-col flex-1">
         {/* Header Section */}
@@ -152,18 +135,6 @@ export default function PlanCard({
                 className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-all active:scale-95 border border-amber-100"
               >
                 <Pencil size={12} /> Edit
-              </button>
-              <button
-                onClick={() => onToggleHighlight?.(plan)}
-                className={clsx(
-                  "flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all active:scale-95 border",
-                  plan.is_highlighted
-                    ? "text-emerald-700 bg-emerald-50 border-emerald-100 shadow-sm"
-                    : "text-slate-400 border-slate-100 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-100"
-                )}
-              >
-                <Star size={12} className={plan.is_highlighted ? "fill-emerald-500 text-emerald-500" : ""} />
-                {plan.is_highlighted ? "Featured" : "Feature"}
               </button>
             </div>
 
