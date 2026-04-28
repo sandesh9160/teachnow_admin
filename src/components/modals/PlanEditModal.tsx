@@ -39,6 +39,7 @@ export default function PlanEditModal({
         feature_days: plan.feature_days ?? 0,
         display_order: plan.display_order ?? 0,
         company_featured: plan.company_featured ?? 0,
+        is_active: plan.is_active ?? true,
       });
     }
   }, [plan]);
@@ -177,27 +178,27 @@ export default function PlanEditModal({
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-between">
+                        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+                                <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center">
                                     <ShieldCheck size={16} />
                                 </div>
                                 <div>
-                                    <p className="text-[13px] font-bold text-slate-900">Featured</p>
-                                    <p className="text-[11px] text-blue-600 font-medium">Institution list</p>
+                                    <p className="text-[13px] font-bold text-slate-900">Active Status</p>
+                                    <p className="text-[11px] text-emerald-600 font-medium">Plan visibility</p>
                                 </div>
                             </div>
                             <button
                                 type="button"
-                                onClick={() => handleChange("company_featured", form.company_featured ? 0 : 1)}
+                                onClick={() => handleChange("is_active", !form.is_active)}
                                 className={clsx(
                                     "w-10 h-5 rounded-full relative transition-colors duration-200 outline-none",
-                                    form.company_featured ? "bg-blue-600" : "bg-slate-300"
+                                    form.is_active ? "bg-emerald-600" : "bg-slate-300"
                                 )}
                             >
                                 <div className={clsx(
                                     "absolute top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200",
-                                    form.company_featured ? "translate-x-6" : "translate-x-1"
+                                    form.is_active ? "translate-x-6" : "translate-x-1"
                                 )} />
                             </button>
                         </div>
