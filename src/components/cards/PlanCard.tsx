@@ -32,8 +32,21 @@ export default function PlanCard({
   const theme = getPlanTheme(plan.slug);
 
   return (
-    <div className="relative rounded-xl border border-slate-200 transition-all duration-300 bg-white overflow-hidden flex flex-col group shadow-sm hover:shadow-md">
+    <div
+      className={clsx(
+        "relative rounded-xl border transition-all duration-300 bg-white overflow-hidden flex flex-col group shadow-sm hover:shadow-md",
+        plan.is_highlighted ? "border-blue-500 ring-1 ring-blue-500" : "border-slate-200"
+      )}
+    >
+      {plan.is_highlighted ? (
+        <div className="bg-[#2563EB] py-1 text-center">
+          <span className="text-[11px] font-bold text-white tracking-wide">
+            Most Popular
+          </span>
+        </div>
+      ) : (
         <div className="py-4"></div>
+      )}
 
       <div className="p-5 flex flex-col flex-1">
         {/* Header Section */}
