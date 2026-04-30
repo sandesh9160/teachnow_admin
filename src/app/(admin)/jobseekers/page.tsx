@@ -148,64 +148,63 @@ export default function JobSeekersPage() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   return (
-    <div className="space-y-6 pb-20 antialiased animate-fade-in-up">
-      {/* Header Evolution */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-col gap-0.5">
-          <h1 className="text-xl font-bold text-slate-900">Jobseeker Management</h1>
-          <p className="text-[11px] text-slate-500 font-semibold leading-none mt-1">
-            Manage candidate accounts <span className="mx-1">·</span> Total {pagination?.total || 0}
-          </p>
+    <div className="space-y-5 pb-20 antialiased animate-fade-in-up">
+      {/* Page Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Jobseeker Management</h1>
+          <p className="page-subtitle">Manage candidate accounts and profiles</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button onClick={() => fetchJobSeekers(pagination?.currentPage)}
-            className="p-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:text-primary transition-all active:scale-95 shadow-sm">
-            <RotateCcw size={16} className={clsx(loading && "animate-spin")} />
+            className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary transition-all active:scale-95 shadow-sm">
+            <RotateCcw size={15} className={clsx(loading && "animate-spin")} />
           </button>
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {[
-          { label: "Total Jobseekers", value: totalJobSeekers, icon: UserCircle, color: "text-blue-600", bg: "bg-blue-50" },
-          { label: "Active Accounts", value: activeTotal, icon: UserCheck, color: "text-emerald-600", bg: "bg-emerald-50" },
+          { label: "Total Jobseekers", value: totalJobSeekers, icon: UserCircle, color: "text-blue-500", bg: "bg-blue-50" },
+          { label: "Active Accounts", value: activeTotal, icon: UserCheck, color: "text-emerald-500", bg: "bg-emerald-50" },
         ].map((stat, i) => (
-          <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between group hover:border-slate-300 transition-all">
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">{stat.label}</p>
-              <p className="text-xl font-bold text-slate-900 tracking-tight">{stat.value}</p>
+          <div key={i} className="stat-card">
+            <div>
+              <p className="stat-card-label">{stat.label}</p>
+              <p className="stat-card-value">{stat.value}</p>
             </div>
-            <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-sm border", stat.bg, stat.color)}>
-              <stat.icon size={18} />
+            <div className={clsx("stat-card-icon", stat.bg, stat.color)}>
+              <stat.icon size={17} />
             </div>
           </div>
         ))}
       </div>
 
-      {/* Search Bar */}
-      <div className="relative group">
-        <SearchIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
-        <input
-          type="text"
-          placeholder="Search jobseekers by name, role or location..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-11 pr-6 py-2 bg-white border border-slate-200 rounded-xl text-[12px] font-medium text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all"
-        />
-      </div>
-
-      {/* Talent Registry Table */}
-      <div className="bg-white rounded-xl border border-slate-200/60 shadow-xl shadow-slate-200/30 overflow-hidden relative z-10">
+      {/* Jobseekers Table */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="text-[13px] font-bold text-slate-900 tracking-tight">All Candidates</h3>
+          <div className="relative group">
+            <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <input
+              type="text"
+              placeholder="Search by name, role or location..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-3 focus:ring-primary/5 focus:border-primary/20 transition-all"
+            />
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
-              <tr className="border-b border-slate-100 bg-white">
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-500  tracking-wider">Jobseeker</th>
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-500  tracking-wider">Location & Contact</th>
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-500  tracking-wider text-center">Experience</th>
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-500  tracking-wider text-right">Joined On</th>
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-500  tracking-wider text-center">Actions</th>
+              <tr className="border-b border-slate-100 bg-slate-50">
+                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Jobseeker</th>
+                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Location & Contact</th>
+                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Experience</th>
+                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right">Joined On</th>
+                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

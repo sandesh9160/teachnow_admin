@@ -89,10 +89,18 @@ export default function CMSCTAModal({ isOpen, onClose, onSuccess, item }: CMSCTA
       }
 
       if (item?.id) {
-        await updateCMSCTA(item.id, payload);
+        const res = await updateCMSCTA(item.id, payload);
+        if (res?.status === false) {
+          toast.error(res.message || "Failed to update CTA banner");
+          return;
+        }
         toast.success("CTA banner updated");
       } else {
-        await createCMSCTA(payload);
+        const res = await createCMSCTA(payload);
+        if (res?.status === false) {
+          toast.error(res.message || "Failed to create CTA banner");
+          return;
+        }
         toast.success("CTA banner created");
       }
       onSuccess();

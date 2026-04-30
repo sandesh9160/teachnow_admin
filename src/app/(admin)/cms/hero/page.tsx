@@ -89,27 +89,25 @@ export default function CMSHeroPage() {
   }
 
   return (
-    <div className="space-y-6 pb-16 antialiased max-w-5xl mx-auto">
-      {/* Header bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard" className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-all active:scale-95">
-            <ArrowLeft size={16} />
+    <div className="space-y-5 pb-16 antialiased max-w-5xl mx-auto">
+      {/* Page Header */}
+      <div className="page-header">
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard" className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-primary transition-all active:scale-95 shadow-sm">
+            <ArrowLeft size={15} />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <Sparkles size={18} className="text-indigo-500" /> Hero Banner
-            </h1>
-            <p className="text-[12px] text-slate-500 font-medium">Manage the main landing section of your homepage.</p>
+            <h1 className="page-title">Hero Banner</h1>
+            <p className="page-subtitle">Manage the main landing section of your homepage</p>
           </div>
         </div>
 
         <button 
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white text-[12px] font-bold rounded-xl shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-[12.5px] font-semibold rounded-lg shadow-sm shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50"
         >
-          {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
           Save Changes
         </button>
       </div>

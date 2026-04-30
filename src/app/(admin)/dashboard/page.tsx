@@ -70,34 +70,36 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-4 pb-10 antialiased animate-fade-in-up">
-      {/* Header with high density */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Page Header */}
+      <div className="page-header">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 tracking-tight">System Overview</h1>
-          <p className="text-[11px] text-slate-500 font-semibold leading-none mt-1">Platform metrics and activity</p>
+          <h1 className="page-title">System Overview</h1>
+          <p className="page-subtitle">Platform metrics and recent activity</p>
         </div>
         <div className="flex items-center gap-2">
             <button suppressHydrationWarning onClick={() => fetchStats()} 
               className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary transition-all active:scale-95 shadow-sm">
-              <RotateCcw size={16} className={clsx(loading && "animate-spin")} />
+              <RotateCcw size={15} className={clsx(loading && "animate-spin")} />
             </button>
         </div>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <StatWidget label="Total Jobs" value={stats?.total_jobs || 0} icon={<Briefcase />} color="emerald" />
         <StatWidget label="Job Seekers" value={stats?.total_job_seekers || 0} icon={<Users />} color="blue" />
         <StatWidget label="Recruiters" value={stats?.total_recruiters || 0} icon={<UserCheck />} color="cyan" />
         <StatWidget label="Institutes" value={stats?.total_employers || 0} icon={<Building2 />} color="indigo" />
       </div>
 
-      {/* Main Sections moved up for maximum density */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mt-2">
+      {/* Activity Tables */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         {/* Recent Applications */}
-        <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-card">
-            <div className="px-4 py-3 border-b border-slate-50 flex items-center justify-between bg-white">
-                <h3 className="text-base font-semibold text-slate-900 tracking-tight">Recent Applications</h3>
-                <Link href="/jobseekers" className="text-sm font-semibold text-primary hover:underline flex items-center gap-1 transition-all group">
-                    View All <ArrowUpRight size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+        <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="text-[13px] font-bold text-slate-900 tracking-tight">Recent Applications</h3>
+                <Link href="/jobseekers" className="text-[12px] font-semibold text-primary hover:text-primary/80 flex items-center gap-1 transition-all group">
+                    View All <ArrowUpRight size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </Link>
             </div>
             <div className="divide-y divide-slate-50">
@@ -110,46 +112,46 @@ export default function DashboardPage() {
                     const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Apr 18, 2026";
                     
                     return (
-                        <div key={i} className="px-4 py-3 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer group" onClick={() => router.push(`/jobseekers/${r.job_seeker_id}`)}>
+                        <div key={i} className="px-4 py-2.5 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => router.push(`/jobseekers/${r.job_seeker_id}`)}>
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-400 border border-slate-100 overflow-hidden shrink-0">
+                                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-400 overflow-hidden shrink-0">
                                     {photo ? (
                                         <img src={resolveMediaUrl(photo)} alt="" className="w-full h-full object-cover" />
                                     ) : (
                                         name.charAt(0)
                                     )}
                                 </div>
-                                <div className="space-y-1">
-                                    <h5 className="text-[15px] font-semibold text-slate-900 leading-none">{position}</h5>
-                                    <p className="text-[13px] text-slate-900 font-medium">{employer}</p>
+                                <div>
+                                    <h5 className="text-[12.5px] font-semibold text-slate-900 leading-tight">{position}</h5>
+                                    <p className="text-[11px] text-slate-500 font-medium">{employer}</p>
                                 </div>
                             </div>
-                            <div className="flex flex-col items-end gap-2">
+                            <div className="flex flex-col items-end gap-1">
                                 <Badge 
                                     variant={status === "shortlisted" ? "success" : status === "applied" ? "indigo" : "default"} 
-                                    className="text-[11px] h-6 px-4 rounded-full font-medium lowercase border-none shadow-none"
+                                    className="text-[10px] px-2 rounded-full font-semibold lowercase"
                                 >
                                     {status}
                                 </Badge>
-                                <span className="text-[12px] font-medium text-slate-400 tracking-tight">{date}</span>
+                                <span className="text-[10.5px] font-medium text-slate-400">{date}</span>
                             </div>
                         </div>
                     );
                 }) : (
                     <div className="px-5 py-12 flex flex-col items-center justify-center opacity-40">
-                        <Users size={32} className="text-slate-300 mb-2" />
+                        <Users size={28} className="text-slate-300 mb-2" />
                         <span className="text-[11px] font-medium text-slate-400">No applications found</span>
                     </div>
                 )}
             </div>
         </div>
 
-        {/* Recent Jobs Registry */}
+        {/* Recent Jobs */}
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
-            <div className="px-4 py-3 border-b border-slate-50 flex items-center justify-between bg-white">
-                <h3 className="text-base font-semibold text-slate-900 tracking-tight">Recent Jobs</h3>
-                <Link href="/jobs" className="text-sm font-semibold text-primary hover:underline flex items-center gap-1 transition-all group">
-                    View All <ArrowUpRight size={16} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="text-[13px] font-bold text-slate-900 tracking-tight">Recent Jobs</h3>
+                <Link href="/jobs" className="text-[12px] font-semibold text-primary hover:text-primary/80 flex items-center gap-1 transition-all group">
+                    View All <ArrowUpRight size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </Link>
             </div>
             <div className="divide-y divide-slate-50">
@@ -161,34 +163,34 @@ export default function DashboardPage() {
                     const date = j.created_at ? new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Just now";
                     
                     return (
-                        <div key={i} className="px-4 py-3 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer group" onClick={() => router.push(`/jobs/edit/${j.id}`)}>
+                        <div key={i} className="px-4 py-2.5 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => router.push(`/jobs/edit/${j.id}`)}>
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-400 border border-slate-100 overflow-hidden shrink-0">
+                                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-400 overflow-hidden shrink-0">
                                     {logo ? (
                                         <img src={resolveMediaUrl(logo)} alt="" className="w-full h-full object-cover" />
                                     ) : (
                                         title.charAt(0)
                                     )}
                                 </div>
-                                <div className="space-y-1">
-                                    <h5 className="text-[15px] font-semibold text-slate-900 leading-none">{title}</h5>
-                                    <p className="text-[13px] text-slate-900 font-medium">{employer}</p>
+                                <div>
+                                    <h5 className="text-[12.5px] font-semibold text-slate-900 leading-tight">{title}</h5>
+                                    <p className="text-[11px] text-slate-500 font-medium">{employer}</p>
                                 </div>
                             </div>
-                            <div className="flex flex-col items-end gap-2">
+                            <div className="flex flex-col items-end gap-1">
                                 <Badge 
                                     variant={status === "approved" ? "success" : status === "rejected" ? "danger" : "warning"} 
-                                    className="text-[11px] h-6 px-4 rounded-full font-medium lowercase border-none shadow-none"
+                                    className="text-[10px] px-2 rounded-full font-semibold lowercase"
                                 >
                                     {status}
                                 </Badge>
-                                <span className="text-[12px] font-medium text-slate-400 tracking-tight">{date}</span>
+                                <span className="text-[10.5px] font-medium text-slate-400">{date}</span>
                             </div>
                         </div>
                     );
                 }) : (
                     <div className="px-5 py-12 flex flex-col items-center justify-center opacity-40">
-                        <Briefcase size={32} className="text-slate-300 mb-2" />
+                        <Briefcase size={28} className="text-slate-300 mb-2" />
                         <span className="text-[11px] font-medium text-slate-400">No job posts found</span>
                     </div>
                 )}
@@ -201,23 +203,22 @@ export default function DashboardPage() {
 
 function StatWidget({ label, value, icon, color }: any) {
   const themes: any = {
-    blue: { bg: "bg-blue-50/50", accent: "text-blue-500", iconBg: "bg-blue-50" },
-    emerald: { bg: "bg-emerald-50/50", accent: "text-emerald-500", iconBg: "bg-emerald-50" },
-    cyan: { bg: "bg-cyan-50/50", accent: "text-cyan-500", iconBg: "bg-cyan-50" },
-    indigo: { bg: "bg-indigo-50/50", accent: "text-indigo-500", iconBg: "bg-indigo-50" },
-    amber: { bg: "bg-amber-50/50", accent: "text-amber-500", iconBg: "bg-amber-50" },
+    blue: { iconBg: "bg-blue-50", iconColor: "text-blue-500" },
+    emerald: { iconBg: "bg-emerald-50", iconColor: "text-emerald-500" },
+    cyan: { iconBg: "bg-cyan-50", iconColor: "text-cyan-500" },
+    indigo: { iconBg: "bg-indigo-50", iconColor: "text-indigo-500" },
+    amber: { iconBg: "bg-amber-50", iconColor: "text-amber-500" },
   };
   const theme = themes[color] || themes.blue;
 
   return (
-    <div className="px-4 py-5 rounded-lg bg-white border border-slate-100 transition-all duration-300 shadow-sm group hover:shadow-md relative overflow-hidden flex flex-col items-center justify-center gap-3">
-      <div className={clsx("w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:rotate-12 group-hover:scale-110", theme.iconBg, theme.accent)}>
-        {React.cloneElement(icon as React.ReactElement<any>, { size: 18, strokeWidth: 2 })}
+    <div className="stat-card">
+      <div>
+        <p className="stat-card-label">{label}</p>
+        <h4 className="stat-card-value">{value}</h4>
       </div>
-      
-      <div className="text-center space-y-0.5">
-        <h4 className="text-xl font-bold text-slate-900 tracking-tight leading-none">{value}</h4>
-        <p className="text-[11px] font-semibold text-slate-500 tracking-tight">{label}</p>
+      <div className={clsx("stat-card-icon", theme.iconBg, theme.iconColor)}>
+        {React.cloneElement(icon as React.ReactElement<any>, { size: 18, strokeWidth: 2 })}
       </div>
     </div>
   );

@@ -90,10 +90,18 @@ export default function CMSTestimonialModal({ isOpen, onClose, onSuccess, item }
       }
 
       if (item?.id) {
-        await updateTestimonial(item.id, data);
+        const res = await updateTestimonial(item.id, data);
+        if (res?.status === false) {
+          toast.error(res.message || "Failed to update testimonial");
+          return;
+        }
         toast.success("Testimonial updated successfully");
       } else {
-        await createTestimonial(data);
+        const res = await createTestimonial(data);
+        if (res?.status === false) {
+          toast.error(res.message || "Failed to create testimonial");
+          return;
+        }
         toast.success("Testimonial created successfully");
       }
       onSuccess();

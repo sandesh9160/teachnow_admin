@@ -183,55 +183,42 @@ export default function PaymentsPage() {
   ];
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-6 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* ─── Compact Header ────────────────────────────────────────── */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-xl shadow-slate-900/5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-50/50 -mt-32 -mr-32 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xl shadow-emerald-600/20 shrink-0">
-              <Banknote size={24} strokeWidth={2.5} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-0.5">
-                 <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">Payment records</span>
-                 <span className="w-1 h-1 rounded-full bg-slate-300" />
-                 <span className="text-[9px] font-bold text-indigo-900">{totalItems} records found</span>
-              </div>
-              <h1 className="text-xl font-bold text-slate-900 tracking-tight leading-none">Employer Payments</h1>
-            </div>
-          </div>
-
+    <div className="max-w-[1600px] mx-auto space-y-5 pb-20 antialiased animate-fade-in-up">
+      {/* Page Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Employer Payments</h1>
+          <p className="page-subtitle">Track and review all subscription payment transactions</p>
         </div>
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-100">
+          <Banknote size={13} /> {totalItems} records
+        </span>
       </div>
 
-
-
-      {/* ─── Table Controls ─────────────────────────────────── */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      {/* Table Controls */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
         <form onSubmit={handleSearch} className="relative flex-1 group max-w-sm">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
           <input 
             type="text" 
             placeholder="Search transactions..." 
             value={search}
             onChange={e => setSearch(e.target.value)}
             suppressHydrationWarning
-            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-[12.5px] font-medium text-slate-900 placeholder:text-slate-300 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-500/5 outline-none transition-all shadow-sm"
+            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-[12.5px] font-medium text-slate-900 placeholder:text-slate-400 focus:border-primary/30 focus:ring-4 focus:ring-primary/5 outline-none transition-all shadow-sm"
           />
         </form>
 
-        <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
            {(["all", "success", "pending", "failed"] as const).map((opt) => (
               <button
                 key={opt}
                 onClick={() => setStatusFilter(opt)}
                 suppressHydrationWarning
                 className={clsx(
-                  "px-4 py-1.5 text-[10px] font-bold rounded-lg transition-all capitalize",
+                  "px-4 py-1.5 text-[11px] font-semibold rounded-lg transition-all capitalize",
                   statusFilter === opt 
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/10" 
+                    ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20" 
                     : "text-slate-500 hover:bg-slate-50"
                 )}
               >

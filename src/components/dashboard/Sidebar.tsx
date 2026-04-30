@@ -213,20 +213,36 @@ export default function Sidebar({
 
       <aside
         className={clsx(
-          "fixed top-0 left-0 h-full z-50 flex flex-col transition-all duration-300 ease-in-out shadow-sm",
-          "bg-white border-r border-surface-200",
+          "fixed top-0 left-0 h-full z-50 flex flex-col transition-all duration-300 ease-in-out",
+          "bg-white border-r border-slate-100",
           collapsed ? "w-[78px]" : "w-[240px]",
           "lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
+        {/* Brand Logo */}
+        <div className={clsx(
+          "h-14 flex items-center border-b border-slate-100 shrink-0",
+          collapsed ? "justify-center px-0" : "px-4 gap-2.5"
+        )}>
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 shadow-md shadow-blue-600/20">
+            <GraduationCap size={16} className="text-white" strokeWidth={2.5} />
+          </div>
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="text-[14px] font-extrabold text-slate-900 tracking-tight leading-none">TeachNow</p>
+              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">Admin Portal</p>
+            </div>
+          )}
+        </div>
+
         {/* Mobile close button */}
-        <div className="lg:hidden p-4 flex items-center justify-end">
+        <div className="lg:hidden px-3 pt-2 flex items-center justify-end">
           <button
             onClick={onMobileClose}
-            className="p-2 rounded-xl text-surface-400 hover:text-danger hover:bg-danger/5 transition-all"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-danger hover:bg-danger/5 transition-all"
           >
-            <ChevronLeft size={20} className="rotate-180" />
+            <ChevronLeft size={18} className="rotate-180" />
           </button>
         </div>
 
@@ -253,8 +269,8 @@ export default function Sidebar({
             return (
             <div key={groupIndex} className="space-y-0.5 pb-2">
               {!collapsed && (
-                <div className="px-3 flex items-center gap-2 mb-1 pt-0.5">
-                    <p className="text-[10px] font-semibold text-slate-400 tracking-wider">
+                <div className="px-3 flex items-center mb-1 pt-2">
+                    <p className="text-[9.5px] font-bold text-slate-300 tracking-widest uppercase">
                         {group.label}
                     </p>
                 </div>
@@ -346,12 +362,12 @@ export default function Sidebar({
             suppressHydrationWarning
             className={clsx(
               "w-full flex items-center gap-3 rounded-xl px-3 py-2 transition-all duration-200 group active:scale-95",
-              "text-slate-500 hover:text-blue-600 hover:bg-blue-50/50 font-semibold text-[13px]",
+              "text-slate-400 hover:text-rose-500 hover:bg-rose-50/60 text-[12.5px] font-semibold",
               collapsed && "justify-center px-0"
             )}
           >
-            <LogOut size={18} className="text-slate-400 group-hover:text-blue-600 transition-colors" />
-            {!collapsed && <span className="tracking-tight">Logout</span>}
+            <LogOut size={16} className="text-slate-300 group-hover:text-rose-500 transition-colors shrink-0" />
+            {!collapsed && <span className="tracking-tight">Sign Out</span>}
           </button>
         </div>
       </aside>

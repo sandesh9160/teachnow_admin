@@ -101,24 +101,20 @@ export default function ManagePlansPage() {
   const activeCount = (plans || []).filter(p => p.is_active).length;
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4 pb-12 antialiased animate-fade-in-up">
-      {/* Modern Administrative Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-1">
-        <div className="space-y-0.5">
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">Manage Plans</h1>
-          <p className="text-[12px] text-slate-500 font-medium tracking-tight">Configure subscription plans for institutes</p>
+    <div className="max-w-6xl mx-auto space-y-5 pb-12 antialiased animate-fade-in-up">
+      {/* Page Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Manage Plans</h1>
+          <p className="page-subtitle">Configure subscription plans for institutes</p>
         </div>
-
-        <div className="flex items-center gap-5">
-
-          <button
-            onClick={handleCreatePlan}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-[12px] font-bold transition-all active:scale-95 group"
-          >
-            <Plus size={14} />
-            Create New Plan
-          </button>
-        </div>
+        <button
+          onClick={handleCreatePlan}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-[12.5px] font-semibold transition-all active:scale-95 shadow-sm shadow-blue-600/20"
+        >
+          <Plus size={14} />
+          Create New Plan
+        </button>
       </div>
 
       {/* Reference Metrics Grid */}

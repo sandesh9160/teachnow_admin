@@ -18,10 +18,11 @@ import {
   X,
   Trash2,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Star
 } from "lucide-react";
 import { toast } from "sonner";
-import { getBlogs, toggleBlogStatus, deleteBlog, updateBlog, createBlog } from "@/services/admin.service";
+import { getBlogs, toggleBlogStatus, toggleBlogFeatured, deleteBlog, updateBlog, createBlog } from "@/services/admin.service";
 import { clsx } from "clsx";
 import { TipTapEditor } from "@/components/ui/TipTapEditor";
 
@@ -47,7 +48,8 @@ export default function BlogsPage() {
     meta_title: "",
     meta_description: "",
     meta_keywords: "",
-    is_active: 1
+    is_active: 1,
+    is_featured: 0,
   });
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -83,7 +85,8 @@ export default function BlogsPage() {
       meta_title: blog.meta_title || "",
       meta_description: blog.meta_description || "",
       meta_keywords: blog.meta_keywords || "",
-      is_active: blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true ? 1 : 0
+      is_active: blog.is_active === "1" || blog.is_active === 1 || blog.is_active === true ? 1 : 0,
+      is_featured: blog.is_featured === "1" || blog.is_featured === 1 || blog.is_featured === true ? 1 : 0,
     });
     setPreview(blog.image || null);
     setFile(null);
@@ -99,7 +102,8 @@ export default function BlogsPage() {
       meta_title: "",
       meta_description: "",
       meta_keywords: "",
-      is_active: 1
+      is_active: 1,
+      is_featured: 0,
     });
     setFile(null);
     setPreview(null);
@@ -139,6 +143,7 @@ export default function BlogsPage() {
       data.append("meta_description", formData.meta_description || "");
       data.append("meta_keywords", formData.meta_keywords || "");
       data.append("is_active", String(formData.is_active));
+      data.append("is_featured", String(formData.is_featured));
       data.append("alt_image_text", formData.title); // Default alt text to title
 
       if (file) {
@@ -416,6 +421,53 @@ export default function BlogsPage() {
                       ))}
                     </div>
                   </div>
+
+                  {/* Featured Toggle */}
+                  <div>
+                    <label className="block text-[9px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Featured</label>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const previousVal = formData.is_featured;
+                        const newVal = previousVal === 1 ? 0 : 1;
+
+                        setFormData(prev => ({ ...prev, is_featured: newVal }));
+
+                        if (currentBlog?.id) {
+                          try {
+                            const res: any = await toggleBlogFeatured(currentBlog.id, { is_featured: newVal });
+                            if (res?.status === false) {
+                              toast.error(res.message || "Failed to update featured status");
+                              setFormData(prev => ({ ...prev, is_featured: previousVal }));
+                              return;
+                            }
+                            toast.success(newVal ? "Marked as featured" : "Removed from featured");
+                            setBlogs(prev => prev.map(b =>
+                              b.id === currentBlog.id ? { ...b, is_featured: newVal } : b
+                            ));
+                          } catch (e) {
+                            toast.error("Connection failed");
+                            setFormData(prev => ({ ...prev, is_featured: previousVal }));
+                          }
+                        }
+                      }}
+                      className={clsx(
+                        "w-full flex items-center justify-center gap-2 py-2 rounded-lg border transition-all font-semibold text-[11px] uppercase tracking-tight",
+                        formData.is_featured === 1
+                          ? "bg-amber-50 border-amber-300 text-amber-700"
+                          : "border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200"
+                      )}
+                    >
+                      <Star
+                        size={13}
+                        className={clsx(
+                          "transition-colors",
+                          formData.is_featured === 1 ? "fill-amber-500 text-amber-500" : "text-slate-300"
+                        )}
+                      />
+                      {formData.is_featured === 1 ? "Featured" : "Not Featured"}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -553,8 +605,8 @@ export default function BlogsPage() {
                   </div>
                 )}
 
-                {/* Quick Status Toggle */}
-                <div className="absolute top-3 right-3">
+                {/* Status + Featured badges */}
+                <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
                   <button
                     onClick={() => handleToggleStatus(blog)}
                     className={clsx(
@@ -572,6 +624,12 @@ export default function BlogsPage() {
                     )} />
                     {(blog.is_active === 1 || blog.is_active === "1" || blog.is_active === true) ? "Live" : "Draft"}
                   </button>
+                  {(blog.is_featured === 1 || blog.is_featured === "1" || blog.is_featured === true) && (
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-amber-500/90 border border-amber-400 text-white text-[9px] font-bold uppercase tracking-wider backdrop-blur-md shadow-sm">
+                      <Star size={9} className="fill-white" />
+                      Featured
+                    </div>
+                  )}
                 </div>
               </div>
 

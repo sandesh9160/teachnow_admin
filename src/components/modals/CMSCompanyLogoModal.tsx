@@ -106,6 +106,10 @@ export default function CMSCompanyLogoModal({ isOpen, onClose, onSuccess, item }
       if (item?.id) {
         const response = await updateCMSCompanyLogo(item.id, payload);
         console.log("[CMSCompanyLogoModal] Update API Response:", response);
+        if (response?.status === false) {
+          toast.error(response.message || "Failed to update branding asset");
+          return;
+        }
         toast.success("Branding asset updated");
       }
       onSuccess();

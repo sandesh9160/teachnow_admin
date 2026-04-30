@@ -33,7 +33,11 @@ export default function RecruiterEditModal({ recruiter, isOpen, onClose, onUpdat
         e.preventDefault();
         try {
             setSaving(true);
-            await updateRecruiter(recruiter.id, formData);
+            const res = await updateRecruiter(recruiter.id, formData);
+            if (res?.status === false) {
+              toast.error(res.message || "Failed to update recruiter");
+              return;
+            }
             toast.success("Recruiter registry updated successfully");
             onUpdate();
             onClose();

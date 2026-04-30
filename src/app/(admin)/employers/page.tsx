@@ -265,40 +265,37 @@ export default function EmployersPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-5 pb-16 antialiased animate-fade-in-up">
-      {/* ─── Header Section ────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 px-1">
-        <div className="space-y-0.5">
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Employer Directory</h1>
-          <p className="text-[13px] text-slate-500 font-medium">Manage educational centers and recruitment partners.</p>
+      {/* Page Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Employer Directory</h1>
+          <p className="page-subtitle">Manage educational centers and recruitment partners</p>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => fetchEmployers()}
-            className="h-10 px-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all font-semibold text-[13px] active:scale-95 shadow-sm"
+            className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary transition-all active:scale-95 shadow-sm"
           >
-            <RotateCcw size={15} className={clsx(loading && "animate-spin")} /> Refresh
+            <RotateCcw size={15} className={clsx(loading && "animate-spin")} />
           </button>
         </div>
       </div>
 
-      {/* ─── Statistics Grid ───────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: "Active", value: employers.length, icon: Building2, color: "text-indigo-600", bg: "bg-indigo-50" },
-          { label: "Verified", value: employers.filter(e => e.is_verified).length, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
-          { label: "Verification Pending", value: employers.filter(e => !e.is_verified).length, icon: Activity, color: "text-rose-600", bg: "bg-rose-50" },
-          { label: "Featured", value: employers.filter(e => e.is_featured).length, icon: Star, color: "text-amber-600", bg: "bg-amber-50" }
-        
+          { label: "Total Employers", value: employers.length, icon: Building2, color: "text-indigo-500", bg: "bg-indigo-50" },
+          { label: "Verified", value: employers.filter(e => e.is_verified).length, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
+          { label: "Pending Verification", value: employers.filter(e => !e.is_verified).length, icon: Activity, color: "text-rose-500", bg: "bg-rose-50" },
+          { label: "Featured", value: employers.filter(e => e.is_featured).length, icon: Star, color: "text-amber-500", bg: "bg-amber-50" }
         ].map((stat, i) => (
-          <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 hover:border-slate-300 transition-all group">
-            <div className="flex items-center justify-between">
-              <div className={clsx("w-9 h-9 rounded-xl flex items-center justify-center", stat.bg, stat.color)}>
-                <stat.icon size={18} strokeWidth={2.5} />
-              </div>
-            </div>
+          <div key={i} className="stat-card">
             <div>
-              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest leading-none">{stat.label}</p>
-              <h3 className="text-xl font-bold text-slate-900 mt-1.5">{stat.value}</h3>
+              <p className="stat-card-label">{stat.label}</p>
+              <h3 className="stat-card-value">{stat.value}</h3>
+            </div>
+            <div className={clsx("stat-card-icon", stat.bg, stat.color)}>
+              <stat.icon size={17} strokeWidth={2} />
             </div>
           </div>
         ))}
@@ -356,13 +353,13 @@ export default function EmployersPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
-              <tr className="border-b border-slate-50 bg-white">
-                <th className="px-6 py-4 text-[12px] font-bold text-slate-900 uppercase tracking-wider">Organization</th>
-                <th className="px-6 py-4 text-[12px] font-bold text-slate-900 uppercase tracking-wider">Location</th>
-                <th className="px-6 py-4 text-[12px] font-bold text-slate-900 uppercase tracking-wider text-center">Status</th>
-                <th className="px-6 py-4 text-[12px] font-bold text-slate-900 uppercase tracking-wider text-center">Joined</th>
-                <th className="px-6 py-4 text-[12px] font-bold text-slate-900 uppercase tracking-wider text-center">Featured</th>
-                <th className="px-6 py-4 text-[12px] font-bold text-slate-900 uppercase tracking-wider text-center">Actions</th>
+              <tr className="border-b border-slate-100 bg-slate-50">
+                <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Organization</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Location</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Status</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Joined</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Featured</th>
+                <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

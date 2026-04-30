@@ -578,39 +578,32 @@ export default function ManageResourcesPage() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-5 pb-12 antialiased animate-fade-in-up">
 
-      {/* ─── Header ───────────────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-sm">
-            <LibraryBig size={24} />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Teaching Resources</h1>
-            <p className="text-sm text-slate-500 font-medium">Manage PDFs, class notes, and learning materials</p>
-          </div>
-          <button
-            onClick={handleCreateNew}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm shadow-indigo-200"
-          >
-            <Plus size={18} /> Add Resource
-          </button>
+      {/* Page Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Teaching Resources</h1>
+          <p className="page-subtitle">Manage PDFs, class notes, and learning materials</p>
         </div>
+        <button
+          onClick={handleCreateNew}
+          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-[12.5px] font-semibold transition-all shadow-sm shadow-blue-600/20 active:scale-95"
+        >
+          <Plus size={14} /> Add Resource
+        </button>
       </div>
 
-      {/* ─── Controls & Filters ──────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full sm:w-80 group">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
-          <input
-            type="text"
-            placeholder="Search by title or author..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all font-medium"
-          />
-        </div>
+      {/* Search */}
+      <div className="relative group max-w-sm">
+        <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+        <input
+          type="text"
+          placeholder="Search by title or author..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-[12px] font-medium placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all shadow-sm"
+        />
       </div>
 
       {/* ─── Resources Grid ──────────────────────────────────────────────── */}

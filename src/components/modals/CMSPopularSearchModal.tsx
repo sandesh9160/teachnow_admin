@@ -65,10 +65,18 @@ export default function CMSPopularSearchModal({ isOpen, onClose, onSuccess, item
       };
 
       if (item?.id) {
-        await updatePopularSearch(item.id, data);
+        const res = await updatePopularSearch(item.id, data);
+        if (res?.status === false) {
+          toast.error(res.message || "Failed to update popular search");
+          return;
+        }
         toast.success("Popular search updated");
       } else {
-        await createPopularSearch(data);
+        const res = await createPopularSearch(data);
+        if (res?.status === false) {
+          toast.error(res.message || "Failed to create popular search");
+          return;
+        }
         toast.success("Popular search created");
       }
       onSuccess();

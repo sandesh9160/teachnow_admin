@@ -580,6 +580,9 @@ export const deleteBlog = (id: number) =>
 export const toggleBlogStatus = (id: number, data?: any) =>
   dashboardServerFetch(`/admin/cms/blogs/${id}/toggle`, { method: "PATCH", data });
 
+export const toggleBlogFeatured = (id: number, data?: any) =>
+  dashboardServerFetch(`/admin/cms/blogs/${id}/toggle`, { method: "PATCH", data });
+
 // ─── About Us ────────────────────────────────────────────────────────────────
 
 export const getAboutUs = () =>

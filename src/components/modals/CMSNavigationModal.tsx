@@ -94,10 +94,18 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
       };
 
       if (item?.id) {
-        await updateCMSNavigation(item.id, payload);
+        const res = await updateCMSNavigation(item.id, payload);
+        if (res?.status === false) {
+          toast.error(res.message || "Failed to update link");
+          return;
+        }
         toast.success("Link updated");
       } else {
-        await createCMSNavigation(payload);
+        const res = await createCMSNavigation(payload);
+        if (res?.status === false) {
+          toast.error(res.message || "Failed to create link");
+          return;
+        }
         toast.success("Link created");
       }
       onSuccess();
@@ -267,9 +275,13 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
                   setFormData({ ...formData, is_active: newState });
                   if (item?.id) {
                     try {
-                      await toggleCMSNavigationActive(item.id, { is_active: newState });
-                      toast.success("Status updated");
-                      onSuccess();
+                      const res = await toggleCMSNavigationActive(item.id, { is_active: newState });
+                      if (res?.status === false) {
+                        toast.error(res.message || "Failed to update status");
+                      } else {
+                        toast.success("Status updated");
+                        onSuccess();
+                      }
                     } catch (e) {
                       toast.error("Failed to update status instantly");
                     }
@@ -304,9 +316,13 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
                   setFormData({ ...formData, show_in_nav: newState });
                   if (item?.id) {
                     try {
-                      await toggleCMSNavigationNav(item.id, { show_in_nav: newState });
-                      toast.success("Visibility updated");
-                      onSuccess();
+                      const res = await toggleCMSNavigationNav(item.id, { show_in_nav: newState });
+                      if (res?.status === false) {
+                        toast.error(res.message || "Failed to update visibility");
+                      } else {
+                        toast.success("Visibility updated");
+                        onSuccess();
+                      }
                     } catch (e) {
                       toast.error("Failed to update visibility instantly");
                     }

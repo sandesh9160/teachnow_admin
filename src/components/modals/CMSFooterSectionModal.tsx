@@ -54,10 +54,18 @@ export default function CMSFooterSectionModal({ isOpen, onClose, onSuccess, item
       if (item?.id) {
         const res = await updateCMSFooterSection(item.id, payload);
         console.log("Update Footer Section Response:", res);
+        if (res?.status === false) {
+          toast.error(res.message || "Failed to update footer section");
+          return;
+        }
         toast.success("Footer section updated");
       } else {
         const res = await createCMSFooterSection(payload);
         console.log("Create Footer Section Response:", res);
+        if (res?.status === false) {
+          toast.error(res.message || "Failed to create footer section");
+          return;
+        }
         toast.success("Footer section created");
       }
       onSuccess();

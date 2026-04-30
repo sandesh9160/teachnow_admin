@@ -127,10 +127,18 @@ export default function CMSFooterLinkModal({ isOpen, onClose, onSuccess, item }:
       }
 
       if (item?.id) {
-        await updateCMSFooterLink(item.id, payload);
+        const res = await updateCMSFooterLink(item.id, payload);
+        if (res?.status === false) {
+          toast.error(res.message || "Failed to update footer link");
+          return;
+        }
         toast.success("Footer link updated");
       } else {
-        await createCMSFooterLink(payload);
+        const res = await createCMSFooterLink(payload);
+        if (res?.status === false) {
+          toast.error(res.message || "Failed to create footer link");
+          return;
+        }
         toast.success("Footer link created");
       }
       onSuccess();

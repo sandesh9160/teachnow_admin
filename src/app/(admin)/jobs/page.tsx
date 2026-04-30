@@ -205,39 +205,37 @@ export default function JobsPage() {
     const hasActiveFilters = search || catFilter.id !== 'all' || locFilter.id !== 'all' || instFilter.id !== 'all' || typeFilter.id !== 'all' || statusFilter.id !== 'all' || featureFilter.id !== 'all';
 
     return (
-        <div className="space-y-6 pb-20 antialiased animate-fade-in-up">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex flex-col gap-0.5">
-                    <h1 className="text-xl font-bold text-slate-900 tracking-tight">Jobs Management</h1>
-
+        <div className="space-y-5 pb-20 antialiased animate-fade-in-up">
+            {/* Page Header */}
+            <div className="page-header">
+                <div>
+                    <h1 className="page-title">Jobs Management</h1>
+                    <p className="page-subtitle">Review and manage all posted job listings</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button suppressHydrationWarning onClick={() => fetchJobs()}
-                        className="p-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:text-primary transition-all active:scale-95 shadow-sm">
-                        <RotateCcw size={18} className={clsx(loading && "animate-spin")} />
+                        className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary transition-all active:scale-95 shadow-sm">
+                        <RotateCcw size={15} className={clsx(loading && "animate-spin")} />
                     </button>
                 </div>
             </div>
 
-            {/* Metrics Overview Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            {/* Stat Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
                 {[
-                    { label: "Total Jobs", value: metrics.total, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
-                    { label: "Active Jobs", value: metrics.active, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
-                    { label: "Featured Jobs", value: metrics.featured, icon: Star, color: "text-amber-600", bg: "bg-amber-50" },
-                    { label: "Rejected Jobs", value: metrics.rejected, icon: XCircle, color: "text-rose-600", bg: "bg-rose-50" },
-                    { label: "Expired Jobs", value: metrics.expired, icon: RotateCcw, color: "text-slate-600", bg: "bg-slate-50" }
+                    { label: "Total Jobs", value: metrics.total, icon: Briefcase, color: "text-blue-500", bg: "bg-blue-50" },
+                    { label: "Active", value: metrics.active, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
+                    { label: "Featured", value: metrics.featured, icon: Star, color: "text-amber-500", bg: "bg-amber-50" },
+                    { label: "Rejected", value: metrics.rejected, icon: XCircle, color: "text-rose-500", bg: "bg-rose-50" },
+                    { label: "Expired", value: metrics.expired, icon: RotateCcw, color: "text-slate-500", bg: "bg-slate-100" }
                 ].map((stat, i) => (
-                    <div key={i} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between group hover:border-slate-300 transition-all">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className={clsx("w-9 h-9 rounded-xl flex items-center justify-center shadow-sm border", stat.bg, stat.color)}>
-                                <stat.icon size={18} strokeWidth={2.5} />
-                            </div>
-                        </div>
+                    <div key={i} className="stat-card">
                         <div>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{stat.label}</p>
-                            <h3 className="text-xl font-black text-slate-900 tracking-tight">{stat.value}</h3>
+                            <p className="stat-card-label">{stat.label}</p>
+                            <h3 className="stat-card-value">{stat.value}</h3>
+                        </div>
+                        <div className={clsx("stat-card-icon", stat.bg, stat.color)}>
+                            <stat.icon size={17} strokeWidth={2} />
                         </div>
                     </div>
                 ))}
