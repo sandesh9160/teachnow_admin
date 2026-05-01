@@ -128,9 +128,11 @@ export function TipTapEditor({
   const [isNofollow, setIsNofollow] = useState(true);
   const [showHeadingMenu, setShowHeadingMenu] = useState(false);
   const [showSizeMenu, setShowSizeMenu] = useState(false);
+  const [showColorMenu, setShowColorMenu] = useState(false);
   
   const headingMenuRef = useRef<HTMLDivElement>(null);
   const sizeMenuRef = useRef<HTMLDivElement>(null);
+  const colorMenuRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const extensions = useMemo(() => [
@@ -175,9 +177,22 @@ export function TipTapEditor({
     },
   });
 
+  // Sync value from parent while preserving selection
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value || "");
+      // If the editor is focused, we try to preserve the selection
+      // to avoid cursor jumping or selection loss during sync
+      if (editor.isFocused) {
+        const { from, to } = editor.state.selection;
+        editor.commands.setContent(value || "", { emitUpdate: false });
+        try {
+          editor.commands.setTextSelection({ from, to });
+        } catch (e) {
+          // Fallback if selection is invalid for new content
+        }
+      } else {
+        editor.commands.setContent(value || "", { emitUpdate: false });
+      }
     }
   }, [value, editor]);
 
@@ -189,6 +204,9 @@ export function TipTapEditor({
       }
       if (sizeMenuRef.current && !sizeMenuRef.current.contains(event.target as Node)) {
         setShowSizeMenu(false);
+      }
+      if (colorMenuRef.current && !colorMenuRef.current.contains(event.target as Node)) {
+        setShowColorMenu(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -246,9 +264,66 @@ export function TipTapEditor({
         <ToolbarDivider />
 
         <div className="flex items-center gap-0.5">
-           <MenuButton onClick={() => editor.chain().focus().setColor('#4f46e5').run()} title="Indigo Text">
-             <Palette size={14} className={editor.isActive('textStyle', { color: '#4f46e5' }) ? 'text-indigo-600' : 'text-slate-400'} />
-           </MenuButton>
+           {/* Color Picker Dropdown */}
+           <div className="relative" ref={colorMenuRef}>
+              <MenuButton 
+                onClick={() => setShowColorMenu(!showColorMenu)} 
+                isActive={showColorMenu || !!editor.getAttributes('textStyle').color} 
+                title="Text Color"
+              >
+                <Palette 
+                  size={14} 
+                  style={{ color: editor.getAttributes('textStyle').color || 'currentColor' }} 
+                />
+              </MenuButton>
+
+              {showColorMenu && (
+                <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-slate-200 rounded-xl shadow-2xl z-[60] p-3 animate-in fade-in zoom-in duration-100">
+                    <div className="flex items-center justify-between mb-3 px-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Text Color</span>
+                        <button 
+                            type="button"
+                            onMouseDown={(e) => { 
+                                e.preventDefault(); 
+                                editor.chain().focus().unsetColor().run(); 
+                                setShowColorMenu(false); 
+                            }}
+                            className="text-[10px] font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+                        >
+                            Reset
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-5 gap-2">
+                        {[
+                            '#000000', '#475569', '#64748b', '#94a3b8', '#cbd5e1',
+                            '#dc2626', '#f97316', '#f59e0b', '#10b981', '#06b6d4',
+                            '#3b82f6', '#4f46e5', '#8b5cf6', '#d946ef', '#f43f5e'
+                        ].map((color) => (
+                            <button 
+                                key={color}
+                                type="button"
+                                onMouseDown={(e) => { 
+                                    e.preventDefault(); 
+                                    editor.chain().focus().setColor(color).run(); 
+                                    setShowColorMenu(false); 
+                                }}
+                                className={clsx(
+                                    "w-8 h-8 rounded-lg border border-slate-100 hover:scale-110 transition-all shadow-sm cursor-pointer flex items-center justify-center",
+                                    editor.getAttributes('textStyle').color === color && "ring-2 ring-indigo-500 ring-offset-2"
+                                )}
+                                style={{ backgroundColor: color }}
+                                title={color}
+                            >
+                                {editor.getAttributes('textStyle').color === color && (
+                                    <div className="w-1.5 h-1.5 rounded-full bg-white shadow-xs" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+              )}
+           </div>
+
            <MenuButton onClick={() => editor.chain().focus().toggleHighlight().run()} isActive={editor.isActive('highlight')} title="Highlight">
              <Highlighter size={14} />
            </MenuButton>
@@ -274,8 +349,12 @@ export function TipTapEditor({
                         <button 
                             key={size}
                             type="button"
-                            onClick={() => { (editor.commands as any).setFontSize(size); setShowSizeMenu(false); }}
-                            className="w-full px-3 py-1.5 text-left text-[11px] font-semibold hover:bg-slate-50 text-slate-600"
+                            onMouseDown={(e) => { 
+                                e.preventDefault(); 
+                                (editor.commands as any).setFontSize(size); 
+                                setShowSizeMenu(false); 
+                            }}
+                            className="w-full px-3 py-1.5 text-left text-[11px] font-semibold hover:bg-slate-50 text-slate-600 cursor-pointer"
                         >
                             {size}
                         </button>
@@ -303,29 +382,29 @@ export function TipTapEditor({
                 <div className="absolute top-full left-0 mt-1 w-32 bg-white border border-slate-200 rounded-lg shadow-xl z-[50] py-1">
                     <button 
                         type="button"
-                        onClick={() => { editor.chain().focus().setParagraph().run(); setShowHeadingMenu(false); }}
-                        className="w-full px-3 py-1.5 text-left text-[11px] font-semibold hover:bg-slate-50 text-slate-600 flex items-center gap-2"
+                        onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().setParagraph().run(); setShowHeadingMenu(false); }}
+                        className="w-full px-3 py-1.5 text-left text-[11px] font-semibold hover:bg-slate-50 text-slate-600 flex items-center gap-2 cursor-pointer"
                     >
                         <TypeIcon size={12} /> Paragraph
                     </button>
                     <button 
                         type="button"
-                        onClick={() => { editor.chain().focus().toggleHeading({ level: 1 }).run(); setShowHeadingMenu(false); }}
-                        className="w-full px-3 py-1.5 text-left text-[11px] font-bold hover:bg-slate-50 text-slate-900 flex items-center gap-2"
+                        onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 1 }).run(); setShowHeadingMenu(false); }}
+                        className="w-full px-3 py-1.5 text-left text-[11px] font-bold hover:bg-slate-50 text-slate-900 flex items-center gap-2 cursor-pointer"
                     >
                         <Heading1 size={12} /> Heading 1
                     </button>
                     <button 
                         type="button"
-                        onClick={() => { editor.chain().focus().toggleHeading({ level: 2 }).run(); setShowHeadingMenu(false); }}
-                        className="w-full px-3 py-1.5 text-left text-[11px] font-bold hover:bg-slate-50 text-slate-800 flex items-center gap-2"
+                        onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 2 }).run(); setShowHeadingMenu(false); }}
+                        className="w-full px-3 py-1.5 text-left text-[11px] font-bold hover:bg-slate-50 text-slate-800 flex items-center gap-2 cursor-pointer"
                     >
                         <Heading2 size={12} /> Heading 2
                     </button>
                     <button 
                         type="button"
-                        onClick={() => { editor.chain().focus().toggleHeading({ level: 3 }).run(); setShowHeadingMenu(false); }}
-                        className="w-full px-3 py-1.5 text-left text-[11px] font-bold hover:bg-slate-50 text-slate-700 flex items-center gap-2"
+                        onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 3 }).run(); setShowHeadingMenu(false); }}
+                        className="w-full px-3 py-1.5 text-left text-[11px] font-bold hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
                     >
                         <Heading3 size={12} /> Heading 3
                     </button>

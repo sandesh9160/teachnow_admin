@@ -10,6 +10,7 @@ interface CVTemplateCardProps {
   onEdit?: (template: CVTemplate) => void;
   onDelete?: (template: CVTemplate) => void;
   onToggleStatus?: (template: CVTemplate) => void;
+  onView?: (template: CVTemplate) => void;
 }
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "https://teachnowbackend.jobsvedika.in";
@@ -18,7 +19,8 @@ export default function CVTemplateCard({
   template, 
   onEdit, 
   onDelete, 
-  onToggleStatus 
+  onToggleStatus,
+  onView
 }: CVTemplateCardProps) {
   const imageUrl = template.preview_image 
     ? `${BACKEND_URL}/${template.preview_image.startsWith('/') ? template.preview_image.slice(1) : template.preview_image}`
@@ -83,6 +85,7 @@ export default function CVTemplateCard({
             </div>
           </div>
           <button 
+            onClick={() => onView?.(template)}
             className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 hover:bg-indigo-100 transition-all shrink-0 shadow-sm"
             title="Preview Details"
           >

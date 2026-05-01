@@ -56,6 +56,8 @@ export default function ManageCVTemplatesPage() {
   // View states
   const [isEditing, setIsEditing] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<CVTemplate | undefined>();
+  const [isViewing, setIsViewing] = useState(false);
+  const [viewingTemplate, setViewingTemplate] = useState<CVTemplate | undefined>();
 
   // Editor states
   const [editorData, setEditorData] = useState({
@@ -261,7 +263,10 @@ export default function ManageCVTemplatesPage() {
       toast.error("Failed to delete template");
     }
   };
-
+  const handleView = (template: CVTemplate) => {
+    setViewingTemplate(template);
+    setIsViewing(true);
+  };
 
   const stats = {
     total: templates.length,
@@ -618,6 +623,7 @@ export default function ManageCVTemplatesPage() {
                 onEdit={handleEdit}
                 onToggleStatus={handleToggleStatus}
                 onDelete={handleDelete}
+                onView={handleView}
               />
             ))}
           </div>
@@ -636,6 +642,63 @@ export default function ManageCVTemplatesPage() {
         <div className="flex flex-col items-center justify-center py-20 bg-slate-50/50 rounded-3xl border-2 border-dashed border-slate-200 italic font-medium text-slate-400">
           <RefreshCcw size={24} className="text-slate-300 mb-3" />
           <p className="text-sm">No matching templates found</p>
+        </div>
+      )}
+      {/* View Modal */}
+      {isViewing && viewingTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">{viewingTemplate.name}</h3>
+                <p className="text-[11px] font-mono text-slate-500 mt-0.5 break-all">
+                  Path: {viewingTemplate.preview_image}
+                </p>
+              </div>
+              <button 
+                onClick={() => setIsViewing(false)}
+                className="p-2 hover:bg-slate-200 rounded-full transition-colors text-slate-400"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-auto p-6 bg-slate-100/30">
+              {viewingTemplate.preview_image ? (
+                <div className="relative group">
+                   <img 
+                    src={`${BACKEND_URL}/${viewingTemplate.preview_image.startsWith('/') ? viewingTemplate.preview_image.slice(1) : viewingTemplate.preview_image}`} 
+                    alt={viewingTemplate.name}
+                    className="w-full h-auto rounded-lg shadow-lg border border-white mx-auto block max-w-full"
+                  />
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <a 
+                      href={`${BACKEND_URL}/${viewingTemplate.preview_image.startsWith('/') ? viewingTemplate.preview_image.slice(1) : viewingTemplate.preview_image}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg text-[11px] font-bold text-indigo-600 shadow-sm flex items-center gap-2 border border-indigo-100"
+                    >
+                      <Eye size={14} /> View Original
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="aspect-[3/4] flex flex-col items-center justify-center bg-white rounded-xl border-2 border-dashed border-slate-200 text-slate-400">
+                  <ImageIcon size={48} strokeWidth={1} className="opacity-20 mb-4" />
+                  <p className="text-sm font-medium">No preview image available</p>
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-end">
+              <button 
+                onClick={() => setIsViewing(false)}
+                className="px-6 py-2 bg-slate-900 text-white rounded-xl text-[12px] font-bold hover:bg-slate-800 transition-all active:scale-95"
+              >
+                Close Preview
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

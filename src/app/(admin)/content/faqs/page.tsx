@@ -16,7 +16,7 @@ import { clsx } from "clsx";
 import { TipTapEditor } from "@/components/ui/TipTapEditor";
 
 
-export default function FAQPage() {
+export default function FAQPage() { 
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");

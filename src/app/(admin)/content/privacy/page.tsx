@@ -5,9 +5,6 @@ import {
   Plus, 
   Search, 
   Trash2, 
-  Eye, 
-  EyeOff, 
-  FileText,
   Save,
   Loader2,
   AlertCircle,
@@ -36,7 +33,6 @@ export default function PrivacyPolicyPage() {
     title: "",
     content: "",
     display_order: 1,
-    is_active: true,
   });
 
   useEffect(() => {
@@ -68,7 +64,6 @@ export default function PrivacyPolicyPage() {
       title: item.title,
       content: item.content,
       display_order: item.display_order,
-      is_active: Boolean(item.is_active),
     });
   };
 
@@ -93,7 +88,6 @@ export default function PrivacyPolicyPage() {
         title: "New Policy Header",
         content: "<p>Start drafting your content here...</p>",
         display_order: policies.length + 1,
-        is_active: true
       });
       toast.success("New node created");
       fetchPolicies(res.data.id);
@@ -207,7 +201,6 @@ export default function PrivacyPolicyPage() {
                       </select>
                       <span className="text-[11px] truncate flex-1 leading-none">{p.title || "Untitled"}</span>
                       {activeId === p.id && <div className="absolute left-0 w-0.5 h-3 bg-violet-600 rounded-full" />}
-                      {!p.is_active && <EyeOff size={11} className="text-slate-300 ml-auto" />}
                   </button>
               ))}
           </div>
@@ -233,16 +226,6 @@ export default function PrivacyPolicyPage() {
                                     className="w-10 text-sm font-bold text-violet-600 bg-transparent focus:outline-hidden"
                                  />
                              </div>
-                             <div className="w-px h-4 bg-slate-100" />
-                             <label className="flex items-center gap-3 cursor-pointer">
-                                 <span className="text-xs font-bold text-slate-500">Visibility</span>
-                                 <input 
-                                    type="checkbox"
-                                    checked={Boolean(editorData.is_active)}
-                                    onChange={e => setEditorData({...editorData, is_active: e.target.checked})}
-                                    className="w-4 h-4 accent-violet-600 rounded-lg"
-                                 />
-                             </label>
                         </div>
                         <button 
                             disabled={saving}
