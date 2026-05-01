@@ -2,25 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { 
-  Plus, 
   Search, 
-  MoreVertical, 
   Edit2, 
   Trash2, 
-  Eye, 
-  EyeOff, 
-  HelpCircle,
-  GripVertical,
   ChevronDown,
   ChevronUp,
-  Save,
   X,
-  PlusCircle,
-  FileText,
-  AlertCircle,
-  Loader2
 } from "lucide-react";
-import { getFAQs, createFAQ, updateFAQ, deleteFAQ, toggleFAQStatus } from "@/services/admin.service";
+import { getFAQs, createFAQ, updateFAQ, deleteFAQ } from "@/services/admin.service";
 import { FAQ } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
@@ -65,15 +54,6 @@ export default function FAQPage() {
     }
   };
 
-  const handleToggleStatus = async (id: number) => {
-    try {
-      await toggleFAQStatus(id);
-      setFaqs(faqs.map(f => f.id === id ? { ...f, is_active: !f.is_active } : f));
-      toast.success("Status updated");
-    } catch (err) {
-      toast.error("Failed to update status");
-    }
-  };
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this FAQ?")) return;
@@ -182,16 +162,12 @@ export default function FAQPage() {
               key={faq.id} 
               className={clsx(
                 "group rounded-xl overflow-hidden",
-                expandedId === faq.id ? "bg-violet-50/50" : "bg-white",
-                !faq.is_active && "bg-violet-600/5 opacity-70"
+                expandedId === faq.id ? "bg-violet-50/50" : "bg-white"
               )}
             >
               <div className="p-3 flex items-start gap-3">
                  <div className="shrink-0">
-                    <div className={clsx(
-                        "w-8 h-8 rounded-lg flex items-center justify-center",
-                        faq.is_active ? "bg-violet-100 text-violet-600 font-bold" : "bg-slate-200 text-slate-500 font-bold"
-                    )}>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-violet-100 text-violet-600 font-bold">
                         {faq.display_order}
                     </div>
                  </div>
@@ -202,10 +178,7 @@ export default function FAQPage() {
                           className="flex items-center gap-2 min-w-0 cursor-pointer w-full"
                           onClick={() => setExpandedId(expandedId === faq.id ? null : faq.id)}
                         >
-                            <h3 className={clsx(
-                                "text-[13px] font-bold truncate transition-none",
-                                faq.is_active ? "text-slate-900" : "text-slate-500"
-                            )}>
+                            <h3 className="text-[13px] font-bold truncate transition-none text-slate-900">
                                 {faq.question}
                             </h3>
                             {expandedId === faq.id ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
@@ -216,12 +189,6 @@ export default function FAQPage() {
                             className="p-1.5 text-slate-500 hover:text-violet-600"
                            >
                              <Edit2 size={15} />
-                           </button>
-                           <button 
-                            onClick={() => handleToggleStatus(faq.id)}
-                            className="p-1.5 text-slate-500 hover:text-violet-600"
-                           >
-                             {faq.is_active ? <EyeOff size={15} /> : <Eye size={15} />}
                            </button>
                            <button 
                             onClick={() => handleDelete(faq.id)}
@@ -285,8 +252,7 @@ export default function FAQPage() {
                   </div>
 
 
-                  <div className="grid grid-cols-2 gap-3">
-                      <div>
+                      <div className="col-span-2">
                           <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Order</label>
                           <input 
                             type="number"
@@ -295,18 +261,6 @@ export default function FAQPage() {
                             className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold"
                           />
                       </div>
-                      <div>
-                          <label className="text-[11px] font-semibold text-slate-500 mb-1 block">Status</label>
-                          <select 
-                            value={formData.is_active ? 1 : 0}
-                            onChange={e => setFormData({...formData, is_active: Number(e.target.value)})}
-                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold"
-                          >
-                              <option value={1}>Active</option>
-                              <option value={0}>Hidden</option>
-                          </select>
-                      </div>
-                  </div>
 
                   <div className="flex items-center gap-2 pt-4">
                       <button 
