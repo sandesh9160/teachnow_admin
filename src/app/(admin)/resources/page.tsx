@@ -423,7 +423,7 @@ export default function ManageResourcesPage() {
                             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Author Name</label>
                             <input
                                 type="text"
-                                placeholder="Chitturi Durgakishore"
+                                placeholder="eg John Doe"
                                 value={formData.author_name}
                                 onChange={e => setFormData({ ...formData, author_name: e.target.value })}
                                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"

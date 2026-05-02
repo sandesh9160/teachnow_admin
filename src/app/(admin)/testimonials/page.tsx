@@ -7,16 +7,17 @@ import {
     Quote, Search, Plus, Filter, 
     Star, Edit3, Trash2, Loader2, 
     CheckCircle2, XCircle, RotateCcw,
-    Camera, Building2, User2
+    Camera, Building2, User2, ChevronDown
 } from "lucide-react";
 import { 
     getTestimonials, 
     createTestimonial, 
     updateTestimonial, 
     deleteTestimonial, 
-    toggleTestimonialStatus 
+    toggleTestimonialStatus,
+    getEmployers
 } from "@/services/admin.service";
-import { Testimonial } from "@/types";
+import { Testimonial, Employer } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 
@@ -30,6 +31,11 @@ export default function TestimonialsPage() {
   const [editingItem, setEditingItem] = useState<Testimonial | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [processingId, setProcessingId] = useState<number | null>(null);
+  const [colleges, setColleges] = useState<Employer[]>([]);
+  const [fetchingColleges, setFetchingColleges] = useState(false);
+  const [collegeSearch, setCollegeSearch] = useState("");
+  const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
+  const collegeDropdownRef = React.useRef<HTMLDivElement>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -38,14 +44,45 @@ export default function TestimonialsPage() {
     company: "",
     message: "",
     rating: 5,
-    is_active: 1
+    is_active: 1,
+    display_order: 0
   });
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>("");
 
   useEffect(() => {
     fetchData();
+    fetchColleges();
+
+    // Click outside handler for college dropdown
+    const handleClickOutside = (event: MouseEvent) => {
+        if (collegeDropdownRef.current && !collegeDropdownRef.current.contains(event.target as Node)) {
+            setShowCollegeDropdown(false);
+        }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const fetchColleges = async () => {
+    try {
+        setFetchingColleges(true);
+        const res: any = await getEmployers({ per_page: 500 });
+        let list = [];
+        if (res?.data?.data && Array.isArray(res.data.data)) {
+            list = res.data.data;
+        } else if (res?.data && Array.isArray(res.data)) {
+            list = res.data;
+        } else if (Array.isArray(res)) {
+            list = res;
+        }
+        setColleges(list);
+    } catch (err) {
+        console.error("Failed to fetch colleges", err);
+    } finally {
+        setFetchingColleges(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -68,7 +105,8 @@ export default function TestimonialsPage() {
         company: item.company || "",
         message: item.message,
         rating: item.rating || 5,
-        is_active: Number(item.is_active)
+        is_active: Number(item.is_active),
+        display_order: item.display_order || 0
       });
       setPreview(item.photo ? (item.photo.startsWith('http') ? item.photo : `${BACKEND_URL}/${item.photo}`) : "");
     } else {
@@ -79,7 +117,8 @@ export default function TestimonialsPage() {
         company: "",
         message: "",
         rating: 5,
-        is_active: 1
+        is_active: 1,
+        display_order: 0
       });
       setPreview("");
     }
@@ -366,15 +405,59 @@ export default function TestimonialsPage() {
                     </div>
                  </div>
 
-                 <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-indigo-400 ml-0.5">Company (Optional)</label>
-                    <input 
-                        type="text"
-                        value={formData.company}
-                        onChange={e => setFormData({...formData, company: e.target.value})}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all shadow-sm"
-                        placeholder="e.g. Narayana Junior College"
-                    />
+                 <div className="space-y-1 relative" ref={collegeDropdownRef}>
+                    <label className="block text-[10px] font-bold text-indigo-400 ml-0.5">College / Company</label>
+                    <div className="relative">
+                        <input 
+                            type="text"
+                            value={formData.company}
+                            onFocus={() => setShowCollegeDropdown(true)}
+                            onChange={e => {
+                                setFormData({...formData, company: e.target.value});
+                                setCollegeSearch(e.target.value);
+                                setShowCollegeDropdown(true);
+                            }}
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all shadow-sm"
+                            placeholder="Type to search or enter manually..."
+                        />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                            {fetchingColleges ? (
+                                <Loader2 size={12} className="text-slate-300 animate-spin" />
+                            ) : (
+                                <ChevronDown size={14} className={clsx("text-slate-300 transition-transform", showCollegeDropdown && "rotate-180")} />
+                            )}
+                        </div>
+                    </div>
+
+                    {showCollegeDropdown && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-100 rounded-2xl shadow-xl z-[110] max-h-[200px] overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-200">
+                            {colleges.filter(c => 
+                                c.company_name?.toLowerCase().includes(collegeSearch.toLowerCase())
+                            ).length > 0 ? (
+                                colleges.filter(c => 
+                                    c.company_name?.toLowerCase().includes(collegeSearch.toLowerCase())
+                                ).map((college) => (
+                                    <button
+                                        key={college.id}
+                                        type="button"
+                                        onClick={() => {
+                                            setFormData({...formData, company: college.company_name});
+                                            setCollegeSearch("");
+                                            setShowCollegeDropdown(false);
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 text-[12px] font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 last:border-0 flex items-center gap-2"
+                                    >
+                                        <Building2 size={12} className="text-slate-300" />
+                                        <span className="truncate">{college.company_name}</span>
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="px-4 py-3 text-[11px] text-slate-400 font-medium italic">
+                                    {collegeSearch ? "No matches found. You can still use this name." : "Start typing to search colleges..."}
+                                </div>
+                            )}
+                        </div>
+                    )}
                  </div>
 
                  <div className="space-y-1">
@@ -403,20 +486,33 @@ export default function TestimonialsPage() {
                             ))}
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                         <span className="text-[10px] font-bold text-indigo-400">Active</span>
-                         <button 
-                            type="button"
-                            onClick={() => setFormData({...formData, is_active: formData.is_active === 1 ? 0 : 1})}
-                            className={clsx(
-                                "w-9 h-4.5 rounded-full relative transition-all duration-300",
-                                formData.is_active === 1 ? "bg-indigo-600" : "bg-slate-200"
-                            )}>
-                            <div className={clsx(
-                                "absolute w-3 h-3 bg-white rounded-full top-[3px] transition-all duration-300",
-                                formData.is_active === 1 ? "left-[20px]" : "left-[4px]"
-                            )} />
-                         </button>
+                    
+                    <div className="flex items-center gap-4">
+                        <div className="space-y-1">
+                            <label className="block text-[9px] font-bold text-indigo-400 mb-1">Display Order</label>
+                            <input 
+                                type="number"
+                                value={formData.display_order}
+                                onChange={e => setFormData({...formData, display_order: Number(e.target.value)})}
+                                className="w-20 px-2 py-1 bg-white border border-slate-100 rounded-lg text-[12px] font-bold text-slate-900 focus:outline-none focus:border-indigo-100 transition-all"
+                                placeholder="0"
+                            />
+                        </div>
+                        <div className="flex items-center gap-2 mt-4">
+                             <span className="text-[10px] font-bold text-indigo-400">Active</span>
+                             <button 
+                                type="button"
+                                onClick={() => setFormData({...formData, is_active: formData.is_active === 1 ? 0 : 1})}
+                                className={clsx(
+                                    "w-9 h-4.5 rounded-full relative transition-all duration-300",
+                                    formData.is_active === 1 ? "bg-indigo-600" : "bg-slate-200"
+                                )}>
+                                <div className={clsx(
+                                    "absolute w-3 h-3 bg-white rounded-full top-[3px] transition-all duration-300",
+                                    formData.is_active === 1 ? "left-[20px]" : "left-[4px]"
+                                )} />
+                             </button>
+                        </div>
                     </div>
                  </div>
 

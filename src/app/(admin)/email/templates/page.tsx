@@ -266,7 +266,7 @@ export default function EmailTemplatesPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button 
+          {/* <button 
             onClick={fetchTemplates}
             className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl font-bold text-sm transition-all border border-indigo-100 group active:scale-95"
           >
@@ -292,7 +292,7 @@ export default function EmailTemplatesPage() {
             >
                 <Newspaper size={16} /> Blogs
             </a>
-          </div>
+          </div> */}
           <button 
             onClick={handleAddNew}
             className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl font-bold text-sm transition-all shadow-lg shadow-indigo-100 active:scale-95"
