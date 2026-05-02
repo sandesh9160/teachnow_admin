@@ -10,11 +10,12 @@ import {
     ChevronLeft, ChevronRight
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getJobs, getCategories, getLocations, getEmployers } from "@/services/admin.service";
+import { getJobs, getCategories, getLocations, getEmployers, deleteJob } from "@/services/admin.service";
 import { Job, MasterDataItem, Employer } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 import { resolveMediaUrl } from "@/lib/media";
+import { ValidatedInput } from "@/components/ui/ValidatedInput";
 
 export default function JobsPage() {
     const router = useRouter();
@@ -55,6 +56,7 @@ export default function JobsPage() {
 
     // UI State
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     // Core Data Fetcher
     const fetchJobs = useCallback(async (customParams: any = {}) => {
@@ -117,6 +119,26 @@ export default function JobsPage() {
             setLoading(false);
         }
     }, [search]);
+
+    const handleDelete = async (id: number) => {
+        if (!window.confirm("Are you sure you want to delete this job? This action will move the job to 'Deleted Jobs' section.")) return;
+
+        try {
+            setDeletingId(id);
+            const res: any = await deleteJob(id);
+            if (res?.status === true) {
+                toast.success(res.message || "Job deleted successfully");
+                fetchJobs({ page: pagination.currentPage });
+            } else {
+                toast.error(res?.message || "Failed to delete job");
+            }
+        } catch (err) {
+            console.error("Delete failed", err);
+            toast.error("Failed to delete job. Please try again.");
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
     const searchParams = useSearchParams();
     const employerIdParam = searchParams.get("employer_id");
@@ -245,15 +267,15 @@ export default function JobsPage() {
             <div className="flex flex-wrap items-center gap-2.5 relative z-[60] overflow-visible">
                 <div className="relative flex-1 min-w-[300px] flex gap-2">
                     <div className="relative flex-1">
-                        <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                        <input
-                            type="text"
+                        <ValidatedInput
+                            validationType="alphaNumeric"
                             placeholder="Search by title or institute..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && fetchJobs()}
-                            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-[12px] font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all shadow-sm"
+                            className="pl-10 !bg-white"
                         />
+                        <Search size={14} className="absolute left-3.5 top-[12px] text-slate-400" />
                     </div>
                     <button
                         onClick={() => fetchJobs()}
@@ -431,7 +453,7 @@ export default function JobsPage() {
                                         </td>
                                         {/* Posted */}
                                         <td className="px-4 py-3 align-middle whitespace-nowrap">
-                                            <p className="text-[11px] text-slate-500 font-medium">
+                                            <p className="text-[11px] text-slate-500 font-medium" suppressHydrationWarning>
                                                 {j.created_at ? new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                                             </p>
                                         </td>
@@ -440,7 +462,14 @@ export default function JobsPage() {
                                             <div className="flex items-center justify-center gap-0">
                                                 <button title="View" onClick={() => router.push(`/jobs/${j.id}`)} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-all"><Eye size={14} /></button>
                                                 <button title="Edit" onClick={() => router.push(`/jobs/${j.id}`)} className="p-1.5 text-amber-500 hover:bg-amber-50 rounded-lg transition-all"><Edit2 size={13} /></button>
-                                                <button title="Delete" className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-all"><Trash2 size={13} /></button>
+                                                <button
+                                                    title="Delete"
+                                                    disabled={deletingId === j.id}
+                                                    onClick={(e) => { e.stopPropagation(); handleDelete(j.id); }}
+                                                    className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-all disabled:opacity-30"
+                                                >
+                                                    {deletingId === j.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -465,7 +494,7 @@ export default function JobsPage() {
                 </div>
 
                 {/* Pagination Console */}
-                <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-white">
+                <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-white" suppressHydrationWarning>
                     <p className="text-[12px] font-semibold text-slate-500">
                         Showing <span className="text-slate-900 font-bold">{filteredJobs.length}</span> of {pagination.total} entries
                     </p>
@@ -539,6 +568,7 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
         <div className="relative" ref={ref}>
             <button
                 onClick={() => setOpen()}
+                suppressHydrationWarning
                 className={clsx(
                     "flex items-center justify-between gap-3 px-3 py-2 bg-white border rounded-xl text-[12px] font-medium transition-all shadow-sm min-w-[130px]",
                     isOpen ? "border-primary/40 ring-4 ring-primary/5 text-primary" : "border-slate-200 text-slate-900 hover:bg-slate-50"

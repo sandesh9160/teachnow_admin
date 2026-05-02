@@ -90,9 +90,8 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
           { title: "Deleted Job Seekers", href: "/deleted-items/jobseekers" },
           { title: "Deleted Jobs", href: "/deleted-items/jobs" },
           { title: "Deleted Employers", href: "/deleted-items/employers" },
-          { title: "Deleted CV Templates", href: "/deleted-items/cv-templates" },
+          // { title: "Deleted CV Templates", href: "/deleted-items/cv-templates" },
           { title: "Deleted Testimonials", href: "/deleted-items/testimonials" },
-          { title: "Deleted Users", href: "/deleted-items/users" },
         ]
       },
     ]

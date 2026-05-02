@@ -20,6 +20,7 @@ import { PrivacyPolicyItem } from "@/types";
 import { TipTapEditor } from "@/components/ui/TipTapEditor";
 import { toast } from "sonner";
 import { clsx } from "clsx";
+import { ValidatedInput } from "@/components/ui/ValidatedInput";
 
 export default function PrivacyPolicyPage() {
   const [policies, setPolicies] = useState<PrivacyPolicyItem[]>([]);
@@ -218,12 +219,13 @@ export default function PrivacyPolicyPage() {
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-5 px-5 py-2 bg-white rounded-xl shadow-xs border border-slate-100">
                              <div className="flex items-center gap-3">
-                                 <span className="text-xs font-bold text-slate-500">Order</span>
-                                 <input 
+                                 <ValidatedInput 
+                                    label="Order"
+                                    validationType="numbers"
                                     type="number"
                                     value={editorData.display_order}
                                     onChange={e => setEditorData({...editorData, display_order: Number(e.target.value)})}
-                                    className="w-10 text-sm font-bold text-violet-600 bg-transparent focus:outline-hidden"
+                                    className="w-16 !bg-transparent !border-none !shadow-none !p-0"
                                  />
                              </div>
                         </div>
@@ -247,13 +249,13 @@ export default function PrivacyPolicyPage() {
 
                   <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4 no-scrollbar">
                       <div className="space-y-1">
-                          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter ml-1">Section Heading</label>
-                          <input 
-                            type="text"
+                          <ValidatedInput 
+                            label="Section Heading"
+                            validationType="alphaNumeric"
                             placeholder="Enter Heading..."
                             value={editorData.title}
                             onChange={e => setEditorData({...editorData, title: e.target.value})}
-                            className="w-full text-xl font-bold text-slate-900 border-none outline-hidden placeholder:text-slate-200"
+                            className="text-xl !bg-transparent !border-none !shadow-none !p-0"
                           />
                       </div>
                       

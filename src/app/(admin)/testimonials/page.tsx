@@ -20,6 +20,7 @@ import {
 import { Testimonial, Employer } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
+import { ValidatedInput, ValidatedTextArea } from "@/components/ui/ValidatedInput";
 
 const BACKEND_URL = "https://teachnowbackend.jobsvedika.in";
 
@@ -382,24 +383,22 @@ export default function TestimonialsPage() {
 
                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-indigo-400 ml-0.5">Full name</label>
-                        <input 
+                        <ValidatedInput 
                             required
-                            type="text"
+                            label="Full name"
+                            validationType="letters"
                             value={formData.name}
                             onChange={e => setFormData({...formData, name: e.target.value})}
-                            className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all shadow-sm"
                             placeholder="e.g. John Doe"
                         />
                     </div>
                     <div className="space-y-1">
-                        <label className="block text-[10px] font-bold text-indigo-400 ml-0.5">Designation</label>
-                        <input 
+                        <ValidatedInput 
                             required
-                            type="text"
+                            label="Designation"
+                            validationType="letters"
                             value={formData.designation}
                             onChange={e => setFormData({...formData, designation: e.target.value})}
-                            className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all shadow-sm"
                             placeholder="e.g. Principal"
                         />
                     </div>
@@ -461,13 +460,13 @@ export default function TestimonialsPage() {
                  </div>
 
                  <div className="space-y-1">
-                    <label className="block text-[10px] font-bold text-indigo-400 ml-0.5">Success message</label>
-                    <textarea 
+                    <ValidatedTextArea 
                         required
+                        label="Success message"
+                        minWords={5}
                         rows={2}
                         value={formData.message}
                         onChange={e => setFormData({...formData, message: e.target.value})}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] font-semibold text-slate-900 focus:outline-none focus:border-indigo-100 focus:bg-white transition-all resize-none shadow-sm"
                         placeholder="Share the success story..."
                     />
                  </div>
@@ -489,12 +488,13 @@ export default function TestimonialsPage() {
                     
                     <div className="flex items-center gap-4">
                         <div className="space-y-1">
-                            <label className="block text-[9px] font-bold text-indigo-400 mb-1">Display Order</label>
-                            <input 
+                            <ValidatedInput 
+                                label="Display Order"
+                                validationType="numbers"
                                 type="number"
                                 value={formData.display_order}
                                 onChange={e => setFormData({...formData, display_order: Number(e.target.value)})}
-                                className="w-20 px-2 py-1 bg-white border border-slate-100 rounded-lg text-[12px] font-bold text-slate-900 focus:outline-none focus:border-indigo-100 transition-all"
+                                className="w-20"
                                 placeholder="0"
                             />
                         </div>

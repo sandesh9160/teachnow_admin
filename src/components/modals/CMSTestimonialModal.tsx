@@ -4,9 +4,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { X, Loader2, MessageSquare, Upload, Star, UserCircle, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { clsx } from "clsx";
-import { createTestimonial, updateTestimonial } from "@/services/admin.service";
-import type { Testimonial } from "@/types";
+import { ValidatedInput, ValidatedTextArea } from "@/components/ui/ValidatedInput";
+import { createTestimonial, updateTestimonial, getEmployers } from "@/services/admin.service";
+import type { Testimonial, Employer } from "@/types";
 import { resolveMediaUrl } from "@/lib/media";
+import { Building2, ChevronDown } from "lucide-react";
 
 interface CMSTestimonialModalProps {
   isOpen: boolean;
@@ -30,6 +32,48 @@ export default function CMSTestimonialModal({ isOpen, onClose, onSuccess, item }
     display_order: 0,
     is_active: 1,
   });
+
+  const [colleges, setColleges] = useState<Employer[]>([]);
+  const [fetchingColleges, setFetchingColleges] = useState(false);
+  const [collegeSearch, setCollegeSearch] = useState("");
+  const [showCollegeDropdown, setShowCollegeDropdown] = useState(false);
+  const collegeDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+        fetchColleges();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+        if (collegeDropdownRef.current && !collegeDropdownRef.current.contains(event.target as Node)) {
+            setShowCollegeDropdown(false);
+        }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const fetchColleges = async () => {
+    try {
+        setFetchingColleges(true);
+        const res: any = await getEmployers({ per_page: 500 });
+        let list = [];
+        if (res?.data?.data && Array.isArray(res.data.data)) {
+            list = res.data.data;
+        } else if (res?.data && Array.isArray(res.data)) {
+            list = res.data;
+        } else if (Array.isArray(res)) {
+            list = res;
+        }
+        setColleges(list);
+    } catch (err) {
+        console.error("Failed to fetch colleges", err);
+    } finally {
+        setFetchingColleges(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -146,38 +190,82 @@ export default function CMSTestimonialModal({ isOpen, onClose, onSuccess, item }
             <div className="flex flex-col md:flex-row gap-5">
               <div className="flex-1 space-y-3">
                 <div>
-                  <label className="text-[11px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Reviewer Name</label>
-                  <input 
-                    type="text"
+                  <ValidatedInput 
+                    label="Reviewer Name"
                     required
+                    validationType="letters"
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-[13px] font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+                    className="!bg-white"
                     placeholder="e.g. John Doe"
                   />
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Designation</label>
-                  <input 
-                    type="text"
+                  <ValidatedInput 
+                    label="Designation"
                     required
+                    validationType="letters"
                     value={formData.designation}
                     onChange={e => setFormData({ ...formData, designation: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-[13px] font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+                    className="!bg-white"
                     placeholder="e.g. CEO or Employer"
                   />
                 </div>
 
-                <div>
-                  <label className="text-[11px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Company</label>
-                  <input 
-                    type="text"
-                    value={formData.company}
-                    onChange={e => setFormData({ ...formData, company: e.target.value })}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-[13px] font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
-                    placeholder="e.g. Tech Solutions"
-                  />
+                <div className="space-y-1 relative" ref={collegeDropdownRef}>
+                  <label className="text-[11px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">College / Company</label>
+                  <div className="relative">
+                    <input 
+                        type="text"
+                        value={formData.company}
+                        onFocus={() => setShowCollegeDropdown(true)}
+                        onChange={e => {
+                            setFormData({...formData, company: e.target.value});
+                            setCollegeSearch(e.target.value);
+                            setShowCollegeDropdown(true);
+                        }}
+                        className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-[13px] font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
+                        placeholder="Type to search or enter manually..."
+                    />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        {fetchingColleges ? (
+                            <Loader2 size={12} className="text-slate-300 animate-spin" />
+                        ) : (
+                            <ChevronDown size={14} className={clsx("text-slate-300 transition-transform", showCollegeDropdown && "rotate-180")} />
+                        )}
+                    </div>
+                  </div>
+
+                  {showCollegeDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-[110] max-h-[180px] overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-200 no-scrollbar">
+                        {colleges.filter(c => 
+                            c.company_name?.toLowerCase().includes(collegeSearch.toLowerCase())
+                        ).length > 0 ? (
+                            colleges.filter(c => 
+                                c.company_name?.toLowerCase().includes(collegeSearch.toLowerCase())
+                            ).map((college) => (
+                                <button
+                                    key={college.id}
+                                    type="button"
+                                    onClick={() => {
+                                        setFormData({...formData, company: college.company_name});
+                                        setCollegeSearch("");
+                                        setShowCollegeDropdown(false);
+                                    }}
+                                    className="w-full text-left px-4 py-2 text-[12px] font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-b border-slate-50 last:border-0 flex items-center gap-2"
+                                >
+                                    <Building2 size={12} className="text-slate-300" />
+                                    <span className="truncate">{college.company_name}</span>
+                                </button>
+                            ))
+                        ) : (
+                            <div className="px-4 py-3 text-[11px] text-slate-400 font-medium italic">
+                                {collegeSearch ? "No matches found. You can still use this name." : "Start typing to search colleges..."}
+                            </div>
+                        )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -211,13 +299,14 @@ export default function CMSTestimonialModal({ isOpen, onClose, onSuccess, item }
 
             {/* Message */}
             <div>
-              <label className="text-[11px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Testimonial Message</label>
-              <textarea 
+              <ValidatedTextArea 
+                label="Testimonial Message"
                 required
+                minWords={5}
                 rows={3}
                 value={formData.message}
                 onChange={e => setFormData({ ...formData, message: e.target.value })}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-[13px] font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all resize-none leading-snug"
+                className="!bg-white"
                 placeholder="Share the feedback here..."
               />
             </div>
@@ -247,13 +336,14 @@ export default function CMSTestimonialModal({ isOpen, onClose, onSuccess, item }
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-bold text-slate-500 mb-1 block uppercase tracking-wider">Display Order</label>
-                  <input 
+                  <ValidatedInput 
+                    label="Display Order"
                     type="number"
                     required
+                    validationType="numbers"
                     value={formData.display_order}
                     onChange={e => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 h-[38px] bg-white border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all"
+                    className="!bg-white"
                   />
                 </div>
 

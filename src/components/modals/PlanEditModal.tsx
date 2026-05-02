@@ -7,6 +7,7 @@ import {
   Loader2, BadgePercent, ShieldCheck, ListOrdered
 } from "lucide-react";
 import { clsx } from "clsx";
+import { ValidatedInput } from "@/components/ui/ValidatedInput";
 import type { Plan } from "@/types";
 
 interface PlanEditModalProps {
@@ -81,10 +82,11 @@ export default function PlanEditModal({
                 {/* Plan Identity */}
                 <div className="space-y-4">
                     <SmartField label="Plan Name" icon={Tag}>
-                        <input
+                        <ValidatedInput
                             value={form.name}
+                            validationType="letters"
                             onChange={(e) => handleChange("name", e.target.value)}
-                            className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
+                            className="!bg-white"
                             placeholder="Basic Silver"
                         />
                     </SmartField>
@@ -92,24 +94,24 @@ export default function PlanEditModal({
                     <div className="grid grid-cols-2 gap-4">
                         <SmartField label="Actual Price" icon={CreditCard}>
                             <div className="relative">
-                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] font-bold text-slate-400">₹</span>
-                                <input
-                                    type="text"
+                                <span className="absolute left-3.5 top-[12px] z-10 text-[13px] font-bold text-slate-400">₹</span>
+                                <ValidatedInput
+                                    validationType="numbers"
                                     value={form.actual_price ?? form.price ?? 0}
                                     onChange={(e) => handleChange("actual_price", e.target.value)}
-                                    className="w-full bg-white border border-slate-200 rounded-lg pl-7 pr-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
+                                    className="pl-7 !bg-white"
                                 />
                             </div>
                         </SmartField>
 
                         <SmartField label="Offer Price" icon={BadgePercent}>
                             <div className="relative">
-                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] font-bold text-blue-500">₹</span>
-                                <input
-                                    type="text"
+                                <span className="absolute left-3.5 top-[12px] z-10 text-[13px] font-bold text-blue-500">₹</span>
+                                <ValidatedInput
+                                    validationType="numbers"
                                     value={form.offer_price ?? 0}
                                     onChange={(e) => handleChange("offer_price", e.target.value)}
-                                    className="w-full bg-white border border-slate-200 rounded-lg pl-7 pr-4 py-2 text-[14px] font-bold text-blue-600 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
+                                    className="pl-7 !bg-white text-blue-600"
                                 />
                             </div>
                         </SmartField>
@@ -117,20 +119,22 @@ export default function PlanEditModal({
 
                     <div className="grid grid-cols-2 gap-4">
                         <SmartField label="Job Posts Limit" icon={Briefcase}>
-                            <input
+                            <ValidatedInput
                                 type="number"
+                                validationType="numbers"
                                 value={form.job_posts_limit ?? 0}
                                 onChange={(e) => handleChange("job_posts_limit", Number(e.target.value))}
-                                className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
+                                className="!bg-white"
                             />
                         </SmartField>
 
                         <SmartField label="Featured Jobs" icon={Star}>
-                            <input
+                            <ValidatedInput
                                 type="number"
+                                validationType="numbers"
                                 value={form.featured_jobs_limit ?? 0}
                                 onChange={(e) => handleChange("featured_jobs_limit", Number(e.target.value))}
-                                className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
+                                className="!bg-white"
                             />
                         </SmartField>
                     </div>
@@ -167,11 +171,12 @@ export default function PlanEditModal({
                         </SmartField>
 
                         <SmartField label="Display Order" icon={ListOrdered}>
-                            <input
+                            <ValidatedInput
                                 type="number"
+                                validationType="numbers"
                                 value={form.display_order ?? 0}
                                 onChange={(e) => handleChange("display_order", Number(e.target.value))}
-                                className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
+                                className="!bg-white"
                                 placeholder="0"
                             />
                         </SmartField>
