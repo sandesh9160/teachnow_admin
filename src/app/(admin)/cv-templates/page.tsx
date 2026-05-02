@@ -47,7 +47,7 @@ export default function ManageCVTemplatesPage() {
   const [templates, setTemplates] = useState<CVTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "active" | "hidden">("all");
+  const [filter, setFilter] = useState<"all" | "enabled" | "disabled">("all");
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -146,7 +146,7 @@ export default function ManageCVTemplatesPage() {
       const res = await getCVTemplates({
         page: currentPage,
         search,
-        status: filter === "all" ? undefined : (filter === "active" ? 1 : 0)
+        status: filter === "all" ? undefined : (filter === "enabled" ? 1 : 0)
       });
 
       const responseData = (res as any).data;
@@ -247,7 +247,7 @@ export default function ManageCVTemplatesPage() {
       setTemplates(prev => prev.map(t =>
         t.id === template.id ? { ...t, is_active: newStatus } : t
       ));
-      toast.success(`${template.name} is now ${newStatus ? 'live' : 'offline'}`);
+      toast.success(`${template.name} is now ${newStatus ? 'enabled' : 'disabled'}`);
     } catch (error) {
       toast.error("Failed to update status");
     }
@@ -351,8 +351,8 @@ export default function ManageCVTemplatesPage() {
                   <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 ml-1">System Visibility</label>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { val: 1, label: "Live", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
-                      { val: 0, label: "Hidden", icon: AlertCircle, color: "text-slate-400", bg: "bg-slate-50" }
+                      { val: 1, label: "Enabled", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
+                      { val: 0, label: "Disabled", icon: AlertCircle, color: "text-slate-400", bg: "bg-slate-50" }
                     ].map((opt) => (
                       <button
                         key={opt.val}
@@ -530,7 +530,7 @@ export default function ManageCVTemplatesPage() {
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100 uppercase tracking-tighter">System Assets</span>
                 <span className="w-1 h-1 rounded-full bg-slate-300" />
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{stats.active}/{stats.total} Active Templates</span>
+                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">{stats.active}/{stats.total} Enabled Templates</span>
               </div>
               <h1 className="text-xl font-semibold text-slate-900 tracking-tight leading-tight">Resume Templates</h1>
               <p className="text-[12px] text-slate-500 font-medium mt-0.5 max-w-lg leading-relaxed">
@@ -587,7 +587,7 @@ export default function ManageCVTemplatesPage() {
         </div>
 
         <div className="flex items-center p-1 bg-white rounded-xl border border-slate-200 shadow-sm shrink-0">
-          {(["all", "active", "hidden"] as const).map((opt) => (
+          {(["all", "enabled", "disabled"] as const).map((opt) => (
             <button
               key={opt}
               onClick={() => setFilter(opt)}
@@ -596,7 +596,7 @@ export default function ManageCVTemplatesPage() {
                 "px-5 py-2 text-[11px] font-bold rounded-lg transition-all capitalize",
                 filter === opt
                   ? opt === "all" ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
-                    : opt === "active" ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+                    : opt === "enabled" ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
                       : "bg-rose-500 text-white shadow-lg shadow-rose-500/20"
                   : "text-slate-400 hover:bg-slate-50"
               )}

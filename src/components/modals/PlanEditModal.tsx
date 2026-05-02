@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { 
   X, Save, CreditCard, Tag, Calendar, 
   Briefcase, Zap, Star, List, Settings2,
-  Loader2, BadgePercent, ShieldCheck, ListOrdered
+  Loader2, BadgePercent, ShieldCheck, ListOrdered, Crown
 } from "lucide-react";
 import { clsx } from "clsx";
 import { ValidatedInput } from "@/components/ui/ValidatedInput";
@@ -39,8 +39,9 @@ export default function PlanEditModal({
         featured_jobs_limit: plan.featured_jobs_limit ?? 0,
         feature_days: plan.feature_days ?? 0,
         display_order: plan.display_order ?? 0,
-        company_featured: plan.company_featured ?? 0,
-        is_active: plan.is_active ?? true,
+        is_active: plan.is_active === true || plan.is_active === 1 ? 1 : 0,
+        is_highlighted: plan.is_highlighted === true || plan.is_highlighted === 1 ? 1 : 0,
+        company_featured: plan.company_featured === true || plan.company_featured === 1 ? 1 : 0,
       });
     }
   }, [plan]);
@@ -48,7 +49,12 @@ export default function PlanEditModal({
   if (!isOpen || !form) return null;
 
   const handleChange = (field: keyof Plan, value: any) => {
-    setForm(prev => prev ? { ...prev, [field]: value } : null);
+    // Convert boolean toggles to 1/0 for API compatibility if needed
+    let finalValue = value;
+    if (field === "is_active" || field === "is_highlighted" || field === "company_featured") {
+        finalValue = value ? 1 : 0;
+    }
+    setForm(prev => prev ? { ...prev, [field]: finalValue } : null);
   };
 
   return (
@@ -97,9 +103,10 @@ export default function PlanEditModal({
                                 <span className="absolute left-3.5 top-[12px] z-10 text-[13px] font-bold text-slate-400">₹</span>
                                 <ValidatedInput
                                     validationType="numbers"
-                                    value={form.actual_price ?? form.price ?? 0}
+                                    value={(form.actual_price === 0 || form.actual_price === "0.00") ? "" : form.actual_price}
                                     onChange={(e) => handleChange("actual_price", e.target.value)}
                                     className="pl-7 !bg-white"
+                                    placeholder="0.00"
                                 />
                             </div>
                         </SmartField>
@@ -109,9 +116,10 @@ export default function PlanEditModal({
                                 <span className="absolute left-3.5 top-[12px] z-10 text-[13px] font-bold text-blue-500">₹</span>
                                 <ValidatedInput
                                     validationType="numbers"
-                                    value={form.offer_price ?? 0}
+                                    value={(form.offer_price === 0 || form.offer_price === "0.00") ? "" : form.offer_price}
                                     onChange={(e) => handleChange("offer_price", e.target.value)}
                                     className="pl-7 !bg-white text-blue-600"
+                                    placeholder="0.00"
                                 />
                             </div>
                         </SmartField>
@@ -122,9 +130,10 @@ export default function PlanEditModal({
                             <ValidatedInput
                                 type="number"
                                 validationType="numbers"
-                                value={form.job_posts_limit ?? 0}
+                                value={form.job_posts_limit === 0 ? "" : form.job_posts_limit}
                                 onChange={(e) => handleChange("job_posts_limit", Number(e.target.value))}
                                 className="!bg-white"
+                                placeholder="0"
                             />
                         </SmartField>
 
@@ -132,9 +141,10 @@ export default function PlanEditModal({
                             <ValidatedInput
                                 type="number"
                                 validationType="numbers"
-                                value={form.featured_jobs_limit ?? 0}
+                                value={form.featured_jobs_limit === 0 ? "" : form.featured_jobs_limit}
                                 onChange={(e) => handleChange("featured_jobs_limit", Number(e.target.value))}
                                 className="!bg-white"
+                                placeholder="0"
                             />
                         </SmartField>
                     </div>
@@ -143,18 +153,20 @@ export default function PlanEditModal({
                         <SmartField label="Validity (Days)" icon={Calendar}>
                             <input
                                 type="number"
-                                value={form.validity_days ?? 0}
+                                value={form.validity_days === 0 ? "" : form.validity_days}
                                 onChange={(e) => handleChange("validity_days", Number(e.target.value))}
                                 className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
+                                placeholder="0"
                             />
                         </SmartField>
 
                         <SmartField label="Live Duration" icon={Zap}>
                             <input
                                 type="number"
-                                value={form.job_live_days ?? 0}
+                                value={form.job_live_days === 0 ? "" : form.job_live_days}
                                 onChange={(e) => handleChange("job_live_days", Number(e.target.value))}
                                 className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
+                                placeholder="0"
                             />
                         </SmartField>
                     </div>
@@ -163,7 +175,7 @@ export default function PlanEditModal({
                         <SmartField label="Feature Days" icon={Calendar}>
                             <input
                                 type="number"
-                                value={form.feature_days ?? 0}
+                                value={form.feature_days === 0 ? "" : form.feature_days}
                                 onChange={(e) => handleChange("feature_days", Number(e.target.value))}
                                 className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2 text-[14px] font-bold text-slate-800 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none"
                                 placeholder="0"
@@ -174,7 +186,7 @@ export default function PlanEditModal({
                             <ValidatedInput
                                 type="number"
                                 validationType="numbers"
-                                value={form.display_order ?? 0}
+                                value={form.display_order === 0 ? "" : form.display_order}
                                 onChange={(e) => handleChange("display_order", Number(e.target.value))}
                                 className="!bg-white"
                                 placeholder="0"
@@ -232,6 +244,31 @@ export default function PlanEditModal({
                                 )} />
                             </button>
                         </div>
+
+                        <div className="p-4 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-violet-600 text-white flex items-center justify-center">
+                                    <Crown size={16} />
+                                </div>
+                                <div>
+                                    <p className="text-[13px] font-bold text-slate-900">Company Featured</p>
+                                    <p className="text-[11px] text-violet-600 font-medium">Premium institution</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => handleChange("company_featured", !form.company_featured)}
+                                className={clsx(
+                                    "w-10 h-5 rounded-full relative transition-colors duration-200 outline-none",
+                                    form.company_featured ? "bg-violet-600" : "bg-slate-300"
+                                )}
+                            >
+                                <div className={clsx(
+                                    "absolute top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200",
+                                    form.company_featured ? "translate-x-6" : "translate-x-1"
+                                )} />
+                            </button>
+                        </div>
                     </div>
 
                     <SmartField label="Plan Features" icon={List}>
@@ -239,7 +276,7 @@ export default function PlanEditModal({
                             rows={3}
                             value={(form.features || []).join("\n")}
                             onChange={(e) =>
-                                handleChange("features", e.target.value.split("\n"))
+                                handleChange("features", e.target.value.split("\n").filter(f => f.trim() !== ""))
                             }
                             className="w-full bg-white border border-slate-200 rounded-lg px-4 py-3 text-[13px] font-bold text-slate-600 focus:ring-4 focus:ring-blue-500/5 focus:border-blue-400 transition-all outline-none resize-none leading-relaxed"
                             placeholder="Benefit 1&#10;Benefit 2..."

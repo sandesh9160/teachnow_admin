@@ -29,16 +29,16 @@ export default function PlanCard({
   onEdit,
   onToggleStatus
 }: PlanCardProps) {
-  const theme = getPlanTheme(plan.slug);
+  const theme = getPlanTheme(plan.slug || 'default');
 
   return (
     <div
       className={clsx(
         "relative rounded-xl border transition-all duration-300 bg-white overflow-hidden flex flex-col group shadow-sm hover:shadow-md",
-        plan.is_highlighted ? "border-blue-500 ring-1 ring-blue-500" : "border-slate-200"
+        (plan.is_highlighted === 1 || plan.is_highlighted === true) ? "border-blue-500 ring-1 ring-blue-500" : "border-slate-200"
       )}
     >
-      {plan.is_highlighted ? (
+      {(plan.is_highlighted === 1 || plan.is_highlighted === true) ? (
         <div className="bg-[#2563EB] py-1 text-center">
           <span className="text-[11px] font-bold text-white tracking-wide">
             Most Popular
@@ -59,7 +59,7 @@ export default function PlanCard({
           </div>
           <div className="min-w-0">
             <h3 className="text-[16px] font-bold text-slate-900 leading-none tracking-tight">{plan.name}</h3>
-            <p className="text-[11px] font-medium text-slate-400 mt-1 leading-tight line-clamp-1">{(plan as any).description || `Perfect for ${plan.slug} needs`}</p>
+            <p className="text-[11px] font-medium text-slate-400 mt-1 leading-tight line-clamp-1">{(plan as any).description || `Subscription tier for ${plan.name}`}</p>
           </div>
         </div>
 

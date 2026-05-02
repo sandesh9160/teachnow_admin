@@ -79,8 +79,8 @@ export const ValidatedInput = React.forwardRef<HTMLInputElement, ValidatedInputP
             onBlur={handleBlur}
             suppressHydrationWarning
             className={clsx(
-              "w-full px-3 py-2 bg-slate-50 border rounded-xl text-[12px] font-semibold transition-all shadow-sm focus:outline-none focus:bg-white",
-              error && touched ? "border-rose-300 focus:border-rose-400 ring-4 ring-rose-500/5" : "border-slate-100 focus:border-indigo-200",
+              "w-full px-3 py-2 bg-white border rounded-xl text-[12px] font-semibold transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/5",
+              error && touched ? "border-rose-300 focus:border-rose-400" : "border-slate-100 focus:border-indigo-200",
               className
             )}
             {...props}
@@ -165,8 +165,8 @@ export const ValidatedTextArea = React.forwardRef<HTMLTextAreaElement, Validated
               onChange={onChange}
               onBlur={handleBlur}
               className={clsx(
-                "w-full px-3 py-2 bg-slate-50 border rounded-2xl text-[12px] font-semibold transition-all shadow-sm focus:outline-none focus:bg-white resize-none",
-                error && touched ? "border-rose-300 focus:border-rose-400 ring-4 ring-rose-500/5" : "border-slate-100 focus:border-indigo-200",
+                "w-full px-3 py-2 bg-white border rounded-2xl text-[12px] font-semibold transition-all shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/5",
+                error && touched ? "border-rose-300 focus:border-rose-400" : "border-slate-100 focus:border-indigo-200",
                 className
               )}
               {...props}

@@ -6,14 +6,14 @@ import type { Plan } from "@/types";
 import { clsx } from "clsx";
 import { getPlans, updatePlan, createPlan } from "@/services/admin.service";
 import { toast } from "sonner";
-import { Plus, Loader2, Sparkles, TrendingUp, ShieldCheck, CreditCard } from "lucide-react";
-import PlanEditModal from "@/components/modals/PlanEditModal";
+import { Plus, Loader2, CreditCard } from "lucide-react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function ManagePlansPage() {
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
-  const [savingPlan, setSavingPlan] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     fetchPlans();
@@ -37,57 +37,23 @@ export default function ManagePlansPage() {
     }
   };
 
-  const handleSavePlan = async (planData: any) => {
-    try {
-      setSavingPlan(true);
-      if (planData.id) {
-        // Update existing
-        await updatePlan(planData.id, planData);
-        toast.success("Plan updated successfully");
-      } else {
-        // Create new
-        await createPlan(planData);
-        toast.success("New plan created successfully!");
-      }
-      fetchPlans();
-      setEditingPlan(null);
-    } catch (error) {
-      console.error("Failed to save plan:", error);
-      toast.error("Failed to save plan");
-    } finally {
-      setSavingPlan(false);
-    }
-  };
+
 
 
 
   const handleToggleStatus = async (plan: Plan) => {
     try {
-      const isActive = !plan.is_active;
-      await updatePlan(plan.id, { is_active: isActive });
-      setPlans(prev => prev.map(p => p.id === plan.id ? { ...p, is_active: isActive } : p));
-      toast.success(isActive ? "Plan enabled" : "Plan disabled");
+      const isActive = (plan.is_active === true || plan.is_active === 1);
+      const nextStatus = isActive ? 0 : 1;
+      await updatePlan(plan.id, { is_active: nextStatus });
+      setPlans(prev => prev.map(p => p.id === plan.id ? { ...p, is_active: nextStatus } : p));
+      toast.success(nextStatus === 1 ? "Plan enabled" : "Plan disabled");
     } catch (error) {
       toast.error("Failed to update status");
     }
   };
 
-  const handleCreatePlan = () => {
-    const defaultNewPlan: any = {
-      name: "",
-      actual_price: 0,
-      offer_price: 0,
-      job_posts_limit: 0,
-      validity_days: 0,
-      job_live_days: 0,
-      features: [],
-      featured_jobs_limit: 0,
-      company_featured: 0,
-      feature_days: 0,
-      display_order: 0
-    };
-    setEditingPlan(defaultNewPlan);
-  };
+
 
   if (loading) {
     return (
@@ -108,13 +74,13 @@ export default function ManagePlansPage() {
           <h1 className="page-title">Manage Plans</h1>
           <p className="page-subtitle">Configure subscription plans for institutes</p>
         </div>
-        <button
-          onClick={handleCreatePlan}
+        <Link
+          href="/plans/create"
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-[12.5px] font-semibold transition-all active:scale-95 shadow-sm shadow-blue-600/20"
         >
           <Plus size={14} />
           Create New Plan
-        </button>
+        </Link>
       </div>
 
       {/* Reference Metrics Grid */}
@@ -136,21 +102,13 @@ export default function ManagePlansPage() {
             <PlanCard
               key={plan.id}
               plan={plan}
-              onEdit={() => setEditingPlan(plan)}
-              onSave={handleSavePlan}
-              onCancel={() => setEditingPlan(null)}
+              onEdit={() => router.push(`/plans/${plan.id}`)}
               onToggleStatus={handleToggleStatus}
             />
           ))}
         </div>
       )}
-      <PlanEditModal
-        isOpen={Boolean(editingPlan)}
-        plan={editingPlan}
-        saving={savingPlan}
-        onClose={() => setEditingPlan(null)}
-        onSave={handleSavePlan}
-      />
+
     </div>
   );
 }

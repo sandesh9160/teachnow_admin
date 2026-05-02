@@ -107,24 +107,23 @@ export type MasterDataTab =
 export interface Plan {
   id: number;
   name: string;
-  slug: string;
-  price: number | string;
+  slug?: string;
   actual_price?: number | string;
   offer_price?: number | string;
   job_posts_limit?: number;
   validity_days?: number;
   job_live_days?: number;
+  feature_days?: number;
   featured_jobs_limit?: number;
   company_featured?: number | boolean;
-  feature_days?: number;
-  original_price?: number | string;
-  sale_price?: number | string;
-  duration: string;
   features: string[];
-  is_highlighted: boolean;
-  is_active: boolean;
+  is_highlighted: number | boolean;
+  is_active: number | boolean;
   display_order?: number;
-  subscribers?: number;
+  created_at?: string;
+  updated_at?: string;
+  price?: number | string;
+  duration?: string;
 }
 
 export interface PlanCardProps {
