@@ -149,8 +149,10 @@ export interface CVTemplate {
 
 export interface DeletedItem {
   id: number;
-  name: string;
+  name?: string;
+  company_name?: string;
   email?: string;
+  phone?: string;
   type: string;
   deleted_at: string;
   deleted_by?: string;

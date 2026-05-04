@@ -54,12 +54,12 @@ export default function DeletedJobsPage() {
   };
 
   const filtered = items.filter(item => 
-    item.name?.toLowerCase().includes(search.toLowerCase())
+    (item as any).title?.toLowerCase().includes(search.toLowerCase())
   );
 
   const columns = [
     { 
-      key: "name", 
+      key: "title", 
       title: "Job Title", 
       render: (v: unknown) => <span className="font-semibold text-surface-900 text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
     },

@@ -54,13 +54,13 @@ export default function DeletedEmployersPage() {
   };
 
   const filtered = items.filter(item => 
-    item.name?.toLowerCase().includes(search.toLowerCase()) ||
+    (item.company_name || item.name)?.toLowerCase().includes(search.toLowerCase()) ||
     item.email?.toLowerCase().includes(search.toLowerCase())
   );
 
   const columns = [
     { 
-      key: "name", 
+      key: "company_name", 
       title: "Employer", 
       render: (v: unknown) => <span className="font-semibold text-surface-900 text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
     },
