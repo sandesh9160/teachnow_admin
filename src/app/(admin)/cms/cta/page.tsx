@@ -38,14 +38,6 @@ export default function CMSCTAPage() {
     }
   };
 
-  const handleToggleActive = async (id: number) => {
-    try {
-      await toggleCMSCTA(id);
-      fetchCTAs();
-    } catch (error) {
-      toast.error("Failed to update status");
-    }
-  };
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this banner?")) return;
@@ -107,17 +99,13 @@ export default function CMSCTAPage() {
     { 
       key: "is_active", 
       title: "Status", 
-      render: (v: unknown, item: any) => (
-        <button 
-          onClick={() => handleToggleActive(item.id)}
-          className={clsx(
-            "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all",
-            Boolean(v) ? "bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm" : "bg-slate-100 text-slate-500 border border-slate-200"
-          )}
+      render: (v: unknown) => (
+        <Badge 
+          variant={Boolean(v) ? "success" : "default"}
+          dot
         >
-          <div className={clsx("w-2 h-2 rounded-full", Boolean(v) ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-slate-400")} />
           {Boolean(v) ? "Active" : "Hidden"}
-        </button>
+        </Badge>
       ) 
     },
     { 

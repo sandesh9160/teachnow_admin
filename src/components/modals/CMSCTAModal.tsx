@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { X, Loader2, Image as ImageIcon, UploadCloud, Type, Link as LinkIcon, Save, Megaphone } from "lucide-react";
 import { toast } from "sonner";
 import { clsx } from "clsx";
-import { createCMSCTA, updateCMSCTA } from "@/services/admin.service";
+import { createCMSCTA, updateCMSCTA, toggleCMSCTA } from "@/services/admin.service";
 
 interface CMSCTAModalProps {
   isOpen: boolean;
@@ -33,7 +33,7 @@ export default function CMSCTAModal({ isOpen, onClose, onSuccess, item }: CMSCTA
           subtitle: item.subtitle || "",
           button_text: item.button_text || "",
           button_link: item.button_link || "",
-          is_active: item.is_active !== undefined ? (item.is_active ? 1 : 0) : 1,
+          is_active: item.is_active !== undefined ? (Boolean(Number(item.is_active)) ? 1 : 0) : 1,
         });
         if (item.background_image) {
           setPreviewImage(
@@ -236,19 +236,61 @@ export default function CMSCTAModal({ isOpen, onClose, onSuccess, item }: CMSCTA
               </div>
 
                <div className="pt-2">
-                  <label className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer transition-all">
-                    <span className="text-[12px] font-bold text-slate-700">Display this CTA</span>
-                    <div className="relative flex items-center justify-center">
-                      <input
-                        type="checkbox"
-                        className="sr-only"
-                        checked={formData.is_active === 1}
-                        onChange={e => setFormData({ ...formData, is_active: e.target.checked ? 1 : 0 })}
-                      />
-                      <div className={clsx("w-8 h-4 bg-slate-200 rounded-full transition-colors", formData.is_active === 1 && "bg-emerald-500")}></div>
-                      <div className={clsx("absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow-sm", formData.is_active === 1 && "translate-x-4")}></div>
+                  <label className="text-[11px] font-bold text-slate-500 mb-2 block uppercase tracking-wider text-center md:text-left">Visibility Status</label>
+                  <button 
+                    type="button"
+                    onClick={async () => {
+                      const newState = formData.is_active === 1 ? 0 : 1;
+                      setFormData({ ...formData, is_active: newState });
+                      
+                      if (item?.id) {
+                        try {
+                           // Call the toggle service for immediate update on server
+                           // This matches the behavior of the status button in the list view
+                           const res = await toggleCMSCTA(item.id);
+                           if (res?.status === false) {
+                             toast.error(res.message || "Failed to update status on server");
+                             // Revert local state if server call fails
+                             setFormData(prev => ({ ...prev, is_active: newState === 1 ? 0 : 1 }));
+                           } else {
+                             toast.success("Status updated successfully");
+                             onSuccess(); // Refresh the list in the background
+                           }
+                        } catch (error) {
+                           toast.error("An error occurred while updating status");
+                           setFormData(prev => ({ ...prev, is_active: newState === 1 ? 0 : 1 }));
+                        }
+                      }
+                    }}
+                    className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-100 bg-slate-50/30 hover:bg-white hover:border-emerald-100 hover:shadow-md hover:shadow-emerald-500/5 cursor-pointer transition-all group outline-none"
+                  >
+                    <div className="flex items-center gap-3">
+                        <div className={clsx(
+                            "w-8 h-8 rounded-xl flex items-center justify-center transition-all shadow-sm border",
+                            formData.is_active === 1 ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-100 text-slate-400 border-slate-200"
+                        )}>
+                            <div className={clsx(
+                              "w-2 h-2 rounded-full", 
+                              formData.is_active === 1 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-slate-300"
+                            )} />
+                        </div>
+                        <div className="text-left">
+                            <p className="text-[12px] font-bold text-slate-800">Display this CTA</p>
+                            <p className="text-[10px] font-medium text-slate-400">
+                                {formData.is_active === 1 ? "Active on platform" : "Currently hidden"}
+                            </p>
+                        </div>
                     </div>
-                  </label>
+                    <div className={clsx(
+                      "relative w-11 h-6 rounded-full transition-all duration-300 flex items-center px-1",
+                      formData.is_active === 1 ? "bg-emerald-500 shadow-inner" : "bg-slate-200 shadow-inner"
+                    )}>
+                      <div className={clsx(
+                        "w-4 h-4 bg-white rounded-full transition-all duration-300 shadow-md transform",
+                        formData.is_active === 1 ? "translate-x-5" : "translate-x-0"
+                      )} />
+                    </div>
+                  </button>
                </div>
             </div>
 
