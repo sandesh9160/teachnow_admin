@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Plus, Search, Megaphone, Pencil, Trash2, Layout, Menu, RotateCcw, Image as ImageIcon } from "lucide-react";
+import { ArrowLeft, Plus, Search, Megaphone, Pencil, Trash2, RotateCcw, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { 
   getCMSCTAs, 

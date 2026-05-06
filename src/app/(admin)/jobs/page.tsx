@@ -42,6 +42,7 @@ export default function JobsPage() {
     const [pagination, setPagination] = useState<{ currentPage: number; lastPage: number; total: number }>({
         currentPage: 1,
         lastPage: 1,
+        
         total: 0
     });
 

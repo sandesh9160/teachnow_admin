@@ -65,7 +65,7 @@ export default function DeletedJobsPage() {
     },
     { 
       key: "email", 
-      title: "Employer info", 
+      title: "Institute name", 
       render: (v: unknown) => <span className="text-surface-500 font-medium text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
     },
     { 
@@ -96,10 +96,10 @@ export default function DeletedJobsPage() {
           <div className="w-px h-3 bg-surface-100 mx-1" />
           <button 
             onClick={() => handlePermanentDelete(item.id)}
-            title="Purge" 
+            title="Delete" 
             className="text-red-500 hover:text-red-600 text-[10px] font-bold uppercase cursor-pointer"
           >
-            <Trash2 size={13} /> Purge
+            <Trash2 size={13} /> Delete
           </button>
         </div>
         );

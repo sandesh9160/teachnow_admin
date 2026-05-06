@@ -26,7 +26,7 @@ import { toast } from "sonner";
 import {
     getCategories, createCategory, updateCategory, deleteCategory,
     getLocations, createLocation, updateLocation, deleteLocation,
-    getSkills, createSkill, updateSkill, deleteSkill,
+    getSkills, createSkill, updateSkill, deleteSkill, toggleSkillStatus,
     updateCategorySEO, updateLocationSEO
 } from "@/services/admin.service";
 import { MasterDataItem } from "@/types";
@@ -34,13 +34,8 @@ import SEOEditModal from "@/components/modals/SEOEditModal";
 
 // ─── Initial Mock for Tabs other than Categories ───────────────────────────
 const initialMock: Record<string, any[]> = {
-    locations: [
-        { id: 1, name: "New Delhi", slug: "new-delhi", count: 342, is_visible: true, is_featured: true, created: "Jan 01, 2025" },
-        { id: 2, name: "Mumbai", slug: "mumbai", count: 289, is_visible: true, is_featured: true, created: "Jan 01, 2025" },
-    ],
-    skills: [
-        { id: 1, name: "Mathematics", slug: "mathematics", count: 520, is_visible: true, is_featured: true, created: "Jan 01, 2025" },
-    ],
+    locations: [],
+    skills: [],
 };
 
 const tabs = [
@@ -85,7 +80,7 @@ export default function MasterDataPage() {
                 // Handle paginated response: { status: true, data: { current_page: 1, data: [...], ... } }
                 const responseData = res.data;
                 const list = Array.isArray(responseData?.data) ? responseData.data : (Array.isArray(responseData) ? responseData : []);
-                
+
                 if (activeTab === "categories") setCategories(list);
                 else if (activeTab === "locations") setLocations(list);
                 else if (activeTab === "skills") setSkills(list);
@@ -104,6 +99,28 @@ export default function MasterDataPage() {
             toast.error(err.message || "Failed to fetch data");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleToggleSkill = async (id: number) => {
+        try {
+            const res = await toggleSkillStatus(id);
+            if (res?.status) {
+                toast.success(res.message || "Skill status updated");
+                
+                // Show exact status from response data if available
+                if (res.data) {
+                    setSkills(prev => prev.map(item => 
+                        item.id === id ? { ...item, is_active: res.data.is_active } : item
+                    ));
+                } else {
+                    fetchData(pagination.currentPage);
+                }
+            } else {
+                toast.error(res?.message || "Failed to update skill status");
+            }
+        } catch (err: any) {
+            toast.error(err.message || "Failed to update skill status");
         }
     };
 
@@ -148,8 +165,8 @@ export default function MasterDataPage() {
                 if (activeTab === "skills") {
                     const payload = {
                         name: editingItem.name,
-                        is_active: (editingItem as any).is_active === 1 || (editingItem as any).is_active === "1" ? 1 : 0,
-                        is_custom: (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" ? 1 : 0
+                        is_active: (editingItem as any).is_active === 1 || (editingItem as any).is_active === "1" || (editingItem as any).is_active === true,
+                        is_custom: (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" || (editingItem as any).is_custom === true
                     };
                     console.log("[MasterData] Creating Skill:", payload);
                     res = await createSkill(payload as any);
@@ -215,8 +232,8 @@ export default function MasterDataPage() {
                 } else if (activeTab === "skills") {
                     const payload = {
                         name: editingItem.name,
-                        is_active: (editingItem as any).is_active === 1 || (editingItem as any).is_active === "1" ? 1 : 0,
-                        is_custom: (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" ? 1 : 0
+                        is_active: (editingItem as any).is_active === 1 || (editingItem as any).is_active === "1" || (editingItem as any).is_active === true,
+                        is_custom: (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" || (editingItem as any).is_custom === true
                     };
                     console.log("[MasterData] Updating Skill:", { id: editingItem.id, payload });
                     res = await updateSkill(editingItem.id, payload);
@@ -285,9 +302,33 @@ export default function MasterDataPage() {
             render: (v: any, r: any) => {
                 // Handle skills which use is_active instead of is_visible
                 const isActive = activeTab === "skills" ? (Number(r.is_active) === 1 || r.is_active === true) : (Number(v) === 1 || v === true);
+
+                if (activeTab === "skills") {
+                    return (
+                        <div className="flex items-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => handleToggleSkill(r.id)}
+                                className={clsx(
+                                    "w-8 h-4.5 rounded-full transition-colors relative cursor-pointer",
+                                    isActive ? "bg-primary-600" : "bg-surface-300"
+                                )}
+                            >
+                                <div className={clsx(
+                                    "absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm",
+                                    isActive ? "right-0.5" : "left-0.5"
+                                )} />
+                            </button>
+                            <span className={clsx("text-[10px] font-bold uppercase", isActive ? "text-primary-600" : "text-surface-400")}>
+                                {isActive ? "Active" : "Inactive"}
+                            </span>
+                        </div>
+                    );
+                }
+
                 return (
                     <Badge variant={isActive ? "success" : "default"} dot className="text-[9px] uppercase font-semibold">
-                        {isActive ? (activeTab === "skills" ? "Active" : "Visible") : (activeTab === "skills" ? "Inactive" : "Hidden")}
+                        {isActive ? "Visible" : "Hidden"}
                     </Badge>
                 );
             }

@@ -86,6 +86,9 @@ export const updateSkill = (id: number, data: any) =>
 export const deleteSkill = (id: number) =>
   dashboardServerFetch(`/admin/cms/skills/${id}`, { method: "DELETE" });
 
+export const toggleSkillStatus = (id: number) =>
+  dashboardServerFetch(`/admin/cms/skills/${id}/toggle`, { method: "PATCH" });
+
 // ─── Jobs ────────────────────────────────────────────────────────────────────
 
 export const getJobs = (params?: Record<string, unknown>) =>
