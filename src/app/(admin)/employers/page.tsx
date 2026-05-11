@@ -10,7 +10,6 @@ import {
   RotateCcw,
   Building2,
   Search,
-  Download,
   Filter,
   MapPin,
   CheckCircle2,
@@ -160,13 +159,13 @@ export default function EmployersPage() {
             {row.company_logo ? (
               <img src={resolveMediaUrl(row.company_logo)} alt="" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-surface-400 font-bold text-[10px]">{row.company_name?.charAt(0)}</span>
+              <span className="text-slate-900 font-bold text-[10px]">{row.company_name?.charAt(0)}</span>
             )}
           </div>
           <div className="min-w-0">
             <span className="font-semibold text-surface-900 block truncate leading-tight text-[13px]">{row.company_name}</span>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[9px] font-semibold text-surface-400 uppercase">{row.institution_type || 'Institution'}</span>
+              <span className="text-[9px] font-semibold text-slate-900">{row.institution_type || 'Institution'}</span>
               {row.is_featured && row.company_featured === 1 && (!row.featured_until || new Date(row.featured_until) >= new Date()) && (
                 <div className="w-1.5 h-1.5 rounded-full bg-primary" />
               )}
@@ -180,8 +179,8 @@ export default function EmployersPage() {
       title: "Location",
       render: (_: any, row: Employer) => (
         <div className="flex flex-col">
-          <span className="text-surface-900 font-semibold text-[12px]">{row.city}</span>
-          <span className="text-[10px] text-surface-400 font-medium truncate max-w-[120px] lowercase">{row.address}</span>
+          <span className="text-slate-900 font-semibold text-[12px]">{row.city}</span>
+          <span className="text-[10px] text-slate-900 font-medium truncate max-w-[120px]">{row.address}</span>
         </div>
       )
     },
@@ -218,7 +217,7 @@ export default function EmployersPage() {
       key: "created_at",
       title: "Joined On",
       render: (val: any) => (
-        <span className="text-surface-500 font-medium text-[11px] whitespace-nowrap">
+        <span className="text-slate-900 font-medium text-[11px] whitespace-nowrap">
           {new Date(val).toLocaleDateString()}
         </span>
       )
@@ -233,6 +232,7 @@ export default function EmployersPage() {
               onClick={(e) => { e.stopPropagation(); handleAction(row.id, "verify"); }}
               disabled={processingId === row.id}
               className="w-8 h-8 text-success hover:bg-success/5 rounded-md flex items-center justify-center transition-all"
+              suppressHydrationWarning
             >
               <CheckCircle2 size={14} />
             </button>
@@ -240,7 +240,8 @@ export default function EmployersPage() {
 
           <button
             onClick={(e) => { e.stopPropagation(); setSeoModal({ isOpen: true, employer: row }); }}
-            className="w-8 h-8 text-surface-400 hover:bg-surface-100 hover:text-primary rounded-md flex items-center justify-center transition-all"
+            className="w-8 h-8 text-slate-900 hover:bg-surface-100 hover:text-primary rounded-md flex items-center justify-center transition-all"
+            suppressHydrationWarning
           >
             <Globe size={14} />
           </button>
@@ -254,7 +255,8 @@ export default function EmployersPage() {
           <button
             onClick={(e) => { e.stopPropagation(); handleAction(row.id, "delete"); }}
             disabled={processingId === row.id}
-            className="w-8 h-8 text-surface-300 hover:text-danger hover:bg-danger/5 rounded-md flex items-center justify-center transition-all"
+            className="w-8 h-8 text-slate-900 hover:text-danger hover:bg-danger/5 rounded-md flex items-center justify-center transition-all"
+            suppressHydrationWarning
           >
             <Trash2 size={14} />
           </button>
@@ -274,7 +276,8 @@ export default function EmployersPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => fetchEmployers()}
-            className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary transition-all active:scale-95 shadow-sm"
+            className="p-2 bg-white border border-slate-200 rounded-lg text-slate-900 hover:text-primary transition-all active:scale-95 shadow-sm"
+            suppressHydrationWarning
           >
             <RotateCcw size={15} className={clsx(loading && "animate-spin")} />
           </button>
@@ -304,13 +307,14 @@ export default function EmployersPage() {
       {/* ─── Filter Matrix ────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-3 relative z-[60]">
         <div className="relative flex-1 min-w-[300px] group">
-          <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+          <Search size={17} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-900 group-focus-within:text-primary transition-colors" />
           <input
             type="text"
             placeholder="Search by name, email or location..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-11 pr-5 py-3 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all font-semibold"
+            className="w-full pl-11 pr-5 py-3 bg-white border border-slate-200 rounded-lg text-[13px] font-medium text-slate-900 placeholder:text-slate-900 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all font-semibold"
+            suppressHydrationWarning
           />
         </div>
 
@@ -342,6 +346,7 @@ export default function EmployersPage() {
           <button
             onClick={() => { setSearch(""); setLocFilter("all"); setStatusFilter("all"); setFeaturedFilter("all"); }}
             className="flex items-center gap-1.5 px-3 py-2 text-[12px] font-semibold text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
+            suppressHydrationWarning
           >
             Reset
           </button>
@@ -349,20 +354,20 @@ export default function EmployersPage() {
       </div>
 
       {/* ─── Registry Table ─────────────────────────────────────── */}
-      <div className="bg-white rounded-[24px] border border-slate-200/60 shadow-xl shadow-slate-200/30 overflow-hidden relative z-10">
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden relative z-10">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[900px]">
+          <table className="w-full text-left border-collapse min-w-[900px]" suppressHydrationWarning>
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Organization</th>
-                <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Location</th>
-                <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Status</th>
-                <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Joined</th>
-                <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Featured</th>
-                <th className="px-5 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Actions</th>
+              <tr className="border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
+                <th className="px-5 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Organization</th>
+                <th className="px-5 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Location</th>
+                <th className="px-5 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Status</th>
+                <th className="px-5 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Joined</th>
+                <th className="px-5 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Featured</th>
+                <th className="px-5 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-200">
               {!loading && filtered.map((row: Employer, i: number) => (
                 <tr key={i} className="group hover:bg-white transition-all duration-200 cursor-pointer" onClick={() => router.push(`/employers/${row.id}`)}>
                   <td className="px-6 py-4">
@@ -374,14 +379,14 @@ export default function EmployersPage() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-[13px] font-bold text-slate-900 leading-tight group-hover:text-primary transition-colors">{row.company_name}</p>
-                        <p className="text-[11px] text-slate-500 font-semibold mt-0.5 tracking-tight uppercase tracking-widest">{row.institution_type || 'Institution'}</p>
+                        <p className="text-[11px] text-slate-900 font-semibold mt-0.5 tracking-tight tracking-widest">{row.institution_type || 'Institution'}</p>
                       </div>
                     </div>
                   </td>
 
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1.5">
-                      <MapPin size={12} className="text-slate-400" />
+                      <MapPin size={12} className="text-slate-900" />
                       <span className="text-[12px] font-bold text-slate-900 truncate">{row.city || '—'}</span>
                     </div>
                   </td>
@@ -389,10 +394,10 @@ export default function EmployersPage() {
                   <td className="px-6 py-4 text-center">
                     <div className="inline-flex">
                       <div className={clsx(
-                        "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border lowercase",
-                        row.is_verified ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
+                        "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border",
+                        row.is_verified ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-900 border-slate-100"
                       )}>
-                        <span className="lowercase">{row.is_verified ? "verified" : "Verification Pending"}</span>
+                        <span>{row.is_verified ? "Verified" : "Verification Pending"}</span>
                       </div>
                     </div>
                   </td>
@@ -431,7 +436,7 @@ export default function EmployersPage() {
                           );
                         }
 
-                        return <span className="text-slate-400 text-[10px] font-semibold">—</span>;
+                        return <span className="text-slate-900 text-[10px] font-semibold">—</span>;
                       })()}
                     </div>
                   </td>
@@ -442,6 +447,7 @@ export default function EmployersPage() {
                         onClick={() => router.push(`/employers/${row.id}`)}
                         title="View profile"
                         className="p-1.5 bg-indigo-50 border border-indigo-100 text-indigo-500 hover:bg-indigo-100 rounded-lg transition-all active:scale-95 shadow-sm"
+                        suppressHydrationWarning
                       >
                         <Eye size={15} />
                       </button>
@@ -455,14 +461,14 @@ export default function EmployersPage() {
           {loading && (
             <div className="py-24 flex flex-col items-center justify-center">
               <Loader2 className="animate-spin text-primary/40 mb-3" size={32} />
-              <span className="text-[13px] font-semibold text-slate-400">Loading organizations...</span>
+              <span className="text-[13px] font-semibold text-slate-900">Loading organizations...</span>
             </div>
           )}
 
           {!loading && filtered.length === 0 && (
             <div className="py-24 flex flex-col items-center justify-center opacity-50">
-              <Building2 size={40} className="text-slate-300 mb-3" />
-              <span className="text-[14px] font-semibold text-slate-400">No organizations found</span>
+              <Building2 size={40} className="text-slate-900 mb-3" />
+              <span className="text-[14px] font-semibold text-slate-900">No organizations found</span>
             </div>
           )}
         </div>
@@ -496,7 +502,7 @@ export default function EmployersPage() {
               <button
                 disabled={pagination.currentPage === pagination.lastPage || loading}
                 onClick={() => fetchEmployers(pagination.currentPage + 1)}
-                className="h-10 px-5 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[12px] font-bold active:scale-95 disabled:cursor-not-allowed"
+                className="h-10 px-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-white text-slate-900 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[12px] font-bold active:scale-95 disabled:cursor-not-allowed"
               >
                 Next <ChevronRight size={16} strokeWidth={2.5} />
               </button>
@@ -537,9 +543,10 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
       <button
         onClick={() => setOpen()}
         className={clsx(
-          "flex items-center justify-between gap-3 px-5 py-3 bg-white border rounded-xl text-[13px] font-semibold transition-all shadow-sm min-w-[150px]",
-          isOpen ? "border-primary/40 ring-4 ring-primary/5 text-primary" : "border-slate-200 text-slate-700 hover:bg-slate-50"
+          "flex items-center justify-between gap-3 px-5 py-3 bg-white border rounded-lg text-[13px] font-semibold transition-all shadow-sm min-w-[150px]",
+          isOpen ? "border-primary/40 ring-4 ring-primary/5 text-primary" : "border-slate-200 text-slate-900 hover:bg-slate-50"
         )}
+        suppressHydrationWarning
       >
         <span className="truncate">{label}</span>
         <Filter size={14} className={clsx("text-slate-400 transition-transform duration-300", isOpen && "text-primary")} />
@@ -555,9 +562,10 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
                 setOpen(false);
               }}
               className={clsx(
-                "w-full text-left px-5 py-2.5 text-[13px] font-medium transition-colors uppercase tracking-tight",
-                label.toLowerCase() === opt.toLowerCase() ? "bg-primary/5 text-primary font-bold" : "text-slate-700 hover:bg-slate-50 active:bg-slate-100"
+                "w-full text-left px-5 py-2.5 text-[13px] font-medium transition-colors tracking-tight",
+                label.toLowerCase() === opt.toLowerCase() ? "bg-primary/5 text-primary font-bold" : "text-slate-900 hover:bg-slate-50 active:bg-slate-100"
               )}
+              suppressHydrationWarning
             >
               {opt === "all" ? `All ${label.split(' ')[0]}s` : opt}
             </button>
@@ -578,9 +586,9 @@ function StatMini({ label, value, color, icon }: any) {
     slate: "text-surface-400 bg-surface-50 border-surface-100",
   };
   return (
-    <div className={clsx("bg-white p-4 rounded-xl border shadow-card flex items-center justify-between group hover:shadow-lg transition-all", colors[color].split(' ')[2])}>
+    <div className={clsx("bg-white p-4 rounded-lg border shadow-card flex items-center justify-between group hover:shadow-lg transition-all", colors[color].split(' ')[2])}>
       <div className="space-y-0.5">
-        <p className="text-[10px] font-medium text-surface-400 uppercase">{label}</p>
+        <p className="text-[10px] font-medium text-slate-900">{label}</p>
         <h3 className="text-2xl font-semibold text-surface-900 leading-tight">{value}</h3>
       </div>
       <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center border transition-all group-hover:scale-110", colors[color])}>

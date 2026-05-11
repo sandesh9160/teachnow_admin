@@ -217,8 +217,10 @@ export const deletePlan = (id: number) =>
 export const getCVTemplates = (params?: Record<string, unknown>) =>
   dashboardServerFetch<ApiResponse<PaginatedResponse<CVTemplate>>>("/admin/cms/cv-templates", { params });
 
+
 export const getCVTemplate = (id: number) =>
   dashboardServerFetch<CVTemplate>(`/admin/cms/cv-templates/${id}`);
+
 
 export const createCVTemplate = (data: FormData | Partial<CVTemplate>) =>
   dashboardServerFetch<CVTemplate>("/admin/cms/cv-templates", {

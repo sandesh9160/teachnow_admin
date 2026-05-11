@@ -30,10 +30,13 @@ export default function RootLayout({
         {children}
         <Toaster
           position="top-right"
+          richColors
+          closeButton
           toastOptions={{
             style: {
               borderRadius: "12px",
               fontSize: "14px",
+              padding: "12px 16px",
             },
           }}
         />

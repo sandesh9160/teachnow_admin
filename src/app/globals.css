@@ -34,7 +34,7 @@
 
   /* Status Colors */
   --color-success: hsl(142.1 76.2% 36.3%);
-  --color-warning: hsl(226 70% 64%);
+  --color-warning: hsl(45 93% 47%);
   --color-danger: hsl(0 84.2% 60.2%);
   --color-info: hsl(198.6 88.7% 48.4%);
 
@@ -120,6 +120,83 @@
     background-color: var(--color-surface-50);
     color: var(--color-surface-900);
     line-height: 1.5;
+  }
+
+  /* ─── Sonner Toast Customization ────────────────────────────────────────── */
+  [data-sonner-toast] {
+    font-family: var(--font-sans) !important;
+  }
+
+  [data-sonner-toast][data-rich-colors="true"][data-type="success"] {
+    background: #f0fdf4 !important;
+    border-color: #bbf7d0 !important;
+    color: #166534 !important;
+  }
+
+  [data-sonner-toast][data-rich-colors="true"][data-type="error"] {
+    background: #fef2f2 !important;
+    border-color: #fecaca !important;
+    color: #991b1b !important;
+  }
+
+  [data-sonner-toast][data-rich-colors="true"][data-type="warning"] {
+    background: #fffbeb !important;
+    border-color: #fde68a !important;
+    color: #92400e !important;
+  }
+
+  [data-sonner-toast][data-rich-colors="true"][data-type="info"] {
+    background: #eff6ff !important;
+    border-color: #bfdbfe !important;
+    color: #1e40af !important;
+  }
+
+  [data-sonner-toast] [data-close-button] {
+    background: rgba(0, 0, 0, 0.05) !important;
+    border: none !important;
+    color: currentColor !important;
+    transition: background 0.2s !important;
+    top: 8px !important;
+    right: 8px !important;
+  }
+
+  [data-sonner-toast] [data-close-button]:hover {
+    background: rgba(0, 0, 0, 0.1) !important;
+  }
+
+  [data-sonner-toast] [data-button] {
+    background: #ef4444 !important; /* Red for Delete */
+    color: white !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    transition: transform 0.2s, opacity 0.2s !important;
+  }
+
+  [data-sonner-toast] [data-button]:active {
+    transform: scale(0.95);
+  }
+
+  [data-sonner-toast] [data-cancel] {
+    background: var(--color-primary) !important; /* Blue for Okay */
+    color: white !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    padding: 6px 12px !important;
+    border-radius: 4px !important;
+    transition: opacity 0.2s !important;
+  }
+
+  [data-sonner-toast] [data-cancel]:hover {
+    opacity: 0.9;
+  }
+
+  /* Ensure close button is strictly on the right */
+  [data-sonner-toast] [data-close-button] {
+    left: auto !important;
+    right: 8px !important;
+    top: 8px !important;
   }
 }
 
@@ -257,7 +334,7 @@
 .page-subtitle {
   font-size: 0.75rem;
   font-weight: 500;
-  color: #64748b;
+  color: #0f172a;
   margin-top: 0.125rem;
 }
 
@@ -277,8 +354,7 @@
   padding: 0.75rem 1rem;
   font-size: 0.6875rem;
   font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
+  color: #0f172a;
   letter-spacing: 0.08em;
   white-space: nowrap;
 }
@@ -329,8 +405,7 @@
 .stat-card-label {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #94a3b8;
-  text-transform: uppercase;
+  color: #0f172a;
   letter-spacing: 0.06em;
   line-height: 1;
 }

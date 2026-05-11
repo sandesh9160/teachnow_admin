@@ -34,20 +34,20 @@ export default function DataTable<T>({
 
   return (
     <div className={clsx(
-        "relative w-full overflow-hidden bg-white rounded-xl border border-slate-100 shadow-sm",
+        "relative w-full overflow-hidden bg-white rounded-lg border border-slate-200 shadow-sm",
         compact && "border-none shadow-none bg-transparent rounded-none"
     )}>
       <table suppressHydrationWarning className="w-full caption-bottom text-sm border-separate border-spacing-0">
         <thead className={clsx(
-            "bg-slate-50 sticky top-0 z-10",
-            compact && "bg-transparent border-b border-slate-100"
+            "bg-slate-50 sticky top-0 z-10 border-b border-slate-200",
+            compact && "bg-transparent border-b border-slate-200"
         )}>
-          <tr className="border-b border-slate-100">
+          <tr className="border-b border-slate-200">
             {columns.map((col, idx) => (
               <th
                 key={col.key}
                 className={clsx(
-                    "px-5 py-3 text-left text-[11px] font-bold text-slate-400 uppercase tracking-wider",
+                    "px-5 py-3 text-left text-[13px] font-bold text-slate-900 tracking-wider",
                     compact && "px-4 py-2.5"
                 )}
                 style={{ width: col.width }}
@@ -57,16 +57,16 @@ export default function DataTable<T>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-50">
+        <tbody className="divide-y divide-slate-200">
           {data.length === 0 ? (
             <tr>
               <td
                 colSpan={columns.length}
                 className="h-24 text-center align-middle"
               >
-                <div className="flex flex-col items-center justify-center py-12 opacity-40">
-                    <Inbox size={28} className="text-slate-300 mb-2" />
-                    <span className="text-[12px] text-slate-400 font-medium">{emptyMessage}</span>
+                <div className="flex flex-col items-center justify-center py-12 opacity-60">
+                    <Inbox size={28} className="text-slate-900 mb-2" />
+                    <span className="text-[12px] text-slate-900 font-bold">{emptyMessage}</span>
                 </div>
               </td>
             </tr>

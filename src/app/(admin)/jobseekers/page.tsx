@@ -18,9 +18,11 @@ import {
   Power,
   Loader2,
   RotateCcw,
-  XCircle
+  XCircle,
+  ChevronDown,
+  Check,
 } from "lucide-react";
-import { disableJobSeeker, getJobSeekers } from "@/services/admin.service";
+import { disableJobSeeker, getJobSeekers, getLocations } from "@/services/admin.service";
 import { JobSeeker } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
@@ -34,12 +36,40 @@ export default function JobSeekersPage() {
   const [pagination, setPagination] = useState<any>(null);
   const [activeTotal, setActiveTotal] = useState(0);
   const [totalJobSeekers, setTotalJobSeekers] = useState(0);
+  const [allLocations, setAllLocations] = useState<string[]>([]);
   const [processingId, setProcessingId] = useState<number | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
+  // Filter State
+  const [locFilter, setLocFilter] = useState("all");
+  const [expFilter, setExpFilter] = useState("all");
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
   useEffect(() => {
     fetchJobSeekers();
+    fetchLocations();
   }, []);
+
+  const fetchLocations = async () => {
+    try {
+      const res = await getLocations({ per_page: 100 });
+      // Robustly extract the array of locations
+      let locArray: any[] = [];
+      if (Array.isArray(res?.data)) {
+        locArray = res.data;
+      } else if (Array.isArray((res as any)?.data?.data)) {
+        locArray = (res as any).data.data;
+      } else if (Array.isArray(res)) {
+        locArray = res;
+      }
+      
+      console.log("[JobSeekers] Locations API Response:", res);
+      const locs = locArray.map((l: any) => (typeof l === 'string' ? l : l.name)).filter(Boolean) || [];
+      setAllLocations(Array.from(new Set(locs)).sort());
+    } catch (err) {
+      console.error("Failed to fetch locations", err);
+    }
+  };
 
   const fetchJobSeekers = async (page = 1) => {
     try {
@@ -99,11 +129,23 @@ export default function JobSeekersPage() {
     }
   };
 
-  const filtered = jobSeekers.filter((j) =>
-    j.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
-    j.title?.toLowerCase().includes(search.toLowerCase()) ||
-    j.location?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = jobSeekers.filter((j) => {
+    const matchesSearch = j.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
+      j.title?.toLowerCase().includes(search.toLowerCase()) ||
+      j.location?.toLowerCase().includes(search.toLowerCase());
+    
+    const matchesLoc = locFilter === "all" || j.location === locFilter;
+    
+    const matchesExp = expFilter === "all" || 
+      (expFilter === "0" && (j.experience_years === 0 || !j.experience_years)) ||
+      (expFilter === "1-3" && j.experience_years >= 1 && j.experience_years <= 3) ||
+      (expFilter === "4-6" && j.experience_years >= 4 && j.experience_years <= 6) ||
+      (expFilter === "7+" && j.experience_years >= 7);
+
+    return matchesSearch && matchesLoc && matchesExp;
+  });
+
+  const experienceOptions = ["0", "1-3", "4-6", "7+"];
 
   const handleToggleStatus = async (id: number) => {
     try {
@@ -144,8 +186,6 @@ export default function JobSeekersPage() {
     }
   };
 
-  // UI State for custom dropdowns (if used in future)
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   return (
     <div className="space-y-5 pb-20 antialiased animate-fade-in-up">
@@ -156,8 +196,11 @@ export default function JobSeekersPage() {
           <p className="page-subtitle">Manage candidate accounts and profiles</p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => fetchJobSeekers(pagination?.currentPage)}
-            className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary transition-all active:scale-95 shadow-sm">
+          <button 
+            onClick={() => fetchJobSeekers(pagination?.currentPage)}
+            suppressHydrationWarning
+            className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary transition-all active:scale-95 shadow-sm"
+          >
             <RotateCcw size={15} className={clsx(loading && "animate-spin")} />
           </button>
         </div>
@@ -181,33 +224,60 @@ export default function JobSeekersPage() {
         ))}
       </div>
 
-      {/* Jobseekers Table */}
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="text-[13px] font-bold text-slate-900 tracking-tight">All Candidates</h3>
-          <div className="relative group">
+      {/* Jobseekers Table Container */}
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden relative z-[60]">
+        <div className="px-4 py-3 border-b border-slate-200 flex flex-wrap items-center gap-3 bg-white">
+          <div className="relative flex-1 min-w-[240px] group">
             <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
             <input
               type="text"
-              placeholder="Search by name, role or location..."
+              placeholder="Search by name, role or keyword..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-3 focus:ring-primary/5 focus:border-primary/20 transition-all"
+              suppressHydrationWarning
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all"
             />
           </div>
+
+          <FilterDropdown
+            label={locFilter === "all" ? "Location" : locFilter}
+            options={["all", ...allLocations]}
+            onSelect={(val: string) => setLocFilter(val)}
+            isOpen={activeDropdown === "location"}
+            setOpen={() => setActiveDropdown(activeDropdown === "location" ? null : "location")}
+          />
+
+          <FilterDropdown
+            label={expFilter === "all" ? "Experience" : expFilter === "0" ? "Fresher" : `${expFilter} Yrs`}
+            options={["all", ...experienceOptions]}
+            onSelect={(val: string) => setExpFilter(val)}
+            isOpen={activeDropdown === "experience"}
+            setOpen={() => setActiveDropdown(activeDropdown === "experience" ? null : "experience")}
+          />
+
+          {(search || locFilter !== "all" || expFilter !== "all") && (
+            <button
+              onClick={() => { setSearch(""); setLocFilter("all"); setExpFilter("all"); }}
+              suppressHydrationWarning
+              className="px-3 py-2 text-[12px] font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+            >
+              Reset
+            </button>
+          )}
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[900px]">
+          <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Jobseeker</th>
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Location & Contact</th>
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Experience</th>
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right">Joined On</th>
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Actions</th>
+              <tr className="border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
+                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Jobseeker</th>
+                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Location</th>
+                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Contact</th>
+                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Experience</th>
+                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-right">Joined On</th>
+                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-200">
               {!loading && filtered.map((row: JobSeeker, i: number) => {
                 return (
                   <tr key={i} className="group hover:bg-slate-50/30 transition-all duration-200 cursor-pointer" onClick={() => router.push(`/jobseekers/${row.id}`)}>
@@ -232,19 +302,20 @@ export default function JobSeekersPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-[13px] font-semibold text-slate-900 leading-tight group-hover:text-primary transition-colors">{row.user?.name}</p>
-                          <p className="text-[10px] text-primary font-semibold mt-0.5 tracking-wide uppercase">{row.title || "Educator"}</p>
+                          <p className="text-[10px] text-primary font-bold mt-0.5 tracking-wide">{row.title || "Educator"}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-1.5 text-[12px] font-medium text-slate-700">
-                          <MapPinIcon size={12} className="text-slate-400" />
-                          {row.location || 'Remote'}
-                        </div>
-                        <div className="text-[10px] text-slate-400 font-medium ml-4.5">
-                          {row.phone || "No Contact"}
-                        </div>
+                      <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-900">
+                        <MapPinIcon size={12} className="text-slate-400" />
+                        {row.location || 'Remote'}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-900">
+                        <Phone size={12} className="text-slate-400" />
+                        {row.phone || "No Contact"}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-center">
@@ -253,7 +324,7 @@ export default function JobSeekersPage() {
                         <span className="text-[9px] font-semibold text-indigo-400 uppercase">Yrs</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right text-[11px] text-slate-500 font-medium">
+                    <td className="px-4 py-3 text-right text-[11px] text-slate-900 font-bold">
                       {row.created_at ? new Date(row.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                     </td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
@@ -372,6 +443,68 @@ export default function JobSeekersPage() {
       </div>
     </div>
   );
+}
+
+function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
+    const ref = React.useRef<HTMLDivElement>(null);
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                if (isOpen) setOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [isOpen, setOpen]);
+
+    return (
+        <div className="relative" ref={ref}>
+            <button
+                onClick={() => setOpen()}
+                suppressHydrationWarning
+                className={clsx(
+                    "flex items-center justify-between gap-3 px-4 py-2 bg-white border rounded-lg text-[12px] font-bold transition-all shadow-sm min-w-[140px]",
+                    isOpen ? "border-primary/40 ring-4 ring-primary/5 text-primary" : "border-slate-200 text-slate-900 hover:bg-slate-50"
+                )}
+            >
+                <span className="truncate">{label}</span>
+                <ChevronDown size={14} className={clsx("text-slate-400 transition-transform duration-300", isOpen && "text-primary rotate-180")} />
+            </button>
+
+            {isOpen && (
+                <div className="absolute top-full right-0 mt-2 w-max min-w-[160px] max-h-[300px] overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl z-[100] py-1.5 animate-in fade-in zoom-in-95 duration-200">
+                    {options.map((opt: string) => {
+                        const isActive = label.toLowerCase().includes(opt.toLowerCase()) || 
+                          (opt === 'all' && (label === 'Location' || label === 'Experience')) ||
+                          (label === 'Fresher' && opt === '0') ||
+                          (label.includes('Yrs') && opt !== 'all');
+                        
+                        return (
+                            <button
+                                key={opt}
+                                onClick={() => {
+                                    onSelect(opt);
+                                    setOpen(false);
+                                }}
+                                suppressHydrationWarning
+                                className={clsx(
+                                    "w-full text-left px-4 py-2.5 text-[12px] font-semibold transition-all flex items-center justify-between group",
+                                    isActive ? "bg-primary/5 text-primary" : "text-slate-900 hover:bg-slate-50 active:bg-slate-100"
+                                )}
+                            >
+                                <span className="capitalize">
+                                    {opt === "all" ? `All ${label === 'Location' ? 'Locations' : 'Experience'}` : 
+                                     opt === "0" ? "Fresher" : 
+                                     (opt.includes('-') || opt.includes('+')) ? `${opt} Years` : opt}
+                                </span>
+                                {isActive && <Check size={12} className="text-primary animate-in zoom-in-50 duration-300" />}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
 }
 
 

@@ -11,12 +11,90 @@ import {
   ArrowRight,
   Loader2,
   Clock,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import { getVerificationRequests } from "@/services/admin.service";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 import Badge from "@/components/ui/Badge";
 import { resolveMediaUrl } from "@/lib/media";
+
+function StatWidget({ label, value, icon, color }: any) {
+  const themes: any = {
+    blue: { iconBg: "bg-blue-50", iconColor: "text-blue-500" },
+    emerald: { iconBg: "bg-emerald-50", iconColor: "text-emerald-500" },
+    rose: { iconBg: "bg-rose-50", iconColor: "text-rose-500" },
+    indigo: { iconBg: "bg-indigo-50", iconColor: "text-indigo-500" },
+  };
+  const theme = themes[color] || themes.blue;
+
+  return (
+    <div className="stat-card">
+      <div>
+        <p className="stat-card-label">{label}</p>
+        <h4 className="stat-card-value">{value}</h4>
+      </div>
+      <div className={clsx("stat-card-icon", theme.iconBg, theme.iconColor)}>
+        {React.cloneElement(icon as React.ReactElement<any>, { size: 18, strokeWidth: 2 })}
+      </div>
+    </div>
+  );
+}
+
+function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
+    const ref = React.useRef<HTMLDivElement>(null);
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (ref.current && !ref.current.contains(event.target as Node)) {
+                if (isOpen) setOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [isOpen, setOpen]);
+
+    return (
+        <div className="relative" ref={ref}>
+            <button
+                onClick={() => setOpen()}
+                className={clsx(
+                    "flex items-center justify-between gap-3 px-4 py-2 bg-white border rounded-lg text-[12px] font-bold transition-all shadow-sm min-w-[140px]",
+                    isOpen ? "border-primary/40 ring-4 ring-primary/5 text-primary" : "border-slate-200 text-slate-900 hover:bg-slate-50"
+                )}
+            >
+                <span className="truncate">{label}</span>
+                <ChevronDown size={14} className={clsx("text-slate-400 transition-transform duration-300", isOpen && "text-primary rotate-180")} />
+            </button>
+
+            {isOpen && (
+                <div className="absolute top-full right-0 mt-2 w-max min-w-[160px] max-h-[300px] overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl z-[100] py-1.5 animate-in fade-in zoom-in-95 duration-200">
+                    {options.map((opt: string) => {
+                        const isActive = label.toLowerCase() === opt.toLowerCase() || (opt === 'all' && (label === 'Status' || label === 'Document Type' || label === 'Institute'));
+                        return (
+                            <button
+                                key={opt}
+                                onClick={() => {
+                                    onSelect(opt);
+                                    setOpen(false);
+                                }}
+                                className={clsx(
+                                    "w-full text-left px-4 py-2.5 text-[12px] font-semibold transition-all flex items-center justify-between group",
+                                    isActive ? "bg-primary/5 text-primary" : "text-slate-900 hover:bg-slate-50 active:bg-slate-100"
+                                )}
+                            >
+                                <span className="capitalize">
+                                    {opt === "all" ? `All ${label.includes('Type') ? 'Types' : label.includes('Institute') ? 'Institutes' : 'Statuses'}` : opt}
+                                </span>
+                                {isActive && <Check size={12} className="text-primary animate-in zoom-in-50 duration-300" />}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
+        </div>
+    );
+}
 
 export default function VerificationPage() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -26,6 +104,12 @@ export default function VerificationPage() {
   const [pendingDocuments, setPendingDocuments] = useState(0);
   const [verifiedInstitutes, setVerifiedInstitutes] = useState(0);
   const [unverifiedInstitutes, setUnverifiedInstitutes] = useState(0);
+  
+  // Filter State
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [instFilter, setInstFilter] = useState("all");
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     fetchRequests();
@@ -51,10 +135,21 @@ export default function VerificationPage() {
   };
 
 
-  const filtered = requests.filter((r) => 
-    r.employer?.company_name?.toLowerCase().includes(search.toLowerCase()) ||
-    r.document_type?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = requests.filter((r) => {
+    const matchesSearch = r.employer?.company_name?.toLowerCase().includes(search.toLowerCase()) ||
+      r.document_type?.toLowerCase().includes(search.toLowerCase());
+    
+    const matchesStatus = statusFilter === "all" || (r.status || "pending").toLowerCase() === statusFilter.toLowerCase();
+    
+    const matchesType = typeFilter === "all" || r.document_type === typeFilter;
+
+    const matchesInst = instFilter === "all" || r.employer?.company_name === instFilter;
+
+    return matchesSearch && matchesStatus && matchesType && matchesInst;
+  });
+
+  const uniqueTypes = Array.from(new Set(requests.map(r => r.document_type).filter(Boolean))).sort();
+  const uniqueInstitutes = Array.from(new Set(requests.map(r => r.employer?.company_name).filter(Boolean))).sort();
 
   const stats = [
     { label: "Pending Documents", value: pendingDocuments, icon: Clock, color: "blue" },
@@ -76,8 +171,8 @@ export default function VerificationPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-1.5">
         <div>
-          <h1 className="text-lg font-semibold text-slate-900 tracking-tight">Verification Requests</h1>
-          <p className="text-[11px] text-slate-500 font-semibold">Review and approve documents for institutes.</p>
+          <h1 className="page-title">Verification Requests</h1>
+          <p className="page-subtitle">Review and approve documents for institutes</p>
         </div>
       </div>
 
@@ -89,26 +184,59 @@ export default function VerificationPage() {
       </div>
 
       {/* Search & Tool Bar */}
-      <div className="bg-white rounded-xl border border-slate-100 p-2 shadow-sm flex items-center gap-3">
-          <div className="relative flex-1">
-            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+      <div className="flex flex-wrap items-center gap-3 relative z-[60]">
+          <div className="relative flex-1 min-w-[300px] group">
+            <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
             <input 
                 type="text" 
-                placeholder="Search requests..." 
+                placeholder="Search by institute or document type..." 
                 value={search} 
                 onChange={(e) => setSearch(e.target.value)} 
-                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-[12px] text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all font-medium shadow-sm" 
+                className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-[12px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all font-semibold shadow-sm" 
             />
           </div>
+
+          <FilterDropdown
+            label={statusFilter === "all" ? "Status" : statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}
+            options={["all", "pending", "approved", "rejected"]}
+            onSelect={(val: string) => setStatusFilter(val)}
+            isOpen={activeDropdown === "status"}
+            setOpen={() => setActiveDropdown(activeDropdown === "status" ? null : "status")}
+          />
+
+          <FilterDropdown
+            label={typeFilter === "all" ? "Document Type" : typeFilter}
+            options={["all", ...uniqueTypes]}
+            onSelect={(val: string) => setTypeFilter(val)}
+            isOpen={activeDropdown === "type"}
+            setOpen={() => setActiveDropdown(activeDropdown === "type" ? null : "type")}
+          />
+
+          <FilterDropdown
+            label={instFilter === "all" ? "Institute" : instFilter}
+            options={["all", ...uniqueInstitutes]}
+            onSelect={(val: string) => setInstFilter(val)}
+            isOpen={activeDropdown === "institute"}
+            setOpen={() => setActiveDropdown(activeDropdown === "institute" ? null : "institute")}
+          />
+
+          {(search || statusFilter !== "all" || typeFilter !== "all" || instFilter !== "all") && (
+            <button
+              onClick={() => { setSearch(""); setStatusFilter("all"); setTypeFilter("all"); setInstFilter("all"); }}
+              className="px-3 py-2 text-[12px] font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+            >
+              Reset
+            </button>
+          )}
       </div>
 
       {/* Verification Queue List */}
-      <div className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-xl shadow-slate-200/30">
-          <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between bg-white">
+      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+          <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
               <h3 className="text-sm font-semibold text-slate-900 tracking-tight">Document List</h3>
-              <p className="text-[11px] text-slate-400 font-semibold">{filtered.length} pending reviews</p>
+              <p className="text-[11px] text-slate-900 font-bold">{filtered.length} pending reviews</p>
           </div>
-          <div className="divide-y divide-slate-50">
+          <div className="divide-y divide-slate-200">
               {filtered.length > 0 ? filtered.map((r: any, i: number) => {
                   const companyName = r.employer?.company_name || "Institute Name";
                   const logo = r.employer?.company_logo;
@@ -119,7 +247,7 @@ export default function VerificationPage() {
                   return (
                       <div key={i} className="px-5 py-4 flex items-center justify-between hover:bg-slate-50/30 transition-colors group">
                           <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-500 border border-slate-200 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+                              <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-900 border border-slate-200 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
                                   {logo ? (
                                       <img src={resolveMediaUrl(logo)} alt="" className="w-full h-full object-cover" />
                                   ) : (
@@ -141,11 +269,11 @@ export default function VerificationPage() {
                               <div className="flex flex-col items-end gap-2">
                                 <Badge 
                                     variant={status === "approved" || status === "verified" ? "success" : status === "pending" ? "warning" : "danger"} 
-                                    className="text-[11px] h-6 px-4 rounded-full font-medium lowercase border-none shadow-none"
+                                    className="text-[11px] h-6 px-4 rounded-full font-bold border-none shadow-none"
                                 >
                                     {status}
                                 </Badge>
-                                <span className="text-[12px] font-medium text-slate-400 tracking-tight">{date}</span>
+                                <span className="text-[12px] font-medium text-slate-900 tracking-tight">{date}</span>
                               </div>
                               
                               <div className="flex items-center gap-2 ml-2 pl-6 border-l border-slate-100">
@@ -158,8 +286,8 @@ export default function VerificationPage() {
                   );
               }) : (
                   <div className="px-5 py-12 flex flex-col items-center justify-center opacity-40">
-                      <ShieldCheck size={32} className="text-slate-300 mb-2" />
-                      <span className="text-[11px] font-semibold text-slate-400">No requests found</span>
+                      <ShieldCheck size={32} className="text-slate-900 mb-2" />
+                      <span className="text-[11px] font-bold text-slate-900">No requests found</span>
                   </div>
               )}
           </div>
@@ -168,26 +296,3 @@ export default function VerificationPage() {
   );
 }
 
-function StatWidget({ label, value, icon, color }: any) {
-  const themes: any = {
-    blue: { bg: "bg-blue-50/50", accent: "text-blue-500", iconBg: "bg-blue-50" },
-    emerald: { bg: "bg-emerald-50/50", accent: "text-emerald-500", iconBg: "bg-emerald-50" },
-    rose: { bg: "bg-rose-50/50", accent: "text-rose-500", iconBg: "bg-rose-50" },
-    indigo: { bg: "bg-indigo-50/50", accent: "text-indigo-500", iconBg: "bg-indigo-50" },
-  };
-  const theme = themes[color] || themes.blue;
-
-  return (
-    <div className="p-4 rounded-xl bg-white border border-slate-200/60 transition-all duration-300 shadow-lg shadow-slate-200/30 group hover:shadow-xl hover:shadow-slate-200/40 relative overflow-hidden">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-[11px] font-semibold text-slate-500 tracking-tight">{label}</p>
-        <div className={clsx("w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:rotate-12", theme.iconBg, theme.accent)}>
-          {React.cloneElement(icon as React.ReactElement<any>, { size: 16, strokeWidth: 2.5 })}
-        </div>
-      </div>
-      <div className="space-y-0.5">
-        <h4 className="text-xl font-semibold text-slate-900 tracking-tight leading-none">{value}</h4>
-      </div>
-    </div>
-  );
-}

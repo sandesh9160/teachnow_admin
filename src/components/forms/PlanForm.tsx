@@ -94,7 +94,7 @@ export default function PlanForm({
                 <div className="flex items-center gap-4">
                     <Link 
                         href="/plans"
-                        className="w-10 h-10 flex items-center justify-center hover:bg-slate-100 rounded-lg text-slate-500 transition-all border border-slate-200"
+                        className="w-10 h-10 flex items-center justify-center bg-white hover:bg-slate-50 rounded-lg text-slate-900 transition-all border border-slate-200 shadow-sm"
                     >
                         <ArrowLeft size={20} />
                     </Link>
@@ -102,13 +102,13 @@ export default function PlanForm({
                         <h1 className="text-2xl font-bold text-slate-900">
                             {form.id ? "Edit Subscription Plan" : "Create New Plan"}
                         </h1>
-                        <p className="text-sm text-slate-500 font-medium">Configure your platform pricing and service limits</p>
+                        <p className="text-sm text-slate-900 font-medium">Configure your platform pricing and service limits</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
                     <Link 
                         href="/plans"
-                        className="px-6 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                        className="h-11 px-8 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg transition-all shadow-md shadow-red-100 flex items-center justify-center active:scale-[0.98]"
                     >
                         Cancel
                     </Link>
@@ -123,16 +123,16 @@ export default function PlanForm({
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 {/* Main Content Area */}
-                <div className="lg:col-span-2 space-y-10">
+                <div className="lg:col-span-2 space-y-12">
                     {/* Basic Info Section */}
-                    <section className="space-y-6">
-                        <div className="flex items-center gap-3 pb-2 border-b border-slate-100">
-                            <div className="w-10 h-10 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-blue-600 shadow-sm">
+                    <section className="space-y-8">
+                        <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-2">
+                            <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-blue-600 shadow-sm">
                                 <Tag size={18} />
                             </div>
-                            <h2 className="text-lg font-bold text-slate-800">Basic Information</h2>
+                            <h2 className="text-lg font-bold text-slate-900">Basic Information</h2>
                         </div>
                         
                         <div className="grid grid-cols-1 gap-8">
@@ -150,7 +150,7 @@ export default function PlanForm({
                             </FormField>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                             <FormField label="Actual Price (Standard)" error={errors.actual_price} required>
                                 <div className="relative">
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
@@ -192,15 +192,15 @@ export default function PlanForm({
                     </section>
 
                     {/* Limits Section */}
-                    <section className="space-y-6">
-                        <div className="flex items-center gap-3 pb-2 border-b border-slate-100">
-                            <div className="w-10 h-10 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-indigo-600 shadow-sm">
+                    <section className="space-y-8">
+                        <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-2">
+                            <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-indigo-600 shadow-sm">
                                 <ShieldCheck size={18} />
                             </div>
-                            <h2 className="text-lg font-bold text-slate-800">Plan Quotas & Limits</h2>
+                            <h2 className="text-lg font-bold text-slate-900">Plan Quotas & Limits</h2>
                         </div>
                         
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
                             <FormField label="Total Job Posts" error={errors.job_posts_limit} required>
                                 <div className="relative">
                                     <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -224,7 +224,7 @@ export default function PlanForm({
                                         type="number"
                                         value={form.featured_jobs_limit === 0 ? "" : form.featured_jobs_limit}
                                         onChange={(e) => handleChange("featured_jobs_limit", Number(e.target.value))}
-                                        className="w-full pl-12 pr-4 h-12 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-semibold"
+                                        className="w-full pl-12 pr-4 h-12 rounded-lg border border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all font-semibold bg-white"
                                         placeholder="e.g. 5"
                                     />
                                 </div>
@@ -265,12 +265,12 @@ export default function PlanForm({
                     </section>
 
                     {/* Features Section */}
-                    <section className="space-y-6">
-                        <div className="flex items-center gap-3 pb-2 border-b border-slate-100">
-                            <div className="w-10 h-10 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-emerald-600 shadow-sm">
+                    <section className="space-y-8">
+                        <div className="flex items-center gap-3 pb-4 border-b border-slate-100 mb-2">
+                            <div className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-emerald-600 shadow-sm">
                                 <List size={18} />
                             </div>
-                            <h2 className="text-lg font-bold text-slate-800">Features & Benefits</h2>
+                            <h2 className="text-lg font-bold text-slate-900">Features & Benefits</h2>
                         </div>
                         
                         <FormField label="Bullet Points (One per line)">
@@ -288,11 +288,11 @@ export default function PlanForm({
                 </div>
 
                 {/* Sidebar Controls */}
-                <div className="space-y-8">
+                <div className="space-y-12">
                     {/* Status Card */}
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                         <div className="bg-slate-50 px-6 py-4 border-b border-slate-200">
-                            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Publication Status</h3>
+                            <h3 className="text-sm font-bold text-slate-900 tracking-wider">Publication Status</h3>
                         </div>
                         <div className="p-6 space-y-6">
                             <StatusToggle 
@@ -322,7 +322,7 @@ export default function PlanForm({
                     </div>
 
                     {/* Sorting & Order */}
-                    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-6">
+                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-6 space-y-6">
                         <FormField label="Display Order" error={errors.display_order} required>
                             <div className="relative">
                                 <ListOrdered className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -346,7 +346,7 @@ export default function PlanForm({
                                     type="number"
                                     value={form.feature_days === 0 ? "" : form.feature_days}
                                     onChange={(e) => handleChange("feature_days", Number(e.target.value))}
-                                    className="w-full pl-12 pr-4 h-12 rounded-lg border border-slate-200 focus:border-blue-500 outline-none transition-all font-bold text-slate-800"
+                                    className="w-full pl-12 pr-4 h-12 rounded-lg border border-slate-200 focus:border-blue-500 outline-none transition-all font-bold text-slate-800 bg-white"
                                     placeholder="0"
                                 />
                             </div>
@@ -354,13 +354,13 @@ export default function PlanForm({
                     </div>
 
                     {/* Help Card */}
-                    <div className="bg-white rounded-xl p-6 border border-blue-100 shadow-sm space-y-4">
+                    <div className="bg-white rounded-lg p-6 border border-blue-100 shadow-sm space-y-4">
                         <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
                             <Settings2 size={20} />
                         </div>
                         <div>
                             <h4 className="font-bold text-lg text-slate-900 mb-1">Quick Tip</h4>
-                            <p className="text-sm text-slate-500 leading-relaxed font-medium">
+                            <p className="text-sm text-slate-900 leading-relaxed font-medium">
                                 Use a low display order (e.g., 1 or 2) to make this plan appear at the beginning of the list for users.
                             </p>
                         </div>
@@ -373,8 +373,8 @@ export default function PlanForm({
 
 function FormField({ label, children, error, required }: { label: string; children: React.ReactNode; error?: string; required?: boolean }) {
     return (
-        <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 flex items-center gap-1">
+        <div className="space-y-3">
+            <label className="text-sm font-bold text-slate-900 flex items-center gap-1 mb-1">
                 {label} {required && <span className="text-red-500">*</span>}
             </label>
             {children}
@@ -388,8 +388,8 @@ function StatusToggle({ label, description, active, onChange, activeColor }: { l
     return (
         <div className="flex items-center justify-between gap-4">
             <div>
-                <p className="text-sm font-bold text-slate-800">{label}</p>
-                <p className="text-xs text-slate-500">{description}</p>
+                <p className="text-sm font-bold text-slate-900">{label}</p>
+                <p className="text-xs text-slate-900">{description}</p>
             </div>
             <button
                 type="button"

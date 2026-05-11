@@ -285,7 +285,7 @@ export default function Sidebar({
                         <div
                           className={clsx(
                             "flex items-center justify-between transition-all duration-200 group relative",
-                            collapsed ? "justify-center px-0 py-2 rounded-xl mb-0.5" : "px-3 py-1.5 rounded-xl mb-0.5",
+                            collapsed ? "justify-center px-0 py-2 rounded-lg mb-0.5" : "px-3 py-1.5 rounded-lg mb-0.5",
                             active && !hasChildren
                               ? "bg-blue-50/60 ring-1 ring-blue-100/50 text-blue-600 shadow-sm"
                               : "text-slate-500 hover:bg-slate-50"
@@ -360,7 +360,7 @@ export default function Sidebar({
             onClick={handleLogout}
             suppressHydrationWarning
             className={clsx(
-              "w-full flex items-center gap-3 rounded-xl px-3 py-2 transition-all duration-200 group active:scale-95",
+              "w-full flex items-center gap-3 rounded-lg px-3 py-2 transition-all duration-200 group active:scale-95",
               "text-slate-400 hover:text-rose-500 hover:bg-rose-50/60 text-[12.5px] font-semibold",
               collapsed && "justify-center px-0"
             )}

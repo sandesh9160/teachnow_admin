@@ -202,19 +202,19 @@ export default function RecruitersPage() {
       </div>
 
       {/* Registry Table */}
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Recruiter</th>
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider">Organization</th>
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Status</th>
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-right">Joined</th>
-                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">Actions</th>
+              <tr className="border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
+                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Recruiter</th>
+                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Organization</th>
+                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Status</th>
+                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-right">Joined</th>
+                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-200">
               
               {!loading &&
                 filtered.map((row: any, i: number) => (
@@ -247,7 +247,7 @@ export default function RecruitersPage() {
                           <p className="text-[13px] font-semibold text-slate-900 leading-tight group-hover:text-primary transition-colors">
                             {row.name}
                           </p>
-                          <p className="text-[10px] text-slate-500 font-medium mt-0.2 tracking-tight">
+                          <p className="text-[10px] text-slate-900 font-medium mt-0.2 tracking-tight">
                             {row.email}
                           </p>
                         </div>
@@ -275,21 +275,21 @@ export default function RecruitersPage() {
                       <div className="inline-flex">
                         <div
                           className={clsx(
-                            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border lowercase",
+                            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border",
                             row.is_active
                               ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                              : "bg-slate-50 text-slate-500 border-slate-100",
+                              : "bg-slate-50 text-slate-900 border-slate-100",
                           )}
                         >
-                          <span className="lowercase">
-                            {row.is_active ? "active" : "inactive"}
+                          <span>
+                            {row.is_active ? "Active" : "Inactive"}
                           </span>
                         </div>
                       </div>
                     </td>
 
                     <td
-                      className="px-4 py-3 text-right text-[11px] text-slate-500 font-medium"
+                      className="px-4 py-3 text-right text-[11px] text-slate-900 font-medium"
                       suppressHydrationWarning
                     >
                       {new Date(row.created_at).toLocaleDateString(undefined, {

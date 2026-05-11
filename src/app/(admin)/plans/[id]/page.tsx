@@ -58,7 +58,7 @@ export default function EditPlanPage() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-400">
         <Loader2 className="w-8 h-8 animate-spin mb-4 text-violet-600" />
-        <p className="text-xs font-bold text-slate-500">Loading plan configuration...</p>
+        <p className="text-xs font-bold text-slate-900">Loading plan configuration...</p>
       </div>
     );
   }

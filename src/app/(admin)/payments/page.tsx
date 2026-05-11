@@ -98,7 +98,7 @@ export default function PaymentsPage() {
     },
     {
       key: "employer_name",
-      title: "Employer / Institute",
+      title: "Institute",
       render: (val: any, row: Payment) => (
         <div className="flex items-center gap-3">
           {row.employer_logo ? (
@@ -106,7 +106,7 @@ export default function PaymentsPage() {
                <img src={row.employer_logo} alt={val} className="w-full h-full object-contain" />
             </div>
           ) : (
-            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-900 shrink-0">
                <Building2 size={14} />
             </div>
           )}
@@ -175,7 +175,7 @@ export default function PaymentsPage() {
       key: "actions",
       title: "",
       render: (_: any, row: Payment) => row.payment_id ? (
-        <div className="p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-indigo-600 transition-all group">
+        <div className="p-2 hover:bg-slate-100 rounded-lg text-slate-900 hover:text-indigo-600 transition-all group">
           <ChevronRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
         </div>
       ) : null
@@ -183,7 +183,7 @@ export default function PaymentsPage() {
   ];
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-5 pb-20 antialiased animate-fade-in-up">
+    <div className="max-w-[1600px] mx-auto space-y-8 pb-20 antialiased animate-fade-in-up">
       {/* Page Header */}
       <div className="page-header">
         <div>
@@ -196,30 +196,30 @@ export default function PaymentsPage() {
       </div>
 
       {/* Table Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 py-2">
         <form onSubmit={handleSearch} className="relative flex-1 group max-w-sm">
-          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+          <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-900 group-focus-within:text-primary transition-colors" />
           <input 
             type="text" 
             placeholder="Search transactions..." 
             value={search}
             onChange={e => setSearch(e.target.value)}
             suppressHydrationWarning
-            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-[12.5px] font-medium text-slate-900 placeholder:text-slate-400 focus:border-primary/30 focus:ring-4 focus:ring-primary/5 outline-none transition-all shadow-sm"
+            className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg text-[12.5px] font-medium text-slate-900 placeholder:text-slate-900 focus:border-primary/30 focus:ring-4 focus:ring-primary/5 outline-none transition-all shadow-sm"
           />
         </form>
 
-        <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex items-center gap-1.5 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
            {(["all", "success", "pending", "failed"] as const).map((opt) => (
               <button
                 key={opt}
                 onClick={() => setStatusFilter(opt)}
                 suppressHydrationWarning
                 className={clsx(
-                  "px-4 py-1.5 text-[11px] font-semibold rounded-lg transition-all capitalize",
+                  "px-4 py-1.5 text-[11px] font-bold rounded-md transition-all",
                   statusFilter === opt 
                     ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20" 
-                    : "text-slate-500 hover:bg-slate-50"
+                    : "text-slate-900 hover:bg-slate-50"
                 )}
               >
                 {opt}
@@ -239,8 +239,8 @@ export default function PaymentsPage() {
         />
         
       {!loading && totalPages > 1 && (
-          <div className="mt-6 flex justify-center">
-              <div className="bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
+          <div className="mt-8 flex justify-center">
+              <div className="bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
                   <Pagination 
                       currentPage={currentPage}
                       totalPages={totalPages}

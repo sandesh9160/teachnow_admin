@@ -121,21 +121,33 @@ export default function JobsPage() {
         }
     }, [search]);
 
-    const handleDelete = async (id: number) => {
-        if (!window.confirm("Are you sure you want to delete this job? This action will move the job to 'Deleted Jobs' section.")) return;
+    const handleDelete = (id: number) => {
+        toast("Delete this job?", {
+            description: "This action will move the job to 'Deleted Jobs' section.",
+            action: {
+                label: "Delete",
+                onClick: () => executeDelete(id),
+            },
+            cancel: {
+                label: "Okay",
+                onClick: () => { },
+            },
+        });
+    };
 
+    const executeDelete = async (id: number) => {
         try {
             setDeletingId(id);
             const res: any = await deleteJob(id);
             if (res?.status === true) {
-                toast.success(res.message || "Job deleted successfully");
+                toast.success(res.message || "Job moved to deleted section");
                 fetchJobs({ page: pagination.currentPage });
             } else {
                 toast.error(res?.message || "Failed to delete job");
             }
         } catch (err) {
             console.error("Delete failed", err);
-            toast.error("Failed to delete job. Please try again.");
+            toast.error("An error occurred during deletion.");
         } finally {
             setDeletingId(null);
         }
@@ -364,22 +376,22 @@ export default function JobsPage() {
             </div>
 
             {/* Main Content Area */}
-            <div className="bg-white rounded-xl border border-slate-200/60 shadow-xl shadow-slate-200/30 overflow-hidden relative z-10">
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden relative z-10">
                 <div>
                     <table className="w-full text-left border-collapse table-fixed">
                         <colgroup><col className="w-[27%]" /><col className="w-[18%]" /><col className="w-[15%]" /><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[10%]" /></colgroup>
                         <thead>
-                            <tr className="border-b border-slate-100 bg-slate-50/60">
-                                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Job Title</th>
-                                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Institute</th>
-                                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Location</th>
-                                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap text-center">Feature</th>
-                                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap text-center">Status</th>
-                                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap">Posted</th>
-                                <th className="px-4 py-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider whitespace-nowrap text-center">Actions</th>
+                            <tr className="border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
+                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap">Job Title</th>
+                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap">Institute</th>
+                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap">Location</th>
+                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap text-center">Feature</th>
+                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap text-center">Status</th>
+                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap">Posted</th>
+                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap text-center">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-slate-200">
                             {!loading && filteredJobs.map((j: Job, i: number) => {
                                 const status = j.status?.toLowerCase() || 'pending';
                                 const applicants = (j as any).applications_count || 0;

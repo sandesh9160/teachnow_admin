@@ -34,6 +34,7 @@ export default function ResumesPage() {
     try {
       setLoading(true);
       const res = await getCMSResumes({ page: upPage, cv_page: genPage });
+      console.log("[ResumesPage] getCMSResumes Response:", res);
       setData(res);
       setUploadedPage(upPage);
       setGeneratedPage(genPage);
@@ -87,6 +88,7 @@ export default function ResumesPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button 
             onClick={() => setActiveTab("uploaded")}
+            suppressHydrationWarning
             className={clsx(
                 "p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group",
                 activeTab === "uploaded" 
@@ -115,6 +117,7 @@ export default function ResumesPage() {
 
         <button 
             onClick={() => setActiveTab("generated")}
+            suppressHydrationWarning
             className={clsx(
                 "p-3 rounded-xl border transition-all duration-300 text-left relative overflow-hidden group",
                 activeTab === "generated" 
@@ -150,30 +153,31 @@ export default function ResumesPage() {
           placeholder="Search by candidate name, email or file title..." 
           value={search} 
           onChange={(e) => setSearch(e.target.value)} 
+          suppressHydrationWarning
           className="w-full pl-11 pr-6 py-3 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/20 transition-all" 
         />
       </div>
 
       {/* Main Registry Table */}
-      <div className="bg-white rounded-xl border border-slate-200/60 shadow-xl shadow-slate-200/30 overflow-hidden relative z-10 flex flex-col">
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden relative z-10 flex flex-col">
         <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/50">
-                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 tracking-wider uppercase">Candidate</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 tracking-wider uppercase">File Name</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 tracking-wider uppercase">Type</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 tracking-wider uppercase">Created Date</th>
-                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 tracking-wider uppercase text-center">Actions</th>
+              <tr className="border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
+                <th className="px-6 py-4 text-[13px] font-bold text-slate-900 tracking-wider">Candidate</th>
+                <th className="px-6 py-4 text-[13px] font-bold text-slate-900 tracking-wider">File Name</th>
+                <th className="px-6 py-4 text-[13px] font-bold text-slate-900 tracking-wider">Type</th>
+                <th className="px-6 py-4 text-[13px] font-bold text-slate-900 tracking-wider">Created Date</th>
+                <th className="px-6 py-4 text-[13px] font-bold text-slate-900 tracking-wider text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-200">
               {loading ? (
                 <tr>
                   <td colSpan={5} className="py-20 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <Loader2 className="animate-spin text-indigo-600" size={32} />
-                      <p className="text-[13px] font-bold text-slate-400 uppercase tracking-widest">Loading Resumes...</p>
+                      <p className="text-[13px] font-bold text-slate-900 tracking-widest">Loading Resumes...</p>
                     </div>
                   </td>
                 </tr>
@@ -208,7 +212,7 @@ export default function ResumesPage() {
                     </td>
                     <td className="px-6 py-2.5">
                       <span className={clsx(
-                        "inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-tight",
+                        "inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border tracking-tight",
                         activeTab === "uploaded" 
                             ? "bg-indigo-50 text-indigo-600 border-indigo-100" 
                             : "bg-purple-50 text-purple-600 border-purple-100"
@@ -260,8 +264,8 @@ export default function ResumesPage() {
                       <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
                         <Search size={32} />
                       </div>
-                      <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest">No Resumes Found</p>
-                      <p className="text-[12px] text-slate-500">Try adjusting your search filters.</p>
+                      <p className="text-[14px] font-bold text-slate-900 tracking-widest">No Resumes Found</p>
+                      <p className="text-[12px] text-slate-900">Try adjusting your search filters.</p>
                     </div>
                   </td>
                 </tr>
@@ -285,6 +289,7 @@ export default function ResumesPage() {
                     <button
                         disabled={pagination.current_page === 1 || loading}
                         onClick={() => handlePageChange(pagination.current_page - 1)}
+                        suppressHydrationWarning
                         className="h-9 px-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[11px] font-bold active:scale-95 cursor-pointer disabled:cursor-not-allowed"
                     >
                         <ChevronLeft size={14} strokeWidth={2.5} /> Previous
@@ -303,6 +308,7 @@ export default function ResumesPage() {
                     <button
                         disabled={pagination.current_page === pagination.last_page || loading}
                         onClick={() => handlePageChange(pagination.current_page + 1)}
+                        suppressHydrationWarning
                         className="h-9 px-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[11px] font-bold active:scale-95 cursor-pointer disabled:cursor-not-allowed"
                     >
                         Next <ChevronRight size={14} strokeWidth={2.5} />
