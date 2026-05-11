@@ -21,7 +21,9 @@ import {
   ArrowUpRight,
   Loader2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  Check
 } from "lucide-react";
 import { getEmployers, verifyEmployer, featureEmployer, deleteEmployer, updateEmployerSEO, updateEmployer } from "@/services/admin.service";
 import { Employer } from "@/types";
@@ -94,10 +96,30 @@ export default function EmployersPage() {
     try {
       setProcessingId(id);
       if (action === "verify") await verifyEmployer(id);
-      else if (action === "feature") await featureEmployer(id);
       else if (action === "delete") {
-        if (!confirm("Are you sure you want to delete this employer?")) return;
-        await deleteEmployer(id);
+        toast("Permanently delete this organization?", {
+          description: "This action will remove all associated recruitment records and cannot be undone.",
+          action: {
+            label: "Delete",
+            onClick: async () => {
+              try {
+                setProcessingId(id);
+                await deleteEmployer(id);
+                toast.success("Employer deleted successfully");
+                fetchEmployers();
+              } catch (err) {
+                toast.error("Failed to delete employer");
+              } finally {
+                setProcessingId(null);
+              }
+            }
+          },
+          cancel: {
+            label: "Okay",
+            onClick: () => { },
+          },
+        });
+        return;
       }
 
       toast.success(`Employer ${action}d successfully`);
@@ -155,7 +177,7 @@ export default function EmployersPage() {
       title: "Organization",
       render: (_: any, row: Employer) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-surface-100 flex items-center justify-center overflow-hidden shrink-0 border border-surface-200/50">
+          <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden shrink-0 border border-slate-200/50">
             {row.company_logo ? (
               <img src={resolveMediaUrl(row.company_logo)} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -167,7 +189,7 @@ export default function EmployersPage() {
             <div className="flex items-center gap-2 mt-0.5">
               <span className="text-[9px] font-semibold text-slate-900">{row.institution_type || 'Institution'}</span>
               {row.is_featured && row.company_featured === 1 && (!row.featured_until || new Date(row.featured_until) >= new Date()) && (
-                <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                <div className="w-1.5 h-1.5 rounded-xl bg-primary" />
               )}
             </div>
           </div>
@@ -188,7 +210,7 @@ export default function EmployersPage() {
       key: "is_verified",
       title: "Verification",
       render: (val: any) => (
-        <Badge variant={val ? "success" : "default"} dot className="text-[10px] px-2 h-4.5 bg-transparent border-none">
+        <Badge variant={val ? "success" : "danger"} dot className="capitalize">
           {val ? "Verified" : "Pending"}
         </Badge>
       )
@@ -202,11 +224,15 @@ export default function EmployersPage() {
         const hasRequest = row.company_featured === 1;
 
         if (isFeatured && hasRequest) {
-          return <Badge variant="success" dot className="text-[10px] px-2 h-4.5 bg-transparent border-none">Featured</Badge>;
+          return (
+            <Badge variant="warning" className="capitalize">
+              <Star size={11} fill="currentColor" className="mr-0.5" /> Featured
+            </Badge>
+          );
         }
         
         if (hasRequest && !isFeatured) {
-          return <Badge variant="warning" dot className="text-[10px] px-2 h-4.5 bg-transparent border-none"> Pending</Badge>;
+          return <Badge variant="warning" dot className="capitalize">Pending</Badge>;
         }
 
         return <span className="text-surface-400 text-[10px] font-medium">—</span>;
@@ -240,14 +266,14 @@ export default function EmployersPage() {
 
           <button
             onClick={(e) => { e.stopPropagation(); setSeoModal({ isOpen: true, employer: row }); }}
-            className="w-8 h-8 text-slate-900 hover:bg-surface-100 hover:text-primary rounded-md flex items-center justify-center transition-all"
+            className="w-8 h-8 text-slate-900 hover:bg-slate-100 hover:text-primary rounded-md flex items-center justify-center transition-all"
             suppressHydrationWarning
           >
             <Globe size={14} />
           </button>
           <Link
             href={`/employers/${row.id}`}
-            className="flex items-center gap-1.5 h-7 px-3 bg-white text-indigo-600 border border-indigo-100 rounded-lg text-[10px] font-semibold hover:bg-indigo-50 transition-all shadow-sm active:scale-95 group"
+            className="flex items-center gap-1.5 h-7 px-3 bg-white text-indigo-600 border border-indigo-100 rounded-xl text-[10px] font-semibold hover:bg-indigo-50 transition-all shadow-sm active:scale-95 group"
           >
             View
             <ArrowUpRight size={12} className="text-indigo-300 group-hover:text-indigo-600 transition-colors" />
@@ -270,13 +296,13 @@ export default function EmployersPage() {
       {/* Page Header */}
       <div className="page-header">
         <div>
-          <h1 className="page-title">Employer Directory</h1>
+          <h1 className="page-title">Institute Management</h1>
           <p className="page-subtitle">Manage educational centers and recruitment partners</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => fetchEmployers()}
-            className="p-2 bg-white border border-slate-200 rounded-lg text-slate-900 hover:text-primary transition-all active:scale-95 shadow-sm"
+            className="p-2 bg-white border border-slate-200 rounded-xl text-slate-900 hover:text-primary transition-all active:scale-95 shadow-sm"
             suppressHydrationWarning
           >
             <RotateCcw size={15} className={clsx(loading && "animate-spin")} />
@@ -313,7 +339,7 @@ export default function EmployersPage() {
             placeholder="Search by name, email or location..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-11 pr-5 py-3 bg-white border border-slate-200 rounded-lg text-[13px] font-medium text-slate-900 placeholder:text-slate-900 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all font-semibold"
+            className="w-full pl-11 pr-5 py-3 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-900 placeholder:text-slate-900 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all font-semibold"
             suppressHydrationWarning
           />
         </div>
@@ -324,6 +350,7 @@ export default function EmployersPage() {
           onSelect={(val: string) => setLocFilter(val)}
           isOpen={activeDropdown === "location"}
           setOpen={() => setActiveDropdown(activeDropdown === "location" ? null : "location")}
+          currentValue={locFilter}
         />
 
         <FilterDropdown
@@ -332,14 +359,16 @@ export default function EmployersPage() {
           onSelect={(val: string) => setStatusFilter(val)}
           isOpen={activeDropdown === "status"}
           setOpen={() => setActiveDropdown(activeDropdown === "status" ? null : "status")}
+          currentValue={statusFilter}
         />
 
         <FilterDropdown
           label={featuredFilter === "all" ? "Featured" : featuredFilter.charAt(0).toUpperCase() + featuredFilter.slice(1)}
-          options={["all", "featured", "pending"]}
+          options={["all", "featured"]}
           onSelect={(val: string) => setFeaturedFilter(val)}
           isOpen={activeDropdown === "featured"}
           setOpen={() => setActiveDropdown(activeDropdown === "featured" ? null : "featured")}
+          currentValue={featuredFilter}
         />
 
         {(search || locFilter !== "all" || statusFilter !== "all" || featuredFilter !== "all") && (
@@ -354,7 +383,7 @@ export default function EmployersPage() {
       </div>
 
       {/* ─── Registry Table ─────────────────────────────────────── */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden relative z-10">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden relative z-10">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]" suppressHydrationWarning>
             <thead>
@@ -378,27 +407,28 @@ export default function EmployersPage() {
                         ) : row.company_name?.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[13px] font-bold text-slate-900 leading-tight group-hover:text-primary transition-colors">{row.company_name}</p>
-                        <p className="text-[11px] text-slate-900 font-semibold mt-0.5 tracking-tight tracking-widest">{row.institution_type || 'Institution'}</p>
+                        <div className="flex items-center gap-2">
+                           <p className="text-[13px] font-semibold text-slate-900 leading-tight group-hover:text-primary transition-colors truncate">{row.company_name}</p>
+                           <Badge variant="indigo" className="capitalize tracking-tight">
+                              {((row.institution_type === 'UG' || row.institution_type === 'PG' || row.institution_type?.toLowerCase() === 'intermediate') ? 'Institute' : (row.institution_type || 'Institute')).toLowerCase()}
+                           </Badge>
+                        </div>
                       </div>
                     </div>
                   </td>
 
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1.5">
-                      <MapPin size={12} className="text-slate-900" />
-                      <span className="text-[12px] font-bold text-slate-900 truncate">{row.city || '—'}</span>
+                      <MapPin size={12} className="text-slate-700" />
+                      <span className="text-[12px] font-medium text-slate-900 truncate">{row.city || '—'}</span>
                     </div>
                   </td>
 
                   <td className="px-6 py-4 text-center">
                     <div className="inline-flex">
-                      <div className={clsx(
-                        "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border",
-                        row.is_verified ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-900 border-slate-100"
-                      )}>
-                        <span>{row.is_verified ? "Verified" : "Verification Pending"}</span>
-                      </div>
+                      <Badge variant={row.is_verified ? "success" : "danger"} dot className="capitalize">
+                        {row.is_verified ? "Verified" : "Pending"}
+                      </Badge>
                     </div>
                   </td>
 
@@ -407,38 +437,36 @@ export default function EmployersPage() {
                   </td>
 
                   <td className="px-6 py-4 text-center">
-                    <div className="inline-flex">
                       {(() => {
                         const isFeatured = row.is_featured && row.company_featured === 1;
                         const isExpired = row.featured_until ? new Date(row.featured_until) < new Date() : false;
 
                         if (isFeatured && !isExpired) {
                           return (
-                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
-                              <Star size={12} className="fill-emerald-600" /> Featured
-                            </div>
+                            <Badge variant="warning" className="capitalize">
+                              <Star size={11} fill="currentColor" className="mr-0.5" /> Featured
+                            </Badge>
                           );
                         }
                         
                         if (isFeatured && isExpired) {
                           return (
-                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-600 border border-rose-100">
-                              <Star size={12} className="fill-rose-600" /> Expired
-                            </div>
+                            <Badge variant="danger" dot className="capitalize">
+                              Expired
+                            </Badge>
                           );
                         }
 
                         if (row.company_featured === 1 && !row.is_featured) {
                           return (
-                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-100">
-                              <Star size={12} className="fill-amber-500" /> Pending
-                            </div>
+                            <Badge variant="warning" dot className="capitalize">
+                              Pending
+                            </Badge>
                           );
                         }
 
                         return <span className="text-slate-900 text-[10px] font-semibold">—</span>;
                       })()}
-                    </div>
                   </td>
 
                   <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
@@ -446,7 +474,7 @@ export default function EmployersPage() {
                       <button
                         onClick={() => router.push(`/employers/${row.id}`)}
                         title="View profile"
-                        className="p-1.5 bg-indigo-50 border border-indigo-100 text-indigo-500 hover:bg-indigo-100 rounded-lg transition-all active:scale-95 shadow-sm"
+                        className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all active:scale-95"
                         suppressHydrationWarning
                       >
                         <Eye size={15} />
@@ -502,7 +530,7 @@ export default function EmployersPage() {
               <button
                 disabled={pagination.currentPage === pagination.lastPage || loading}
                 onClick={() => fetchEmployers(pagination.currentPage + 1)}
-                className="h-10 px-5 flex items-center gap-2 rounded-lg border border-slate-200 bg-white text-slate-900 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[12px] font-bold active:scale-95 disabled:cursor-not-allowed"
+                className="h-10 px-5 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-900 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[12px] font-bold active:scale-95 disabled:cursor-not-allowed"
               >
                 Next <ChevronRight size={16} strokeWidth={2.5} />
               </button>
@@ -526,7 +554,7 @@ export default function EmployersPage() {
   );
 }
 
-function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
+function FilterDropdown({ label, options, onSelect, isOpen, setOpen, currentValue }: any) {
   const ref = React.useRef<HTMLDivElement>(null);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -543,33 +571,37 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
       <button
         onClick={() => setOpen()}
         className={clsx(
-          "flex items-center justify-between gap-3 px-5 py-3 bg-white border rounded-lg text-[13px] font-semibold transition-all shadow-sm min-w-[150px]",
-          isOpen ? "border-primary/40 ring-4 ring-primary/5 text-primary" : "border-slate-200 text-slate-900 hover:bg-slate-50"
+          "flex items-center justify-between gap-3 px-5 py-3 bg-white border rounded-xl text-[13px] font-semibold transition-all shadow-sm min-w-[160px]",
+          isOpen ? "border-primary border-b-2 ring-4 ring-primary/5 text-primary" : "border-slate-200 text-slate-900 hover:bg-slate-50"
         )}
         suppressHydrationWarning
       >
         <span className="truncate">{label}</span>
-        <Filter size={14} className={clsx("text-slate-400 transition-transform duration-300", isOpen && "text-primary")} />
+        <ChevronDown size={14} className={clsx("text-slate-400 transition-transform duration-300", isOpen && "rotate-180 text-primary")} />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-max min-w-[180px] max-h-[300px] overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-xl z-[100] py-2 animate-in fade-in zoom-in-95 duration-200">
-          {options.map((opt: string) => (
-            <button
-              key={opt}
-              onClick={() => {
-                onSelect(opt);
-                setOpen(false);
-              }}
-              className={clsx(
-                "w-full text-left px-5 py-2.5 text-[13px] font-medium transition-colors tracking-tight",
-                label.toLowerCase() === opt.toLowerCase() ? "bg-primary/5 text-primary font-bold" : "text-slate-900 hover:bg-slate-50 active:bg-slate-100"
-              )}
-              suppressHydrationWarning
-            >
-              {opt === "all" ? `All ${label.split(' ')[0]}s` : opt}
-            </button>
-          ))}
+        <div className="absolute top-full right-0 mt-2 w-max min-w-[200px] max-h-[300px] overflow-y-auto bg-white border border-slate-200 rounded-2xl shadow-xl z-[100] py-2 animate-in fade-in slide-in-from-top-2 duration-200">
+          {options.map((opt: string) => {
+            const isActive = currentValue === opt;
+            return (
+              <button
+                key={opt}
+                onClick={() => {
+                  onSelect(opt);
+                  setOpen(false);
+                }}
+                className={clsx(
+                  "w-full flex items-center justify-between px-5 py-2.5 text-[13px] font-medium transition-colors tracking-tight",
+                  isActive ? "bg-primary/5 text-primary font-bold" : "text-slate-900 hover:bg-slate-50 active:bg-slate-100"
+                )}
+                suppressHydrationWarning
+              >
+                <span>{opt === "all" ? "All" : opt.charAt(0).toUpperCase() + opt.slice(1)}</span>
+                {isActive && <Check size={14} className="text-primary" />}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>

@@ -35,8 +35,8 @@ export default function RootLayout({
           toastOptions={{
             style: {
               borderRadius: "12px",
-              fontSize: "14px",
-              padding: "12px 16px",
+              fontSize: "13px",
+              padding: "10px 14px",
             },
           }}
         />

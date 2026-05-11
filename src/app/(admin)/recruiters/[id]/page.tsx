@@ -15,7 +15,7 @@ import { toast } from "sonner";
 // import Badge from "@/components/ui/Badge";
 import { clsx } from "clsx";
 
-const API_URL = "https://teachnowbackend.jobsvedika.in";
+const API_URL = process.env.NEXT_PUBLIC_API_URL||"https://teachnowbackend.jobsvedika.in";
 
 export default function RecruiterDetailPage({
   params,
@@ -65,11 +65,28 @@ export default function RecruiterDetailPage({
         return;
       }
       else if (action === "delete") {
-        if (!confirm("Permanently delete this recruiter? This cannot be undone.")) return;
-        const res = await deleteRecruiter(recruiter.id);
-        console.log(`[handleAction] Delete Result:`, res);
-        toast.success("Recruiter deleted successfully");
-        router.push("/recruiters");
+        toast("Permanently delete this recruiter?", {
+          description: "This action cannot be undone and will remove all associated recruitment data.",
+          action: {
+            label: "Delete",
+            onClick: async () => {
+              try {
+                setProcessing(true);
+                await deleteRecruiter(recruiter.id);
+                toast.success("Recruiter deleted successfully");
+                router.push("/recruiters");
+              } catch (err) {
+                toast.error("Failed to delete recruiter");
+              } finally {
+                setProcessing(false);
+              }
+            }
+          },
+          cancel: {
+            label: "Okay",
+            onClick: () => { },
+          },
+        });
         return;
       }
     } catch (err: any) {
@@ -94,13 +111,12 @@ export default function RecruiterDetailPage({
 
   return (
     <div className="max-w-7xl mx-auto space-y-5 pb-16 antialiased animate-fade-in-up px-4">
-      {/* ─── Back Button ─────────────────────────────────────────────── */}
-      <button
-        onClick={() => router.back()}
-        className="flex items-center gap-2 px-4 py-2 text-[13px] font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all"
+      <Link
+        href="/recruiters"
+        className="flex items-center w-fit gap-2 text-[12px] font-semibold text-slate-600 hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
       >
-        <ChevronLeft size={18} /> Back to Recruiters
-      </button>
+        <ChevronLeft size={14} /> Back
+      </Link>
 
       {/* ─── Header Card ────────────────────────────────────────────── */}
       <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-6 space-y-5">
@@ -111,17 +127,17 @@ export default function RecruiterDetailPage({
                   </div>
                   <div className="min-w-0">
                       <div className="flex items-center gap-3 mb-0.5">
-                          <h1 className="text-xl font-bold text-slate-900 ">{recruiter.name}</h1>
+                          <h1 className="text-xl font-bold text-slate-900 tracking-tight">{recruiter.name}</h1>
                           <div className={clsx(
-                              "px-2 py-0.5 rounded-lg text-[10px] font-bold border capitalize",
-                              recruiter.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
+                              "px-2.5 py-0.5 rounded-lg text-[10px] font-bold border uppercase tracking-wider",
+                              recruiter.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-rose-50 text-rose-600 border-rose-100"
                           )}>
                               {recruiter.is_active ? "Active" : "Inactive"}
                           </div>
                       </div>
-                      <div className="flex items-center gap-4 text-[12px] text-slate-900 font-semibold">
-                          <span className="flex items-center gap-1.5"><Building2 size={13} className="text-indigo-500" /> {recruiter.employer?.company_name || "Independent"}</span>
-                          <span className="flex items-center gap-1.5"><Mail size={13} className="text-indigo-500" /> {recruiter.email}</span>
+                      <div className="flex items-center gap-4 text-[13px] font-medium text-slate-500">
+                          <span className="flex items-center gap-1.5"><Building2 size={13} className="text-slate-400" /> {recruiter.employer?.company_name || "Independent"}</span>
+                          <span className="flex items-center gap-1.5"><Mail size={13} className="text-slate-400" /> {recruiter.email}</span>
                       </div>
                   </div>
               </div>
@@ -146,21 +162,21 @@ export default function RecruiterDetailPage({
                 <button 
                    onClick={() => handleAction("delete")}
                    disabled={processing}
-                   className="h-9 px-4 flex items-center gap-2 bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-100 rounded-xl transition-all shadow-sm active:scale-95 text-[12px] font-bold"
+                   className="h-9 px-4 flex items-center gap-2 bg-red-600 text-white hover:bg-red-700 rounded-xl transition-all shadow-lg shadow-red-100 active:scale-95 text-[12px] font-bold"
                 >
                    <Trash2 size={15} /> Delete
                 </button>
               </div>
           </div>
 
-          <div className="flex items-center gap-8 border-b border-slate-100 px-2 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-8 border-b border-slate-200 px-2 overflow-x-auto scrollbar-hide">
               {(["Overview", "Jobs"] as const).map((t) => (
                   <button
                       key={t}
                       onClick={() => setActiveTab(t)}
                       className={clsx(
                           "pb-4 pt-1 text-[13px] font-bold border-b-2 transition-all whitespace-nowrap",
-                          activeTab === t ? "text-primary border-primary" : "text-slate-400 border-transparent hover:text-slate-600"
+                          activeTab === t ? "text-primary border-primary" : "text-slate-700 border-transparent hover:text-slate-600"
                       )}
                   >
                       {t}
@@ -177,12 +193,12 @@ export default function RecruiterDetailPage({
               { label: "Member since", value: fmt(recruiter.created_at), icon: Calendar, color: "text-blue-600", bg: "bg-blue-50" }
           ].map((m, i) => (
               <div key={i} className="bg-white p-4 rounded-xl border border-slate-200/60 shadow-sm flex items-center gap-4 hover:bg-slate-50/20 transition-all group">
-                  <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform", m.bg, m.color)}>
+                  <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", m.bg, m.color)}>
                      <m.icon size={18} />
                   </div>
                   <div>
-                      <p className="text-[11px] font-bold text-slate-900 tracking-wide mb-1 opacity-70">{m.label}</p>
-                      <p className={clsx("text-[14px] font-bold text-slate-900")}>{m.value}</p>
+                      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">{m.label}</p>
+                      <p className={clsx("text-base font-bold text-slate-900")}>{m.value}</p>
                   </div>
               </div>
           ))}
@@ -194,7 +210,7 @@ export default function RecruiterDetailPage({
                 <div className="lg:col-span-2 space-y-6">
                     <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-8 space-y-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                          <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                              <Building2 size={20} />
                           </div>
                           <h3 className="text-[18px] font-bold text-slate-900 tracking-tight">Recruiter details</h3>
@@ -209,24 +225,24 @@ export default function RecruiterDetailPage({
 
                 <div className="lg:col-span-1 space-y-6">
                     <div className="bg-white rounded-xl border border-slate-200/60 shadow-sm p-5 space-y-5">
-                       <p className="text-[11px] font-bold text-indigo-600 tracking-wide pl-1">Communication</p>
+                       <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest pl-1">Communication</p>
                        <div className="space-y-3">
-                          <div className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group">
+                          <div className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-200 group">
                               <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:scale-105 transition-transform">
                                   <Mail size={16} />
                               </div>
                               <div className="min-w-0">
-                                  <p className="text-[10px] font-bold text-slate-900 tracking-wide leading-none mb-1 opacity-70">Email address</p>
-                                  <p className="text-[13px] font-bold text-slate-900 truncate group-hover:text-primary transition-colors">{recruiter.email}</p>
+                                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Email address</p>
+                                  <p className="text-[13px] font-semibold text-slate-900 truncate group-hover:text-primary transition-colors">{recruiter.email}</p>
                               </div>
                           </div>
-                          <div className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group">
+                          <div className="flex items-center gap-3.5 p-3 rounded-xl hover:bg-slate-50 transition-all border border-transparent hover:border-slate-200 group">
                               <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:scale-105 transition-transform">
                                   <Calendar size={16} />
                               </div>
                               <div className="min-w-0">
-                                  <p className="text-[10px] font-bold text-slate-900 tracking-wide leading-none mb-1 opacity-70">Joined date</p>
-                                  <p className="text-[13px] font-bold text-slate-900">{fmt(recruiter.created_at)}</p>
+                                  <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-0.5">Joined date</p>
+                                  <p className="text-[13px] font-semibold text-slate-900">{fmt(recruiter.created_at)}</p>
                               </div>
                           </div>
                        </div>
@@ -237,38 +253,38 @@ export default function RecruiterDetailPage({
 
           {activeTab === "Jobs" && (
              <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200/60 shadow-sm overflow-hidden">
-                 <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+                 <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-white">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                          <Briefcase size={16} />
                       </div>
                       <h3 className="text-[15px] font-bold text-slate-900 tracking-tight">Active vacancies</h3>
                     </div>
-                    <span className="text-[11px] font-bold text-slate-400 tracking-wide">Live Inventory</span>
+                    <span className="text-[11px] font-bold text-slate-700 tracking-wide">Live Inventory</span>
                  </div>
                  <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-slate-50 bg-slate-50/50">
-                                <th className="px-6 py-2.5 text-[11px] font-bold text-slate-900 tracking-wide">Job title</th>
-                                <th className="px-6 py-2.5 text-[11px] font-bold text-slate-900 text-center tracking-wide">Type</th>
-                                <th className="px-6 py-2.5 text-[11px] font-bold text-slate-900 text-center tracking-wide">Status</th>
-                                <th className="px-6 py-2.5 text-[11px] font-bold text-slate-900 text-right tracking-wide">Posted date</th>
+                            <tr className="border-b border-slate-100 bg-slate-50/50">
+                                <th className="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest">Job title</th>
+                                <th className="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Type</th>
+                                <th className="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-center">Status</th>
+                                <th className="px-6 py-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest text-right">Posted date</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
                             {jobs.map((job: any) => (
                                 <tr key={job.id} onClick={() => router.push(`/jobs/${job.id}`)} className="group hover:bg-slate-50/50 cursor-pointer transition-all">
-                                    <td className="px-6 py-3">
-                                        <p className="text-[13px] font-bold text-slate-900 leading-tight group-hover:text-primary transition-colors">{job.title}</p>
-                                        <p className="text-[10px] text-slate-500 font-bold mt-1 inline-flex items-center gap-1"><MapPin size={10} className="text-slate-400" />{job.location}</p>
+                                    <td className="px-6 py-4">
+                                        <p className="text-[13px] font-semibold text-slate-900 leading-tight group-hover:text-primary transition-colors">{job.title}</p>
+                                        <p className="text-[10px] text-slate-400 font-medium mt-1 inline-flex items-center gap-1"><MapPin size={10} className="text-slate-400" />{job.location}</p>
                                     </td>
-                                    <td className="px-6 py-3 text-center">
-                                        <div className="inline-flex px-2 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-[10px] font-bold shrink-0">
+                                    <td className="px-6 py-4 text-center">
+                                        <div className="inline-flex px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600 text-[10px] font-semibold shrink-0">
                                             {job.job_type?.replace("_", " ")}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-3 text-center">
+                                    <td className="px-6 py-4 text-center">
                                         <div className={clsx(
                                             "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border",
                                             job.status === "approved" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-amber-50 text-amber-600 border-amber-100"
@@ -276,7 +292,7 @@ export default function RecruiterDetailPage({
                                             {job.status}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-3 text-right text-[11px] text-slate-900 font-bold whitespace-nowrap opacity-60">
+                                    <td className="px-6 py-4 text-right text-[11px] text-slate-500 font-medium whitespace-nowrap">
                                         {fmt(job.created_at)}
                                     </td>
                                 </tr>
@@ -285,7 +301,7 @@ export default function RecruiterDetailPage({
                                 <tr>
                                     <td colSpan={4} className="px-6 py-12 text-center">
                                       <Briefcase size={32} className="mx-auto text-slate-200 mb-3" />
-                                      <p className="text-[13px] text-slate-400 font-bold italic">No vacancy records found</p>
+                                      <p className="text-[13px] text-slate-400 font-medium italic">No vacancy records found</p>
                                     </td>
                                 </tr>
                             )}
@@ -303,15 +319,15 @@ export default function RecruiterDetailPage({
 function Field({ label, value, icon: Icon }: { label: string; value?: React.ReactNode | string | number | null; icon?: any }) {
   return (
     <div className="space-y-2">
-      <p className="text-[11px] font-bold text-slate-900 tracking-wide leading-none opacity-70">{label}</p>
+      <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider leading-none">{label}</p>
       <div className="flex items-center gap-2.5 min-h-[24px]">
         {Icon && (
-          <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+          <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
             <Icon size={14} />
           </div>
         )}
-        <div className="text-[14px] text-slate-900 font-bold leading-tight flex items-center">
-          {value || <span className="text-slate-400 font-medium whitespace-nowrap">Not provided</span>}
+        <div className="text-[14px] text-slate-900 font-semibold leading-tight flex items-center">
+          {value || <span className="text-slate-400 font-medium whitespace-nowrap italic text-[12px]">Not provided</span>}
         </div>
       </div>
     </div>

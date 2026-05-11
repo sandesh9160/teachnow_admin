@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -14,29 +14,16 @@ import {
   CheckCircle2,
   XCircle,
   SaveAll,
+  Loader2,
+  Trash2,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { clsx } from "clsx";
-
-// Mock data fetcher based on ID
-const getVerificationData = (id: string) => {
-  return {
-    id,
-    institute: "EduSmart School",
-    email: "admin@edusmart.edu.in",
-    phone: "+91 98765 43210",
-    address: "123 Education Hub, New Delhi, 110001",
-    status: "Pending",
-    submissionDate: "Mar 10, 2025",
-    documents: [
-      { id: "d1", type: "GST Certificate", file: "edusmart_gst.pdf", size: "2.4 MB" },
-      { id: "d2", type: "Registration Certificate", file: "edusmart_reg.pdf", size: "1.8 MB" },
-      { id: "d3", type: "PAN Card", file: "edusmart_pan.pdf", size: "850 KB" },
-      { id: "d4", type: "Affiliation Letter", file: "cbse_affiliation.pdf", size: "3.1 MB" },
-      { id: "d5", type: "Address Proof", file: "electricity_bill.pdf", size: "1.2 MB" },
-    ],
-  };
-};
+import Badge from "@/components/ui/Badge";
+import { getEmployer, approveVerification, rejectVerification, deleteEmployer, verifyEmployer } from "@/services/admin.service";
+import { Employer, EmployerDocument } from "@/types";
+import { resolveMediaUrl } from "@/lib/media";
 
 type DocStatus = "Pending" | "Approved" | "Rejected";
 
@@ -45,60 +32,135 @@ interface DocDecision {
   feedback: string;
 }
 
-export default function VerificationDetailPage() {
-  const params = useParams();
+export default function VerificationDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params);
   const router = useRouter();
+  const feedbackRef = React.useRef<HTMLTextAreaElement>(null);
 
-  const data = getVerificationData(params.id as string);
-  const [activeDocId, setActiveDocId] = useState(data.documents[0].id);
+  const [employer, setEmployer] = useState<Employer | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeDocId, setActiveDocId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [decisions, setDecisions] = useState<Record<number, DocDecision>>({});
 
-  // State to hold decisions for each document
-  const [decisions, setDecisions] = useState<Record<string, DocDecision>>(() => {
-    const init: Record<string, DocDecision> = {};
-    data.documents.forEach((doc) => {
-      init[doc.id] = { status: "Pending", feedback: "" };
-    });
-    return init;
-  });
+  const handleDownload = (url: string, filename: string) => {
+    try {
+      const proxyUrl = `/api/download?url=${encodeURIComponent(url)}&name=${encodeURIComponent(filename)}`;
+      window.location.href = proxyUrl;
+      toast.success("Download started");
+    } catch (err) {
+      toast.error("Failed to start download");
+    }
+  };
 
-  const activeDoc = data.documents.find((d) => d.id === activeDocId)!;
-  const currentDecision = decisions[activeDocId];
+  useEffect(() => {
+    if (resolvedParams.id) {
+      fetchDetails();
+    }
+  }, [resolvedParams.id]);
+
+  const fetchDetails = async () => {
+    try {
+      setLoading(true);
+      const res = await getEmployer(Number(resolvedParams.id));
+      if (res?.data) {
+        setEmployer(res.data);
+        const init: Record<number, DocDecision> = {};
+        res.data.documents?.forEach((doc) => {
+          init[doc.id] = { 
+            status: (doc.status?.charAt(0).toUpperCase() + doc.status?.slice(1)) as DocStatus || "Pending", 
+            feedback: "" 
+          };
+        });
+        setDecisions(init);
+        if (res.data.documents && res.data.documents.length > 0) {
+          setActiveDocId(res.data.documents[0].id);
+        }
+      }
+    } catch {
+      toast.error("Failed to load verification details");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const activeDoc = employer?.documents?.find((d) => d.id === activeDocId);
+  const currentDecision = activeDocId ? decisions[activeDocId] : null;
 
   const handleUpdateDecision = (field: keyof DocDecision, value: string) => {
+    if (!activeDocId) return;
     setDecisions((prev) => ({
       ...prev,
       [activeDocId]: { ...prev[activeDocId], [field]: value },
     }));
   };
 
-  const setDocStatus = (status: "Approved" | "Rejected") => {
+  const setDocStatus = async (status: "Approved" | "Rejected") => {
+    if (!activeDocId || !currentDecision) return;
+    
     if (status === "Rejected" && !currentDecision.feedback.trim()) {
-      toast.error("Feedback is required to reject this specific document.");
-      return;
-    }
-    handleUpdateDecision("status", status);
-    toast.success(`${activeDoc.type} marked as ${status}`);
-  };
-
-  const handleSubmitAll = async () => {
-    // Check if any document is pending
-    const pendingDocs = Object.values(decisions).filter(d => d.status === "Pending");
-    if (pendingDocs.length > 0) {
-      toast.error(`Please review all documents. ${pendingDocs.length} remaining.`);
+      toast.error("Please provide feedback for rejection.");
+      feedbackRef.current?.focus();
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      toast.success("All document decisions have been successfully submitted.");
-      router.push("/verification");
-    } catch (error) {
-      toast.error("Failed to submit verifications.");
+      setIsSubmitting(true);
+      if (status === "Approved") {
+        await approveVerification(activeDocId);
+      } else {
+        await rejectVerification(activeDocId, currentDecision.feedback);
+      }
+      
+      handleUpdateDecision("status", status);
+      toast.success(`${activeDoc?.document_name} marked as ${status}`);
+    } catch {
+      toast.error(`Failed to update ${activeDoc?.document_name} status`);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmitAll = async () => {
+    toast.info("Decisions are saved individually as you verify.");
+    router.push("/verification");
+  };
+
+  const handleVerifyInstitute = async () => {
+    if (!employer || isSubmitting) return;
+    try {
+      setIsSubmitting(true);
+      await verifyEmployer(employer.id);
+      setEmployer(prev => prev ? { ...prev, is_verified: true } : null);
+      toast.success("Institute verified successfully");
+    } catch {
+      toast.error("Failed to verify institute");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteInstitute = async () => {
+    if (!employer || isSubmitting) return;
+    toast("Delete this institute permanently?", {
+      description: "This action will permanently remove the organization, all job postings, and associated recruiter accounts.",
+      action: {
+        label: "Delete",
+        onClick: async () => {
+          try {
+            setIsSubmitting(true);
+            await deleteEmployer(employer.id);
+            toast.success("Institute deleted successfully");
+            router.push("/verification");
+          } catch {
+            toast.error("Failed to delete institute");
+          } finally {
+            setIsSubmitting(false);
+          }
+        },
+      },
+      cancel: { label: "Cancel", onClick: () => {} }
+    });
   };
 
   const getStatusBadge = (status: DocStatus) => {
@@ -107,34 +169,44 @@ export default function VerificationDetailPage() {
     return null;
   };
 
+  if (loading) return (
+    <div className="h-[60vh] flex flex-col items-center justify-center gap-3">
+      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <p className="text-[13px] font-semibold text-slate-500">Loading details...</p>
+    </div>
+  );
+
+  if (!employer) return <div className="p-20 text-center text-slate-500 font-bold">Institute not found</div>;
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-10">
-      {/* ─── Header & Back Button ──────────────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+      {/* ─── Header & Navigation ──────────────────────────────────────────── */}
+      <div className="space-y-5">
+        <div className="flex items-center justify-between gap-4">
           <Link
             href="/verification"
-            className="p-2 bg-white border border-surface-200 rounded-lg text-surface-500 hover:text-surface-900 hover:bg-surface-50 transition-colors"
+            className="flex items-center gap-2 text-[12px] font-semibold text-slate-600 hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft size={14} /> Back
           </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-surface-900 tracking-tight">
-              Review Documents
-            </h1>
-            <p className="text-sm text-surface-500">
-              Verify {data.documents.length} submitted documents and provide feedback
-            </p>
-          </div>
+          <button
+            onClick={handleSubmitAll}
+            disabled={isSubmitting}
+            className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 disabled:opacity-50 transition-all shadow-sm"
+          >
+            {isSubmitting ? "Submitting..." : "Submit All Decisions"}
+            {!isSubmitting && <SaveAll size={18} />}
+          </button>
         </div>
-        <button
-          onClick={handleSubmitAll}
-          disabled={isSubmitting}
-          className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 disabled:opacity-50 transition-all shadow-sm"
-        >
-          {isSubmitting ? "Submitting..." : "Submit All Decisions"}
-          {!isSubmitting && <SaveAll size={18} />}
-        </button>
+
+        <div>
+          <h1 className="text-2xl font-bold text-surface-900 tracking-tight">
+            Review Documents
+          </h1>
+          <p className="text-sm text-surface-500 font-medium">
+            Verify {employer.documents?.length || 0} submitted documents and provide feedback
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -147,9 +219,16 @@ export default function VerificationDetailPage() {
                 <Building size={16} className="text-primary-600" />
                 Institute Information
               </h3>
-              <span className="inline-flex px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-50 text-amber-600 uppercase tracking-wide">
-                {data.status}
-              </span>
+              {!employer.is_verified && (
+                <button
+                  onClick={handleVerifyInstitute}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all shadow-sm active:scale-95 disabled:opacity-50"
+                >
+                  <ShieldCheck size={14} />
+                  Verify Institute
+                </button>
+              )}
             </div>
             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
               <div>
@@ -157,26 +236,26 @@ export default function VerificationDetailPage() {
                   Institute Name
                 </p>
                 <p className="text-sm font-semibold text-surface-900">
-                  {data.institute}
+                  {employer.company_name}
                 </p>
               </div>
               <div>
                 <p className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-0.5 flex items-center gap-1">
                   <Mail size={12} /> Email
                 </p>
-                <p className="text-sm font-medium text-surface-700">{data.email}</p>
+                <p className="text-sm font-medium text-surface-700">{employer.email}</p>
               </div>
               <div>
                 <p className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-0.5 flex items-center gap-1">
                   <Phone size={12} /> Phone
                 </p>
-                <p className="text-sm font-medium text-surface-700">{data.phone}</p>
+                <p className="text-sm font-medium text-surface-700">{employer.phone}</p>
               </div>
               <div>
                 <p className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-0.5 flex items-center gap-1">
                   <MapPin size={12} /> Address
                 </p>
-                <p className="text-sm font-medium text-surface-700">{data.address}</p>
+                <p className="text-sm font-medium text-surface-700">{employer.address}</p>
               </div>
             </div>
           </div>
@@ -186,11 +265,11 @@ export default function VerificationDetailPage() {
             {/* Document Tabs / List */}
             <div className="p-4 border-b border-surface-100 bg-surface-50">
               <h3 className="text-sm font-semibold text-surface-900 mb-3">
-                Uploaded Documents ({data.documents.length})
+                Uploaded Documents ({employer.documents?.length || 0})
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {data.documents.map((doc) => {
-                  const docStat = decisions[doc.id].status;
+                {employer.documents?.map((doc) => {
+                  const docStat = decisions[doc.id]?.status || "Pending";
                   return (
                     <button
                       key={doc.id}
@@ -208,10 +287,10 @@ export default function VerificationDetailPage() {
                       </div>
                       <div className="min-w-0">
                         <p className={clsx("text-[13px] leading-tight font-semibold truncate", activeDocId === doc.id ? "text-primary-900" : "text-surface-900")}>
-                          {doc.type}
+                          {doc.document_name}
                         </p>
                         <p className={clsx("text-[11px] truncate mt-0.5", activeDocId === doc.id ? "text-primary-600" : "text-surface-500")}>
-                          {doc.size}
+                          Uploaded: {new Date(doc.created_at).toLocaleDateString()}
                         </p>
                       </div>
                     </button>
@@ -224,47 +303,71 @@ export default function VerificationDetailPage() {
             <div className="px-4 py-2.5 flex items-center justify-between border-b border-surface-100">
               <div>
                 <h4 className="font-semibold text-surface-900 text-sm">
-                  {activeDoc.type} Preview
+                  {activeDoc?.document_name} Preview
                 </h4>
                 <p className="text-[11px] text-surface-500">
-                  {activeDoc.file} • {activeDoc.size}
+                   {activeDoc?.document_type}
                 </p>
               </div>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-surface-600 bg-white border border-surface-200 hover:bg-surface-50 rounded-lg transition-colors shadow-sm">
-                <Download size={14} /> Download
-              </button>
+              {activeDoc && (
+                <button 
+                  onClick={() => handleDownload(resolveMediaUrl(activeDoc.document_file), activeDoc.document_name)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-surface-600 bg-white border border-surface-200 hover:bg-surface-50 rounded-lg transition-colors shadow-sm"
+                >
+                  <Download size={14} /> Download
+                </button>
+              )}
             </div>
 
-            {/* Fake PDF Viewer */}
-            <div className="w-full bg-surface-100/50 h-[360px] flex flex-col items-center justify-center p-6 border-b border-surface-100">
-              <FileText size={48} className="text-surface-300 mb-3 drop-shadow-sm" />
-              <p className="text-surface-600 text-sm font-medium">{activeDoc.file}</p>
-              <p className="text-xs text-surface-400 mt-1">
-                PDF Document Preview Area
-              </p>
+            {/* Document Preview Area */}
+            <div className="w-full bg-slate-50 min-h-[450px] flex flex-col items-center justify-center border-b border-surface-100 overflow-hidden relative">
+              {activeDoc ? (
+                activeDoc.document_file.toLowerCase().endsWith('.pdf') ? (
+                  <iframe 
+                    src={`/api/download?url=${encodeURIComponent(resolveMediaUrl(activeDoc.document_file))}&mode=inline`}
+                    className="w-full h-[600px] border-none"
+                    title={activeDoc.document_name}
+                  />
+                ) : (
+                  <div className="p-4 flex items-center justify-center w-full h-full">
+                    <img 
+                      src={resolveMediaUrl(activeDoc.document_file)} 
+                      alt={activeDoc.document_name}
+                      className="max-w-full max-h-[600px] object-contain rounded-lg shadow-sm border border-slate-200 bg-white"
+                    />
+                  </div>
+                )
+              ) : (
+                <div className="flex flex-col items-center opacity-40">
+                  <FileText size={48} className="text-surface-300 mb-3" />
+                  <p className="text-surface-600 text-sm font-medium italic">No document selected</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* ─── Right Column (Feedback & Actions per doc) ───────────────────────────── */}
-        <div className="lg:col-span-1">
+        {/* ─── Right Column (Actions & Feedback) ───────────────────────────── */}
+        <div className="lg:col-span-1 space-y-4">
           <div className="bg-white rounded-xl border border-surface-200 shadow-sm sticky top-6">
             <div className="p-4 border-b border-surface-100 bg-surface-50">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-surface-900">Document Verdict</h3>
-                <span
-                  className={clsx(
-                    "px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-md",
-                    currentDecision.status === "Pending" && "bg-amber-100 text-amber-700",
-                    currentDecision.status === "Approved" && "bg-emerald-100 text-emerald-700",
-                    currentDecision.status === "Rejected" && "bg-red-100 text-red-700"
-                  )}
-                >
-                  {currentDecision.status}
-                </span>
+                {currentDecision && (
+                  <Badge 
+                    variant={
+                      currentDecision.status === "Approved" ? "success" : 
+                      currentDecision.status === "Rejected" ? "danger" : "warning"
+                    } 
+                    dot 
+                    className="capitalize"
+                  >
+                    {currentDecision.status}
+                  </Badge>
+                )}
               </div>
               <p className="text-xs text-surface-500 mt-1">
-                Reviewing: <span className="font-medium text-surface-700">{activeDoc.type}</span>
+                Reviewing: <span className="font-medium text-surface-700">{activeDoc?.document_name}</span>
               </p>
             </div>
             
@@ -275,7 +378,8 @@ export default function VerificationDetailPage() {
                   Document Feedback <span className="text-red-500">*</span>
                 </label>
                 <textarea
-                  value={currentDecision.feedback}
+                  ref={feedbackRef}
+                  value={currentDecision?.feedback || ""}
                   onChange={(e) => handleUpdateDecision("feedback", e.target.value)}
                   placeholder="Provide precise feedback..."
                   className="w-full h-24 px-3 py-2.5 rounded-lg border border-surface-200 text-surface-900 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all resize-none text-[13px] bg-surface-50"
@@ -283,30 +387,20 @@ export default function VerificationDetailPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-2 pt-1">
+              <div className="flex gap-2 pt-1">
                 <button
                   onClick={() => setDocStatus("Approved")}
-                  className={clsx(
-                    "w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm border",
-                    currentDecision.status === "Approved"
-                      ? "bg-emerald-600 border-emerald-600 text-white"
-                      : "bg-white border-surface-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200"
-                  )}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm bg-emerald-600 text-white border border-emerald-700"
                 >
                   <CheckCircle2 size={16} />
-                  Approve Document
+                  Approve
                 </button>
                 <button
                   onClick={() => setDocStatus("Rejected")}
-                  className={clsx(
-                    "w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm border",
-                    currentDecision.status === "Rejected"
-                      ? "bg-red-600 border-red-600 text-white"
-                      : "bg-white border-surface-200 text-red-600 hover:bg-red-50 hover:border-red-200"
-                  )}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm bg-red-600 text-white border border-red-700"
                 >
                   <XCircle size={16} />
-                  Reject Document
+                  Reject
                 </button>
               </div>
             </div>

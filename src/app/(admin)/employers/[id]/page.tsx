@@ -7,7 +7,7 @@ import {
   ShieldCheck, ShieldAlert, Star, Calendar, Clock,
   Trash2, Users, Briefcase, ExternalLink, Loader2,
   CheckCircle2, FileText, Hash, Info, Tag, CreditCard,
-  Link2, Image as ImageIcon, Download, ArrowUpRight
+  Link2, Image as ImageIcon, Download, ArrowUpRight, Eye
 } from "lucide-react";
 import { clsx } from "clsx";
 import DataTable from "@/components/tables/DataTable";
@@ -25,6 +25,19 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState("Overview");
+  const [previewDoc, setPreviewDoc] = useState<any>(null);
+
+  const handleDownload = (url: string, filename: string) => {
+    try {
+      // Use our internal proxy to bypass CORS and force download
+      const proxyUrl = `/api/download?url=${encodeURIComponent(url)}&name=${encodeURIComponent(filename)}`;
+      window.location.href = proxyUrl;
+      toast.success("Download started");
+    } catch (err) {
+      console.error("Download trigger failed:", err);
+      toast.error("Failed to start download. Please try again.");
+    }
+  };
 
   const tabs = ["Overview", "Recruiters", "Jobs", "Documents", "SEO"];
 
@@ -45,56 +58,49 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
 
   const handleAction = async (action: "verify" | "feature" | "delete" | "toggle-status") => {
     if (!employer || processing) return;
-    const now = Date.now();
-    console.log(`[handleAction] [${now}] Starting action: ${action} for ID: ${employer.id}`);
+    
+    if (action === "delete") {
+      toast("Permanently delete this organization?", {
+        description: "This action will remove all associated records, including jobs and recruiters.",
+        action: {
+          label: "Delete",
+          onClick: async () => {
+            try {
+              setProcessing(true);
+              await deleteEmployer(employer.id);
+              toast.success("Employer deleted successfully");
+              router.push("/employers");
+            } catch (err) {
+              toast.error("Failed to delete employer");
+            } finally {
+              setProcessing(false);
+            }
+          }
+        },
+        cancel: {
+          label: "Cancel",
+          onClick: () => {},
+        },
+      });
+      return;
+    }
+
     try {
       setProcessing(true);
       if (action === "verify") {
         const res = await verifyEmployer(employer.id);
-        console.log(`[handleAction] Verify Result:`, res);
-        
-        const nextIsVerified = res.data?.employer_verified ?? true;
-
-        setEmployer(prev => prev ? { ...prev, is_verified: nextIsVerified } : null);
+        setEmployer(prev => prev ? { ...prev, is_verified: res.data?.employer_verified ?? true } : null);
         toast.success(res.message || "Employer verified successfully");
         await fetchDetails();
-        return;
       }
       else if (action === "feature") {
         const res = await featureEmployer(employer.id);
-        console.log(`[handleAction] Feature Result:`, res);
-        
         const nextIsFeatured = res.data?.employer_featured ?? !employer.is_featured;
-            
-        setEmployer(prev => prev ? { 
-          ...prev, 
-          is_featured: nextIsFeatured, 
-          company_featured: nextIsFeatured 
-        } : null);
-        
+        setEmployer(prev => prev ? { ...prev, is_featured: nextIsFeatured, company_featured: nextIsFeatured } : null);
         toast.success(nextIsFeatured ? "Organization is now featured" : "Featured status removed");
         await fetchDetails();
-        return;
       }
-      else if (action === "delete") {
-        if (!confirm("Permanently delete this employer? This cannot be undone.")) return;
-        const res = await deleteEmployer(employer.id);
-        console.log(`[handleAction] Delete Result:`, res);
-        router.push("/employers");
-        return;
-      }
-
-      const messages = {
-        verify: "Employer verified successfully",
-        feature: "Employer feature status updated",
-        delete: "Employer deleted successfully"
-      };
-
-      toast.success(messages[action as keyof typeof messages]);
-      console.log(`[handleAction] Refreshing details...`);
-      fetchDetails();
     } catch (err: any) {
-      console.error(`[handleAction] Error:`, err);
       toast.error(err.response?.data?.message || "Action failed");
     } finally {
       setProcessing(false);
@@ -115,20 +121,19 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
   const initials = employer.company_name?.charAt(0).toUpperCase() || "E";
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-20 antialiased animate-fade-in-up px-4">
-      {/* ─── Breadcrumb Navigation ─────────────────────────────────── */}
-      <nav className="flex items-center gap-2 text-[12px] font-semibold text-slate-500">
-        <Link href="/employers" className="hover:text-primary transition-colors flex items-center gap-1">
-          <ChevronLeft size={14} /> Organizations
-        </Link>
-        <span className="text-slate-300">/</span>
-        <span className="text-slate-900">{employer.company_name}</span>
-      </nav>
+    <>
+      <div className="max-w-6xl mx-auto space-y-6 pb-20 antialiased animate-fade-in-up px-4">
+      <Link
+        href="/employers"
+        className="flex items-center w-fit gap-2 text-[12px] font-semibold text-slate-600 hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
+      >
+        <ChevronLeft size={14} /> Back
+      </Link>
 
       {/* ─── Header Card ────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 rounded-2xl bg-indigo-600 border border-slate-100 flex items-center justify-center text-white text-xl font-bold shadow-sm shrink-0 overflow-hidden">
+          <div className="w-16 h-16 rounded-xl bg-indigo-600 border border-slate-100 flex items-center justify-center text-white text-xl font-bold shadow-sm shrink-0 overflow-hidden">
             {employer.company_logo ? (
               <img src={resolveMediaUrl(employer.company_logo)} alt="" className="w-full h-full object-contain p-2 bg-white" />
             ) : (
@@ -152,9 +157,9 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl border border-slate-200 shadow-sm">
-            <span className="text-[13px] font-semibold text-slate-600">Featured</span>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+            <span className="text-[13px] font-bold text-slate-600">Featured</span>
             <button
               onClick={() => handleAction("feature")}
               disabled={processing}
@@ -175,11 +180,18 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
             <button
               onClick={() => handleAction("verify")}
               disabled={processing}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-100 text-emerald-600 text-[13px] font-semibold rounded-xl hover:bg-emerald-100 transition-all shadow-sm active:scale-95"
+              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white text-[13px] font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100 active:scale-95"
             >
-              <ShieldCheck size={16} /> Verify
+              <ShieldCheck size={16} /> Verify Institute
             </button>
           )}
+          <button
+            onClick={() => handleAction("delete")}
+            disabled={processing}
+            className="flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white text-[13px] font-bold rounded-xl hover:bg-red-700 transition-all shadow-md shadow-red-100 active:scale-95"
+          >
+            <Trash2 size={16} /> Delete Institute
+          </button>
         </div>
       </div>
 
@@ -204,7 +216,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
         {activeTab === "Overview" && (
           <>
             <div className="lg:col-span-2 space-y-6">
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
                   <Info size={16} className="text-primary" /> Organization Summary
                 </h3>
@@ -213,7 +225,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-6">
                 <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
                   <Building2 size={16} className="text-indigo-500" /> Administrative Registry
                 </h3>
@@ -229,14 +241,14 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
             </div>
 
             <div className="lg:col-span-1 space-y-6">
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-5">
                 <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
                   <Star size={16} className="text-amber-500" /> Feature Request Status
                 </h3>
                 <div className={clsx(
                   "px-4 py-3 rounded-xl text-[13px] font-semibold border text-center",
                   employer.is_featured && employer.company_featured === 1
-                    ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                    ? "bg-amber-50 text-amber-700 border-amber-100"
                     : employer.company_featured === 1 
                     ? "bg-amber-50 text-amber-700 border-amber-100" 
                     : "bg-slate-50 text-slate-600 border-slate-100"
@@ -245,7 +257,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-5">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-5">
                 <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
                   <Mail size={16} className="text-indigo-500" /> Digital Contact
                 </h3>
@@ -277,7 +289,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="p-4 border-b border-slate-100 bg-slate-50/50">
                   <h3 className="text-[13px] font-bold text-slate-900 flex items-center gap-2">
                     <MapPin size={14} className="text-indigo-500" /> Verified Location
@@ -303,7 +315,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
         )}
 
         {activeTab === "Recruiters" && (
-          <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <DataTable compact
               columns={[
                 {
@@ -340,7 +352,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                 <ExternalLink size={14} /> Manage Registry
               </Link>
             </div>
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <DataTable compact
               columns={[
                 {
@@ -391,7 +403,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
 
         {activeTab === "SEO" && (
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Globe size={16} className="text-indigo-500" />
@@ -452,7 +464,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
         )}
 
         {activeTab === "Documents" && (
-          <div className="lg:col-span-3 bg-white rounded-[24px] border border-slate-200/60 shadow-xl shadow-slate-200/30 overflow-hidden">
+          <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <DataTable
               columns={[
                 {
@@ -467,44 +479,81 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                 { key: "status", title: "Status", render: (v: any) => <Badge variant={v === "approved" ? "success" : "warning"} dot>{v}</Badge> },
                 { key: "created_at", title: "Upload Date", render: (v: any) => <span className="text-[11px] font-bold text-slate-400">{fmt(v)}</span> },
                 {
-                  key: "document_file", title: "", render: (v: any) => (
-                    <a href={resolveMediaUrl(v)} target="_blank"
-                      className="flex items-center gap-2 h-8 px-4 bg-indigo-50 border border-indigo-100 rounded-xl text-[11px] font-bold text-indigo-600 hover:bg-indigo-100 transition-all active:scale-95 shadow-sm">
-                      <Download size={14} /> View
-                    </a>
+                  key: "document_file", title: "", render: (v: any, r: any) => (
+                    <div className="flex justify-end gap-2">
+                      <button 
+                        onClick={() => setPreviewDoc(r)}
+                        className="flex items-center gap-2 h-8 px-4 bg-indigo-50 border border-indigo-100 rounded-xl text-[11px] font-bold text-indigo-600 hover:bg-indigo-100 transition-all active:scale-95 shadow-sm">
+                        <Eye size={14} /> View
+                      </button>
+                    </div>
                   )
                 },
               ]}
               data={employer.documents || []}
               emptyMessage="No organizational documents available."
             />
-          </div>
-        )}
-
-      </div>
-
-      {/* ─── Delete Section ─────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-rose-100 shadow-sm p-8 space-y-4">
+            {/* ─── Danger Zone ─────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl border border-rose-100 shadow-sm p-8 space-y-4">
         <div className="space-y-2">
           <h3 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
             <Trash2 size={16} className="text-rose-500" /> Danger Zone
           </h3>
-          <p className="text-[13px] text-slate-600">This action cannot be undone. All associated data will be permanently deleted.</p>
+          <p className="text-[13px] text-slate-600 font-medium">This action will permanently delete this organization profile along with all associated job postings and recruiter accounts.</p>
         </div>
-        <button
-          onClick={() => {
-            const message = `Are you absolutely sure you want to delete "${employer.company_name}"?\n\nThis will permanently delete:\n• Organization profile\n• All job postings\n• All recruiter accounts\n• All applications\n\nThis cannot be undone.`;
-            if (confirm(message)) {
-              handleAction("delete");
-            }
-          }}
-          disabled={processing}
-          className="flex items-center gap-2 px-6 py-3 bg-rose-50 border border-rose-200 text-rose-600 text-[13px] font-bold rounded-xl hover:bg-rose-100 transition-all shadow-sm active:scale-95 disabled:opacity-50"
-        >
-          <Trash2 size={16} /> Permanently Delete Organization
-        </button>
       </div>
     </div>
+        )}
+
+      </div>
+
+    </div>
+
+      {/* ─── Document Preview Modal ───────────────────────────────── */}
+      {previewDoc && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={() => setPreviewDoc(null)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                    <FileText size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 leading-tight">{previewDoc.document_name}</h3>
+                    <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">{previewDoc.document_type?.replace(/_/g, " ")}</p>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={() => handleDownload(resolveMediaUrl(previewDoc.document_file), previewDoc.document_name)}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-[12px] font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 active:scale-95"
+              >
+                <Download size={15} /> Download
+              </button>
+            </div>
+            <div className={clsx("flex-1 bg-slate-50 overflow-hidden", !previewDoc.document_file?.toLowerCase().endsWith('.pdf') && "p-8 flex items-center justify-center")}>
+               {previewDoc.document_file?.toLowerCase().endsWith('.pdf') ? (
+                  <div className="w-full h-full relative group">
+                    <iframe 
+                      src={`/api/download?url=${encodeURIComponent(resolveMediaUrl(previewDoc.document_file))}&mode=inline`}
+                      className="w-full h-[75vh] border-none" 
+                    />
+                  </div>
+               ) : (
+                  <img src={resolveMediaUrl(previewDoc.document_file)} alt="Document Preview" className="max-w-full max-h-full object-contain rounded-xl shadow-lg border border-slate-200" />
+               )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

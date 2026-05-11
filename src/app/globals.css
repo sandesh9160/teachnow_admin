@@ -72,7 +72,7 @@
   --color-sidebar-border: #f4f4f5;
   --color-sidebar-hover: #f4f4f5;
   --color-sidebar-active: hsl(221.2 83.2% 53.3%);
-  --color-sidebar-text: #71717a;
+  --color-sidebar-text: #18181b;
   --color-sidebar-text-active: hsl(221.2 83.2% 53.3%);
   --color-sidebar-icon-active: #ffffff;
 }
@@ -169,13 +169,18 @@
     color: white !important;
     font-size: 11px !important;
     font-weight: 700 !important;
-    padding: 6px 12px !important;
+    padding: 6px 14px !important;
     border-radius: 4px !important;
-    transition: transform 0.2s, opacity 0.2s !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
+  }
+
+  [data-sonner-toast] [data-button]:hover {
+    transform: translateY(-1px);
   }
 
   [data-sonner-toast] [data-button]:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
 
   [data-sonner-toast] [data-cancel] {
@@ -183,20 +188,62 @@
     color: white !important;
     font-size: 11px !important;
     font-weight: 700 !important;
-    padding: 6px 12px !important;
+    padding: 6px 14px !important;
     border-radius: 4px !important;
-    transition: opacity 0.2s !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05) !important;
   }
 
   [data-sonner-toast] [data-cancel]:hover {
-    opacity: 0.9;
+    transform: translateY(-1px);
   }
 
-  /* Ensure close button is strictly on the right */
+  [data-sonner-toast] {
+    padding: 12px 40px 12px 14px !important;
+    gap: 12px !important;
+    min-height: unset !important;
+    align-items: center !important;
+    width: fit-content !important;
+    max-width: 400px !important;
+  }
+
+  [data-sonner-toast] [data-content] {
+    flex: 1 !important;
+    margin: 0 !important;
+  }
+
+  /* Handle confirmation actions row - if present */
+  [data-sonner-toast]:has([data-button]) {
+    flex-wrap: wrap !important;
+    align-items: flex-start !important;
+    padding-right: 32px !important; /* space for close button */
+  }
+
+  [data-sonner-toast]:has([data-button]) [data-content] {
+    flex: 1 0 100% !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Keep buttons together on the left with NO gap */
+  [data-sonner-toast] [data-cancel] {
+    margin-left: 0 !important;
+  }
+  
+  [data-sonner-toast] [data-button] {
+    margin-left: 4px !important; /* Very minimal gap as requested */
+  }
+
+  /* Ensure close button is strictly on the right and vertically centered */
   [data-sonner-toast] [data-close-button] {
     left: auto !important;
     right: 8px !important;
-    top: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+  }
+
+  [data-sonner-toast]:has([data-button]) [data-close-button] {
+    top: 12px !important;
+    transform: none !important;
   }
 }
 
@@ -324,18 +371,18 @@
 }
 
 .page-title {
-  font-size: 1.125rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #0f172a;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   line-height: 1.2;
 }
 
 .page-subtitle {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   font-weight: 500;
-  color: #0f172a;
-  margin-top: 0.125rem;
+  color: #475569;
+  margin-top: 0.25rem;
 }
 
 /* ─── Consistent Table Styles ─────────────────────────────────────────── */

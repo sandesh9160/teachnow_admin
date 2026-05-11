@@ -258,10 +258,6 @@ export default function VerificationPage() {
                                   <h5 className="text-[14px] font-semibold text-slate-900 leading-none">{companyName}</h5>
                                   <div className="flex items-center gap-2">
                                       <p className="text-[13px] text-slate-900 font-medium">{docType}</p>
-                                      <div className="w-1 h-1 rounded-full bg-slate-400" />
-                                      <a href={resolveMediaUrl(r.document_file)} target="_blank" className="text-[11px] font-semibold text-primary/80 hover:underline flex items-center gap-1">
-                                          <FileText size={12} /> View Document
-                                      </a>
                                   </div>
                               </div>
                           </div>
@@ -277,7 +273,7 @@ export default function VerificationPage() {
                               </div>
                               
                               <div className="flex items-center gap-2 ml-2 pl-6 border-l border-slate-100">
-                                  <Link href={`/employers/${r.employer_id}`} className="p-2 text-slate-400 hover:text-primary transition-colors">
+                                  <Link href={`/verification/${r.employer_id}`} className="p-2 text-slate-400 hover:text-primary transition-colors">
                                       <ArrowRight size={18} />
                                   </Link>
                               </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
+
 import { useRouter } from "next/navigation";
 import {
 
@@ -26,6 +26,7 @@ import { disableJobSeeker, getJobSeekers, getLocations } from "@/services/admin.
 import { JobSeeker } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
+import Badge from "@/components/ui/Badge";
 import { resolveMediaUrl } from "@/lib/media";
 
 export default function JobSeekersPage() {
@@ -199,7 +200,7 @@ export default function JobSeekersPage() {
           <button 
             onClick={() => fetchJobSeekers(pagination?.currentPage)}
             suppressHydrationWarning
-            className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary transition-all active:scale-95 shadow-sm"
+            className="p-2 bg-white border border-slate-200 rounded-xl text-slate-700 hover:text-primary transition-all active:scale-95 shadow-sm"
           >
             <RotateCcw size={15} className={clsx(loading && "animate-spin")} />
           </button>
@@ -225,17 +226,17 @@ export default function JobSeekersPage() {
       </div>
 
       {/* Jobseekers Table Container */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden relative z-[60]">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden relative z-[60]">
         <div className="px-4 py-3 border-b border-slate-200 flex flex-wrap items-center gap-3 bg-white">
           <div className="relative flex-1 min-w-[240px] group">
-            <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <SearchIcon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-700 group-focus-within:text-primary transition-colors" />
             <input
               type="text"
               placeholder="Search by name, role or keyword..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               suppressHydrationWarning
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all"
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[12px] font-semibold text-slate-900 placeholder:text-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all"
             />
           </div>
 
@@ -259,7 +260,7 @@ export default function JobSeekersPage() {
             <button
               onClick={() => { setSearch(""); setLocFilter("all"); setExpFilter("all"); }}
               suppressHydrationWarning
-              className="px-3 py-2 text-[12px] font-bold text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+              className="px-3 py-2 text-[12px] font-bold text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
             >
               Reset
             </button>
@@ -293,12 +294,12 @@ export default function JobSeekersPage() {
                           {row.profile_photo ? (
                             <img src={resolveMediaUrl(row.profile_photo)} alt="" className="w-full h-full object-cover transition-transform group-hover/img:scale-110" />
                           ) : (
-                            <UserCircle size={20} className="text-slate-400" />
+                            <UserCircle size={20} className="text-slate-700" />
                           )}
                           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white">
                             <EyeIcon size={18} />
                           </div>
-                          <div className={clsx("absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white z-10", row.is_active ? "bg-emerald-500" : "bg-slate-300")} />
+                          <div className={clsx("absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white z-10", row.is_active ? "bg-emerald-500" : "bg-red-500")} />
                         </div>
                         <div className="min-w-0">
                           <p className="text-[13px] font-semibold text-slate-900 leading-tight group-hover:text-primary transition-colors">{row.user?.name}</p>
@@ -307,24 +308,23 @@ export default function JobSeekersPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-900">
-                        <MapPinIcon size={12} className="text-slate-400" />
+                      <div className="flex items-center gap-1.5 text-[12px] font-medium text-slate-900">
+                        <MapPinIcon size={12} className="text-slate-700" />
                         {row.location || 'Remote'}
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5 text-[12px] font-bold text-slate-900">
-                        <Phone size={12} className="text-slate-400" />
+                      <div className="flex items-center gap-1.5 text-[12px] font-medium text-slate-900">
+                        <Phone size={12} className="text-slate-700" />
                         {row.phone || "No Contact"}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <div className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-indigo-50/50 rounded-full border border-indigo-100">
-                        <span className="text-[12px] font-semibold text-indigo-700">{row.experience_years || 0}</span>
-                        <span className="text-[9px] font-semibold text-indigo-400 uppercase">Yrs</span>
-                      </div>
+                      <span className="text-[12px] font-bold text-slate-700">
+                        {row.experience_years || 0} Years
+                      </span>
                     </td>
-                    <td className="px-4 py-3 text-right text-[11px] text-slate-900 font-bold">
+                    <td className="px-4 py-3 text-right text-[11px] text-slate-900 font-medium">
                       {row.created_at ? new Date(row.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                     </td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
@@ -357,7 +357,7 @@ export default function JobSeekersPage() {
                         <button
                           onClick={() => router.push(`/jobseekers/${row.id}`)}
                           title="View Account Profile"
-                          className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-primary rounded-lg transition-all active:scale-95"
+                          className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all active:scale-95"
                         >
                           <EyeIcon size={15} />
                         </button>
@@ -372,14 +372,14 @@ export default function JobSeekersPage() {
           {loading && (
             <div className="py-24 flex flex-col items-center justify-center">
               <Loader2 className="animate-spin text-primary/40 mb-3" size={40} />
-              <span className="text-[13px] font-semibold text-slate-400 font-medium">Loading Jobseekers...</span>
+              <span className="text-[13px] font-semibold text-slate-700 font-medium">Loading Jobseekers...</span>
             </div>
           )}
 
           {!loading && filtered.length === 0 && (
             <div className="py-24 flex flex-col items-center justify-center opacity-50">
               <UserCircle size={48} className="text-slate-300 mb-3" />
-              <span className="text-[14px] font-semibold text-slate-400 font-medium">No jobseekers found</span>
+              <span className="text-[14px] font-semibold text-slate-700 font-medium">No jobseekers found</span>
             </div>
           )}
         </div>
@@ -463,12 +463,12 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
                 onClick={() => setOpen()}
                 suppressHydrationWarning
                 className={clsx(
-                    "flex items-center justify-between gap-3 px-4 py-2 bg-white border rounded-lg text-[12px] font-bold transition-all shadow-sm min-w-[140px]",
+                    "flex items-center justify-between gap-3 px-4 py-2 bg-white border rounded-xl text-[12px] font-bold transition-all shadow-sm min-w-[140px]",
                     isOpen ? "border-primary/40 ring-4 ring-primary/5 text-primary" : "border-slate-200 text-slate-900 hover:bg-slate-50"
                 )}
             >
                 <span className="truncate">{label}</span>
-                <ChevronDown size={14} className={clsx("text-slate-400 transition-transform duration-300", isOpen && "text-primary rotate-180")} />
+                <ChevronDown size={14} className={clsx("text-slate-700 transition-transform duration-300", isOpen && "text-primary rotate-180")} />
             </button>
 
             {isOpen && (

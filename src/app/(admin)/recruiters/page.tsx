@@ -65,11 +65,29 @@ export default function RecruitersPage() {
       setProcessingId(id);
       if (action === "disable") await disableRecruiter(id);
       else if (action === "delete") {
-        if (
-          !confirm("Are you sure you want to decommission this recruiter node?")
-        )
-          return;
-        await deleteRecruiter(id);
+        toast("Permanently delete this recruiter?", {
+          description: "This action cannot be undone and will remove all associated recruitment data.",
+          action: {
+            label: "Delete",
+            onClick: async () => {
+              try {
+                setProcessingId(id);
+                await deleteRecruiter(id);
+                toast.success("Recruiter permanently deleted");
+                fetchRecruiters();
+              } catch (err) {
+                toast.error("Failed to execute delete protocol");
+              } finally {
+                setProcessingId(null);
+              }
+            }
+          },
+          cancel: {
+            label: "Okay",
+            onClick: () => { },
+          },
+        });
+        return;
       }
 
       toast.success(
@@ -98,14 +116,14 @@ export default function RecruitersPage() {
       title: "Full Name",
       render: (_: any, row: Recruiter) => (
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-md bg-surface-100 flex items-center justify-center text-surface-400 font-bold text-[9px] shrink-0 border border-surface-200/50">
+          <div className="w-7 h-7 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-[9px] shrink-0 border border-slate-200/50">
             {row.name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="font-medium text-surface-900 leading-tight tracking-tight text-[13px]">
+            <p className="font-medium text-slate-900 leading-tight tracking-tight text-[13px]">
               {row.name}
             </p>
-            <p className="text-[10.5px] text-surface-400 font-medium truncate max-w-[140px] lowercase tracking-tight">
+            <p className="text-[10.5px] text-slate-700 font-medium truncate max-w-[140px] lowercase tracking-tight">
               {row.email}
             </p>
           </div>
@@ -117,9 +135,9 @@ export default function RecruitersPage() {
       title: "Organization",
       render: (_: any, row: Recruiter) => (
         <div className="max-w-[160px]">
-          <p className="font-medium text-surface-500 text-[12px] truncate tracking-tight">
+          <p className="font-medium text-slate-800 text-[12px] truncate tracking-tight">
             {row.employer?.company_name || (
-              <span className="text-surface-300 italic">No organization</span>
+              <span className="text-slate-300 italic">No organization</span>
             )}
           </p>
         </div>
@@ -143,7 +161,7 @@ export default function RecruitersPage() {
       title: "Joined On",
       render: (v: any) => (
         <div
-          className="text-surface-400 font-medium text-[11px] whitespace-nowrap tracking-tight"
+          className="text-slate-700 font-medium text-[11px] whitespace-nowrap tracking-tight"
           suppressHydrationWarning
         >
           {new Date(v).toLocaleDateString()}
@@ -157,13 +175,13 @@ export default function RecruitersPage() {
       {/* Page Header */}
       <div className="page-header">
         <div>
-          <h1 className="page-title">Recruiter Directory</h1>
+          <h1 className="page-title">Recruiter Management</h1>
           <p className="page-subtitle">Manage recruitment team members and access permissions</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={fetchRecruiters}
-            className="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-primary transition-all active:scale-95 shadow-sm"
+            className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-primary transition-all active:scale-95 shadow-sm"
           >
             <RotateCcw size={15} className={clsx(loading && "animate-spin")} />
           </button>
@@ -202,7 +220,7 @@ export default function RecruitersPage() {
       </div>
 
       {/* Registry Table */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
@@ -273,18 +291,13 @@ export default function RecruitersPage() {
 
                     <td className="px-4 py-3 text-center">
                       <div className="inline-flex">
-                        <div
-                          className={clsx(
-                            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border",
-                            row.is_active
-                              ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                              : "bg-slate-50 text-slate-900 border-slate-100",
-                          )}
+                        <Badge 
+                          variant={row.is_active ? "success" : "danger"} 
+                          dot 
+                          className="capitalize"
                         >
-                          <span>
-                            {row.is_active ? "Active" : "Inactive"}
-                          </span>
-                        </div>
+                          {row.is_active ? "Active" : "Inactive"}
+                        </Badge>
                       </div>
                     </td>
 
@@ -307,11 +320,11 @@ export default function RecruitersPage() {
                         <button
                           onClick={() => router.push(`/recruiters/${row.id}`)}
                           title="View Profile"
-                          className="p-1.5 bg-indigo-50 border border-indigo-100 text-indigo-500 hover:bg-indigo-100 rounded-lg transition-all active:scale-95 shadow-sm"
+                          className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all active:scale-95"
                         >
                           <Eye size={15} />
                         </button>
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-slate-200 shadow-sm">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-xl border border-slate-200 shadow-sm">
                           <span className="text-[11px] font-semibold text-slate-600">
                             {row.is_active ? "Active" : "Inactive"}
                           </span>
@@ -335,7 +348,7 @@ export default function RecruitersPage() {
                           onClick={() => handleAction(row.id, "delete")}
                           disabled={processingId === row.id}
                           title="Delete account"
-                          className="p-1.5 bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-100 rounded-lg transition-all active:scale-95 shadow-sm"
+                          className="p-1.5 bg-red-600 text-white hover:bg-red-700 rounded-xl transition-all active:scale-95 shadow-lg shadow-red-100"
                         >
                           <Trash2 size={15} />
                         </button>

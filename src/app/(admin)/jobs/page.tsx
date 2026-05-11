@@ -7,7 +7,7 @@ import {
     Eye, Edit2,
     CheckCircle2, XCircle, Trash2, Users,
     RotateCcw, Loader2, ChevronDown, X, Star,
-    ChevronLeft, ChevronRight
+    ChevronLeft, ChevronRight, Check
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getJobs, getCategories, getLocations, getEmployers, deleteJob } from "@/services/admin.service";
@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { clsx } from "clsx";
 import { resolveMediaUrl } from "@/lib/media";
 import { ValidatedInput } from "@/components/ui/ValidatedInput";
+import Badge from "@/components/ui/Badge";
 
 export default function JobsPage() {
     const router = useRouter();
@@ -305,6 +306,7 @@ export default function JobsPage() {
                     onSelect={(opt: any) => setCatFilter({ id: opt.id, name: opt.id === 'all' ? 'Category' : opt.name })}
                     isOpen={activeDropdown === 'category'}
                     setOpen={() => setActiveDropdown(activeDropdown === 'category' ? null : 'category')}
+                    currentValue={catFilter.id}
                 />
 
                 <FilterDropdown
@@ -313,6 +315,7 @@ export default function JobsPage() {
                     onSelect={(opt: any) => setLocFilter({ id: opt.id, name: opt.id === 'all' ? 'Location' : opt.name })}
                     isOpen={activeDropdown === 'location'}
                     setOpen={() => setActiveDropdown(activeDropdown === 'location' ? null : 'location')}
+                    currentValue={locFilter.id}
                 />
 
                 <FilterDropdown
@@ -325,6 +328,7 @@ export default function JobsPage() {
                     onSelect={(opt: any) => setInstFilter({ id: opt.id, name: opt.id === 'all' ? 'Institute' : opt.name })}
                     isOpen={activeDropdown === 'institute'}
                     setOpen={() => setActiveDropdown(activeDropdown === 'institute' ? null : 'institute')}
+                    currentValue={instFilter.id}
                 />
 
                 <FilterDropdown
@@ -333,11 +337,11 @@ export default function JobsPage() {
                         { id: 'all', name: 'Job Type' },
                         { id: 'full_time', name: 'Permanent' },
                         { id: 'part_time', name: 'Part Time' },
-
                     ]}
                     onSelect={(opt: any) => setTypeFilter({ id: opt.id, name: opt.id === 'all' ? 'Job Type' : opt.name })}
                     isOpen={activeDropdown === 'type'}
                     setOpen={() => setActiveDropdown(activeDropdown === 'type' ? null : 'type')}
+                    currentValue={typeFilter.id}
                 />
 
                 <FilterDropdown
@@ -351,18 +355,19 @@ export default function JobsPage() {
                     onSelect={(opt: any) => setStatusFilter({ id: opt.id, name: opt.id === 'all' ? 'Status' : opt.name })}
                     isOpen={activeDropdown === 'status'}
                     setOpen={() => setActiveDropdown(activeDropdown === 'status' ? null : 'status')}
+                    currentValue={statusFilter.id}
                 />
 
                 <FilterDropdown
                     label={featureFilter.name}
                     options={[
                         { id: 'all', name: 'Feature' },
-                        { id: 'featured', name: 'Featured' },
-                        { id: 'pending', name: 'Pending' }
+                        { id: 'featured', name: 'Featured' }
                     ]}
                     onSelect={(opt: any) => setFeatureFilter({ id: opt.id, name: opt.id === 'all' ? 'Feature' : opt.name })}
                     isOpen={activeDropdown === 'feature'}
                     setOpen={() => setActiveDropdown(activeDropdown === 'feature' ? null : 'feature')}
+                    currentValue={featureFilter.id}
                 />
 
                 {hasActiveFilters && (
@@ -432,17 +437,13 @@ export default function JobsPage() {
                                         <td className="px-4 py-3 align-middle">
                                             <div className="flex justify-center">
                                                 {isFeatureExpired ? (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap border bg-rose-50 text-rose-600 border-rose-100">
-                                                        <Star size={10} /> Expired
-                                                    </span>
+                                                    <Badge variant="danger" dot className="capitalize">Expired</Badge>
                                                 ) : (j as any).featured && j.admin_featured ? (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap border bg-emerald-50 text-emerald-600 border-emerald-100">
-                                                        <Star size={10} /> Featured
-                                                    </span>
+                                                    <Badge variant="warning" className="capitalize">
+                                                        <Star size={11} fill="currentColor" className="mr-0.5" /> Featured
+                                                    </Badge>
                                                 ) : (j as any).featured && !j.admin_featured ? (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap border bg-amber-50 text-amber-600 border-amber-100">
-                                                        <Star size={10} /> Pending
-                                                    </span>
+                                                    <Badge variant="warning" dot className="capitalize">Pending</Badge>
                                                 ) : (
                                                     <span className="text-[11px] text-slate-300">—</span>
                                                 )}
@@ -451,17 +452,17 @@ export default function JobsPage() {
                                         {/* Status */}
                                         <td className="px-4 py-3 align-middle">
                                             <div className="flex justify-center">
-                                                <span className={clsx(
-                                                    "inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap border",
-                                                    isExpired ? "bg-rose-50 text-rose-600 border-rose-100"
-                                                        : status === 'approved' ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                                                            : status === 'pending' ? "bg-amber-50 text-amber-600 border-amber-100"
-                                                                : status === 'rejected' ? "bg-rose-50 text-rose-600 border-rose-100"
-                                                                    : "bg-slate-50 text-slate-500 border-slate-100"
-                                                )}>
-                                                    {isExpired ? <XCircle size={11} /> : status === 'approved' ? <CheckCircle2 size={11} /> : status === 'pending' ? <ClockIcon size={11} /> : <XCircle size={11} />}
-                                                    {isExpired ? 'Expired' : status === 'approved' ? 'Active' : status.charAt(0).toUpperCase() + status.slice(1)}
-                                                </span>
+                                                <Badge 
+                                                    variant={
+                                                        isExpired ? "danger" :
+                                                        status === "approved" ? "success" :
+                                                        status === "pending" ? "warning" : "danger"
+                                                    }
+                                                    dot
+                                                    className="capitalize"
+                                                >
+                                                    {isExpired ? "Expired" : status === "approved" ? "Active" : status}
+                                                </Badge>
                                             </div>
                                         </td>
                                         {/* Posted */}
@@ -473,7 +474,7 @@ export default function JobsPage() {
                                         {/* Actions */}
                                         <td className="px-3 py-3 align-middle overflow-hidden" onClick={(e) => e.stopPropagation()}>
                                             <div className="flex items-center justify-center gap-0">
-                                                <button title="View" onClick={() => router.push(`/jobs/${j.id}`)} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-all"><Eye size={14} /></button>
+                                                <button title="View" onClick={() => router.push(`/jobs/${j.id}`)} className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-lg transition-all active:scale-95"><Eye size={14} /></button>
                                                 <button title="Edit" onClick={() => router.push(`/jobs/${j.id}`)} className="p-1.5 text-amber-500 hover:bg-amber-50 rounded-lg transition-all"><Edit2 size={13} /></button>
                                                 <button
                                                     title="Delete"
@@ -545,7 +546,7 @@ export default function JobsPage() {
     );
 }
 
-function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
+function FilterDropdown({ label, options, onSelect, isOpen, setOpen, currentValue }: any) {
     const ref = useRef<HTMLDivElement>(null);
     const [innerSearch, setInnerSearch] = useState("");
     const searchRef = useRef<HTMLInputElement>(null);
@@ -560,7 +561,6 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [isOpen, setOpen]);
 
-    // Reset search and focus input when dropdown opens
     useEffect(() => {
         if (isOpen) {
             setInnerSearch("");
@@ -568,7 +568,6 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
         }
     }, [isOpen]);
 
-    // Show search box only when there are more than 7 options
     const showSearch = options.length > 7;
 
     const filteredOptions = showSearch && innerSearch
@@ -583,8 +582,8 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
                 onClick={() => setOpen()}
                 suppressHydrationWarning
                 className={clsx(
-                    "flex items-center justify-between gap-3 px-3 py-2 bg-white border rounded-xl text-[12px] font-medium transition-all shadow-sm min-w-[130px]",
-                    isOpen ? "border-primary/40 ring-4 ring-primary/5 text-primary" : "border-slate-200 text-slate-900 hover:bg-slate-50"
+                    "flex items-center justify-between gap-3 px-3 py-2 bg-white border rounded-xl text-[12px] font-semibold transition-all shadow-sm min-w-[140px]",
+                    isOpen ? "border-primary border-b-2 ring-4 ring-primary/5 text-primary" : "border-slate-200 text-slate-900 hover:bg-slate-50"
                 )}
             >
                 <span className="truncate">{label}</span>
@@ -592,7 +591,7 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
             </button>
 
             {isOpen && (
-                <div className="absolute top-full left-0 mt-2 w-[240px] bg-white border border-slate-200 rounded-2xl shadow-xl z-[100] animate-in fade-in zoom-in-95 duration-200 flex flex-col overflow-hidden">
+                <div className="absolute top-full left-0 mt-2 w-[240px] bg-white border border-slate-200 rounded-2xl shadow-xl z-[100] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col overflow-hidden">
                     {showSearch && (
                         <div className="px-3 pt-2.5 pb-1.5 border-b border-slate-100 shrink-0">
                             <div className="relative">
@@ -612,21 +611,25 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen }: any) {
                     <div className="overflow-y-auto max-h-[220px] py-1.5">
                         {filteredOptions.length === 0 ? (
                             <p className="px-5 py-3 text-[12px] text-slate-400 font-medium text-center">No results</p>
-                        ) : filteredOptions.map((opt: any) => (
-                            <button
-                                key={opt.id}
-                                onClick={() => {
-                                    onSelect(opt);
-                                    setOpen(false);
-                                }}
-                                className={clsx(
-                                    "w-full text-left px-5 py-2 text-[13px] font-medium transition-colors truncate",
-                                    label === opt.name ? "bg-primary/5 text-primary" : "text-slate-700 hover:bg-slate-50 active:bg-slate-100"
-                                )}
-                            >
-                                {opt.name}
-                            </button>
-                        ))}
+                        ) : filteredOptions.map((opt: any) => {
+                            const isActive = currentValue === opt.id;
+                            return (
+                                <button
+                                    key={opt.id}
+                                    onClick={() => {
+                                        onSelect(opt);
+                                        setOpen(false);
+                                    }}
+                                    className={clsx(
+                                        "w-full flex items-center justify-between px-5 py-2 text-[13px] font-medium transition-colors truncate",
+                                        isActive ? "bg-primary/5 text-primary font-bold" : "text-slate-700 hover:bg-slate-50 active:bg-slate-100"
+                                    )}
+                                >
+                                    <span>{opt.id === 'all' ? 'All' : opt.name}</span>
+                                    {isActive && <Check size={14} className="text-primary" />}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
             )}

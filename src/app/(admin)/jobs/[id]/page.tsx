@@ -90,18 +90,39 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
   const handleAction = async (action: "approve" | "reject" | "feature" | "delete") => {
     if (!job) return;
+
+    if (action === "delete") {
+      toast("Permanently delete this job?", {
+        description: "This action cannot be undone.",
+        action: {
+          label: "Delete",
+          onClick: async () => {
+            try {
+              setProcessing(true);
+              await deleteJob(job.id);
+              toast.success("Job deleted successfully");
+              router.push("/jobs");
+            } catch (err) {
+              toast.error("Failed to delete job");
+            } finally {
+              setProcessing(false);
+            }
+          },
+        },
+        cancel: {
+          label: "Okay",
+          onClick: () => { },
+        },
+      });
+      return;
+    }
+
     try {
       setProcessing(true);
       if (action === "approve") await approveJob(job.id);
       else if (action === "reject") await rejectJob(job.id);
       else if (action === "feature") {
         await featureJob(job.id);
-      }
-      else if (action === "delete") {
-        if (!confirm("Permanently delete this job?")) return;
-        await deleteJob(job.id);
-        router.push("/jobs");
-        return;
       }
       toast.success(`Job ${action}d successfully`);
       fetchJobDetails();
@@ -180,12 +201,12 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     return (
       <div className="h-[40vh] flex flex-col items-center justify-center gap-2">
         <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
-        <p className="text-[11px] font-medium text-slate-400">Loading Job Data</p>
+        <p className="text-[11px] font-medium text-slate-700">Loading Job Data</p>
       </div>
     );
   }
 
-  if (!job) return <div className="p-12 text-center text-slate-400 font-medium border border-dashed border-slate-200 rounded-2xl">Job listing not found.</div>;
+  if (!job) return <div className="p-12 text-center text-slate-700 font-medium border border-dashed border-slate-200 rounded-2xl">Job listing not found.</div>;
 
   return (
     <div className="w-full space-y-5 pb-10 antialiased">
@@ -195,7 +216,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           href="/jobs"
           className="flex items-center gap-2 text-[12px] font-semibold text-slate-600 hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
         >
-          <ChevronLeft size={14} /> Back to Registry
+          <ChevronLeft size={14} /> Back
         </Link>
         <div className="flex items-center gap-2.5">
           {/* Featured Toggle Switch */}
@@ -205,7 +226,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           )}>
             <span className={clsx(
               "text-[12px] font-semibold",
-              job.admin_featured ? "text-amber-700" : "text-slate-500"
+              job.admin_featured ? "text-amber-700" : "text-slate-800"
             )}>
               Featured Listing
             </span>
@@ -231,7 +252,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           <button
             onClick={() => handleAction("delete")}
             disabled={processing}
-            className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-200 rounded-xl transition-all shadow-sm active:scale-95"
+            className="p-2.5 bg-red-600 text-white border-none rounded-2xl hover:bg-red-700 transition-all shadow-lg shadow-red-200 active:scale-95"
           >
             <Trash2 size={16} />
           </button>
@@ -240,7 +261,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
       {/* Institute Feature Request Alert */}
       {(job as any).featured ? (
-        <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl shadow-sm animate-in fade-in duration-300">
+        <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-2xl shadow-sm animate-in fade-in duration-300">
           <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
             <Star size={16} className="text-amber-600" />
           </div>
@@ -250,22 +271,22 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+        <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl">
           <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-            <Star size={14} className="text-slate-400" />
+            <Star size={14} className="text-slate-700" />
           </div>
-          <p className="text-[11px] font-semibold text-slate-400">No feature request from institute</p>
+          <p className="text-[11px] font-semibold text-slate-700">No feature request from institute</p>
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {/* ─── Header Section ─────────────────────────────────────────── */}
         <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-5 border-b border-slate-100 bg-slate-50/30">
           <div className="flex items-center gap-5">
             <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-primary border border-slate-200 shadow-sm overflow-hidden shrink-0 p-1">
               {job.employer?.company_logo ? (
-                <img 
-                  src={resolveMediaUrl(job.employer.company_logo)} 
+                <img
+                  src={resolveMediaUrl(job.employer.company_logo)}
                   alt={job.employer.company_name}
                   className="w-full h-full object-contain rounded-lg"
                 />
@@ -280,15 +301,15 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold border shadow-none",
                   job.status === 'approved' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
                     job.status === 'pending' ? "bg-amber-50 text-amber-600 border-amber-100" :
-                      "bg-rose-50 text-rose-600 border-rose-100"
+                      "bg-red-50 text-red-600 border-red-100"
                 )}>
                   <span className="lowercase">{job.status === 'approved' ? 'active' : job.status}</span>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[12px] text-slate-700 font-medium mt-1.5">
                 <span className="flex items-center gap-1.5 font-semibold text-slate-900"><Building size={14} className="text-primary/70" /> {job.employer?.company_name}</span>
-                <span className="flex items-center gap-1.5"><MapPin size={14} className="text-slate-400" /> {job.location}</span>
-                <span className="flex items-center gap-1.5" suppressHydrationWarning><Calendar size={14} className="text-slate-400" /> Posted {new Date(job.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                <span className="flex items-center gap-1.5"><MapPin size={14} className="text-slate-700" /> {job.location}</span>
+                <span className="flex items-center gap-1.5" suppressHydrationWarning><Calendar size={14} className="text-slate-700" /> Posted {new Date(job.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
               </div>
             </div>
           </div>
@@ -298,7 +319,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               <button
                 onClick={() => handleAction("approve")}
                 disabled={processing}
-                className="px-5 py-2 bg-primary text-white text-[12px] font-semibold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center gap-2 active:scale-95"
+                className="px-5 py-2 bg-primary text-white text-[12px] font-semibold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center gap-2 active:scale-95"
               >
                 <CheckCircle2 size={15} /> Approve Job
               </button>
@@ -307,7 +328,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               <button
                 onClick={() => handleAction("reject")}
                 disabled={processing}
-                className="px-5 py-2 bg-white border border-rose-200 text-rose-600 text-[12px] font-semibold rounded-xl hover:bg-rose-50 transition-all shadow-sm flex items-center gap-2 active:scale-95"
+                className="px-5 py-2 bg-white border border-red-200 text-red-600 text-[12px] font-semibold rounded-2xl hover:bg-red-50 transition-all shadow-sm flex items-center gap-2 active:scale-95"
               >
                 <XCircle size={15} /> Reject Listing
               </button>
@@ -323,7 +344,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               onClick={() => setActiveTab(t)}
               className={clsx(
                 "py-4 text-[13px] font-semibold border-b-2 transition-all transition-colors",
-                activeTab === t ? "text-primary border-primary" : "text-slate-400 border-transparent hover:text-slate-600"
+                activeTab === t ? "text-primary border-primary" : "text-slate-700 border-transparent hover:text-slate-600"
               )}
             >
               {t}
@@ -338,9 +359,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
               {/* Left Column: Role Details & Questions */}
               <div className="space-y-6">
                 {/* About the Role */}
-                <section className="bg-white p-6 rounded-xl border border-slate-100/60 shadow-sm">
+                <section className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                    <div className="w-9 h-9 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                       <FileText size={18} />
                     </div>
                     <h3 className="text-[15px] font-bold text-slate-900 tracking-tight">About the Role</h3>
@@ -353,22 +374,22 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
                 {/* Candidate Questions */}
                 {(job as any).questions && (job as any).questions.length > 0 && (
-                  <section className="bg-white p-6 rounded-xl border border-slate-100/60 shadow-sm">
+                  <section className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                      <div className="w-9 h-9 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600">
                         <Target size={18} />
                       </div>
                       <h3 className="text-[15px] font-bold text-slate-900 tracking-tight">Candidate Questions</h3>
                     </div>
                     <div className="space-y-3">
                       {(job as any).questions.map((q: any, i: number) => (
-                        <div key={i} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-xl border border-slate-100 group">
+                        <div key={i} className="flex items-center justify-between p-4 bg-slate-50/50 rounded-2xl border border-slate-100 group">
                           <div className="flex items-center gap-3 min-w-0">
-                            <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-[11px] font-bold text-slate-400 group-hover:text-primary transition-colors shrink-0 border border-slate-200">{i + 1}</span>
+                            <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-[11px] font-bold text-slate-700 group-hover:text-primary transition-colors shrink-0 border border-slate-200">{i + 1}</span>
                             <p className="text-[12px] font-semibold text-slate-700 leading-snug">{q.question}</p>
                           </div>
                           <div className="flex flex-col items-end gap-0.5 shrink-0 ml-4">
-                            <span className="text-[9px] text-slate-400 font-medium h-3 leading-none uppercase">Expected Answer</span>
+                            <span className="text-[9px] text-slate-700 font-medium h-3 leading-none uppercase">Expected Answer</span>
                             <span className="text-[11px] font-bold text-primary group-hover:text-primary transition-colors lowercase h-4 leading-none">{q.recruiter_answer}</span>
                           </div>
                         </div>
@@ -386,12 +407,17 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   { icon: <Users size={16} />, label: "Openings", value: `${job.vacancies} Positions`, theme: "bg-indigo-50 text-indigo-600" },
                   { icon: <IndianRupee size={16} />, label: "Monthly Salary", value: `\u20B9${Number(job.salary_min).toLocaleString()} - \u20B9${Number(job.salary_max).toLocaleString()}`, theme: "bg-emerald-50 text-emerald-600" },
                   { icon: <History size={16} />, label: "Experience Required", value: `${job.experience_required}y (${job.experience_type?.replace('_', ' ') || "Experienced"})`, theme: "bg-purple-50 text-purple-600" },
-                  { icon: <TrendingUp size={16} />, label: "Home Page Featuring", value: job.admin_featured ? "Featured" : "Standard", theme: "bg-blue-50 text-blue-600" },
+                  { 
+                    icon: <TrendingUp size={16} />, 
+                    label: "Home Page Featuring", 
+                    value: job.admin_featured ? "Featured" : "Standard", 
+                    theme: job.admin_featured ? "bg-amber-50 text-amber-600" : "bg-slate-50 text-slate-800"
+                  },
                   {
                     icon: <Star size={16} />,
                     label: "Institute Request",
                     value: (job as any).featured ? "Requested" : "Not Requested",
-                    theme: (job as any).featured ? "bg-amber-50 text-amber-600" : "bg-slate-50 text-slate-500"
+                    theme: (job as any).featured ? "bg-amber-50 text-amber-600" : "bg-slate-50 text-slate-800"
                   },
                   job.admin_featured && {
                     icon: <Clock size={16} />,
@@ -399,35 +425,35 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     value: (job.featured_until && job.featured_until !== "0000-00-00 00:00:00")
                       ? new Date(job.featured_until).toLocaleDateString()
                       : (job.expires_at ? new Date(job.expires_at).toLocaleDateString() : "No Deadline"),
-                    theme: "bg-rose-50 text-rose-600"
+                    theme: "bg-red-50 text-red-600"
                   },
 
                 ].filter(Boolean).map((card: any, i: number) => (
-                  <div key={i} className="p-3.5 bg-white border border-slate-100 rounded-xl shadow-sm flex items-center gap-3.5 group hover:border-slate-200 transition-all hover:bg-slate-50/20">
-                    <div className={clsx("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform", card.theme)}>
+                  <div key={i} className="p-3.5 bg-white border border-slate-200 rounded-2xl shadow-sm flex items-center gap-3.5 group hover:border-slate-300 transition-all hover:bg-slate-50/20">
+                    <div className={clsx("w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform", card.theme)}>
                       {card.icon}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[11px] font-semibold text-slate-400 group-hover:text-slate-500 transition-colors leading-none mb-1.5">{card.label}</p>
+                      <p className="text-[11px] font-semibold text-slate-700 group-hover:text-slate-800 transition-colors leading-none mb-1.5">{card.label}</p>
                       <p className="text-[13px] font-bold text-slate-900 group-hover:text-primary transition-colors truncate capitalize leading-tight">{card.value}</p>
                     </div>
                   </div>
                 ))}
 
-                <div className="p-4 bg-slate-50/50 rounded-xl border border-slate-100 space-y-4 shadow-sm">
+                <div className="p-4 bg-slate-50/50 rounded-2xl border border-slate-200 space-y-4 shadow-sm">
                   <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest pl-1">Key Dates</p>
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between p-2 rounded-lg hover:bg-white transition-all group">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 group-hover:bg-indigo-100 transition-colors"><Calendar size={13} /></div>
-                        <span className="text-[11px] font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">Posted on</span>
+                        <span className="text-[11px] font-semibold text-slate-800 group-hover:text-slate-700 transition-colors">Posted on</span>
                       </div>
                       <span className="text-[12px] font-bold text-slate-700">{new Date(job.created_at).toLocaleDateString()}</span>
                     </div>
                     <div className="flex items-center justify-between p-2 rounded-lg hover:bg-white transition-all group font-serif">
                       <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center text-rose-500 group-hover:bg-rose-100 transition-colors"><Clock size={13} /></div>
-                        <span className="text-[11px] font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">Apply Before</span>
+                        <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center text-red-500 group-hover:bg-red-100 transition-colors"><Clock size={13} /></div>
+                        <span className="text-[11px] font-semibold text-slate-800 group-hover:text-slate-700 transition-colors">Apply Before</span>
                       </div>
                       <span className="text-[12px] font-bold text-slate-700">
                         {job.application_deadline && job.application_deadline !== "0000-00-00" ? new Date(job.application_deadline).toLocaleDateString() : (job.expires_at ? new Date(job.expires_at).toLocaleDateString() : 'Rolling')}
@@ -436,7 +462,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     <div className="flex items-center justify-between p-2 rounded-lg hover:bg-white transition-all group">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-100 transition-colors"><CheckCircle size={13} /></div>
-                        <span className="text-[11px] font-semibold text-slate-500 group-hover:text-slate-700 transition-colors">Post Status</span>
+                        <span className="text-[11px] font-semibold text-slate-800 group-hover:text-slate-700 transition-colors">Post Status</span>
                       </div>
                       <span className="text-[12px] font-bold text-slate-700 capitalize">{job.status}</span>
                     </div>
@@ -454,31 +480,31 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 </h3>
                 <button
                   onClick={fetchJobApps}
-                  className="px-3 py-1.5 bg-white border border-slate-200 text-slate-500 hover:text-primary hover:border-primary/30 rounded-lg text-[12px] font-medium transition-all flex items-center gap-2"
+                  className="px-3 py-1.5 bg-white border border-slate-200 text-slate-800 hover:text-primary hover:border-primary/30 rounded-lg text-[12px] font-medium transition-all flex items-center gap-2"
                 >
                   <Clock size={14} /> Refresh
                 </button>
               </div>
 
               {applicationsLoading ? (
-                <div className="py-12 flex flex-col items-center justify-center gap-3 bg-slate-50/50 rounded-xl border border-slate-100">
+                <div className="py-12 flex flex-col items-center justify-center gap-3 bg-slate-50/50 rounded-2xl border border-slate-100">
                   <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                  <p className="text-[12px] font-medium text-slate-400">Loading applicants...</p>
+                  <p className="text-[12px] font-medium text-slate-700">Loading applicants...</p>
                 </div>
               ) : applications.length === 0 ? (
-                <div className="py-12 text-center bg-slate-50/50 rounded-xl border border-slate-100">
+                <div className="py-12 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
                   <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center text-slate-300 mx-auto mb-3 shadow-sm border border-slate-100">
                     <Users size={20} />
                   </div>
                   <p className="text-[14px] font-bold text-slate-700">No applicants yet</p>
-                  <p className="text-[12px] text-slate-500 mt-1">This job hasn't received any applications.</p>
+                  <p className="text-[12px] text-slate-800 mt-1">This job hasn't received any applications.</p>
                 </div>
               ) : (
-                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-800 uppercase tracking-wider">
                           <th className="px-5 py-4 whitespace-nowrap">Applicant</th>
                           <th className="px-5 py-4 whitespace-nowrap">Email</th>
                           <th className="px-5 py-4 whitespace-nowrap">Status</th>
@@ -490,7 +516,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                           <tr key={app.id} className="hover:bg-slate-50/50 transition-colors group">
                             <td className="px-5 py-3 whitespace-nowrap">
                               <div className="flex items-center gap-3">
-                                <div className="w-9 h-9 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center text-slate-400 font-bold text-[13px]">
+                                <div className="w-9 h-9 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center text-slate-700 font-bold text-[13px]">
                                   {app.job_seeker?.profile_photo ? (
                                     <img
                                       src={resolveMediaUrl(app.job_seeker.profile_photo)}
@@ -507,7 +533,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                               </div>
                             </td>
                             <td className="px-5 py-3 whitespace-nowrap">
-                              <span className="text-[13px] font-medium text-slate-500">
+                              <span className="text-[13px] font-medium text-slate-800">
                                 {app.job_seeker?.user?.email || "-"}
                               </span>
                             </td>
@@ -515,9 +541,9 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                               <div className={clsx(
                                 "inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold border",
                                 app.status === 'applied' ? "bg-blue-50 text-blue-600 border-blue-100" :
-                                app.status === 'shortlisted' ? "bg-amber-50 text-amber-600 border-amber-100" :
-                                app.status === 'hired' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
-                                "bg-slate-50 text-slate-600 border-slate-200"
+                                  app.status === 'shortlisted' ? "bg-amber-50 text-amber-600 border-amber-100" :
+                                    app.status === 'hired' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                                      "bg-slate-50 text-slate-600 border-slate-200"
                               )}>
                                 <span className="capitalize">{app.status}</span>
                               </div>
@@ -525,7 +551,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                             <td className="px-5 py-3 whitespace-nowrap">
                               <span className={clsx(
                                 "text-[13px] font-semibold",
-                                app.contact_status ? "text-slate-700 capitalize" : "text-slate-400"
+                                app.contact_status ? "text-slate-700 capitalize" : "text-slate-700"
                               )}>
                                 {app.contact_status || "Pending"}
                               </span>
@@ -551,7 +577,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     type="text"
                     value={editData.title}
                     onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
                   />
                 </div>
                 <div className="space-y-2">
@@ -562,7 +588,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     type="text"
                     value={editData.location}
                     onChange={(e) => setEditData({ ...editData, location: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
                   />
                 </div>
                 <div className="space-y-2">
@@ -573,7 +599,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     type="number"
                     value={editData.vacancies}
                     onChange={(e) => setEditData({ ...editData, vacancies: Number(e.target.value) })}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -585,7 +611,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       type="text"
                       value={editData.salary_min}
                       onChange={(e) => setEditData({ ...editData, salary_min: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                      className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
                     />
                   </div>
                   <div className="space-y-2">
@@ -596,7 +622,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       type="text"
                       value={editData.salary_max}
                       onChange={(e) => setEditData({ ...editData, salary_max: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                      className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
                     />
                   </div>
                 </div>
@@ -606,7 +632,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
                   <AlignLeft size={14} className="text-primary" /> Role Description
                 </label>
-                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden focus-within:ring-4 focus-within:ring-primary/5 transition-all">
+                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden focus-within:ring-4 focus-within:ring-primary/5 transition-all">
                   <TipTapEditor
                     value={editData.description}
                     onChange={(val) => setEditData({ ...editData, description: val })}
@@ -618,7 +644,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 <button
                   type="submit"
                   disabled={processing}
-                  className="flex items-center gap-2.5 px-8 py-3 bg-indigo-600 text-white text-[13px] font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 active:scale-95 disabled:opacity-50"
+                  className="flex items-center gap-2.5 px-8 py-3 bg-slate-900 text-white text-[13px] font-bold rounded-2xl hover:bg-black transition-all shadow-lg shadow-slate-100 active:scale-95 disabled:opacity-50"
                 >
                   {processing ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
                   Synchronize Job Details
@@ -628,7 +654,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
           )}
 
           {activeTab === "SEO Settings" && (
-            <form onSubmit={handleSaveSeo} className="max-w-2xl space-y-5 bg-slate-50/50 p-6 rounded-xl border border-slate-100">
+            <form onSubmit={handleSaveSeo} className="max-w-2xl space-y-5 bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
               <div className="space-y-2">
                 <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2">
                   <Link2 size={14} className="text-primary" /> Slug
@@ -638,7 +664,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   value={seoConfig.slug}
                   onChange={(e) => setSeoConfig({ ...seoConfig, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/--+/g, '-') })}
                   placeholder="my-job-url-slug"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-medium placeholder:text-slate-300 bg-white font-mono"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-medium placeholder:text-slate-300 bg-white font-mono"
                 />
               </div>
               <div className="space-y-2">
@@ -650,7 +676,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   value={seoConfig.meta_title}
                   onChange={(e) => setSeoConfig({ ...seoConfig, meta_title: e.target.value })}
                   placeholder="High-converting SEO title..."
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-medium placeholder:text-slate-300 bg-white"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-medium placeholder:text-slate-300 bg-white"
                 />
               </div>
               <div className="space-y-2">
@@ -662,7 +688,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   value={seoConfig.meta_keywords}
                   onChange={(e) => setSeoConfig({ ...seoConfig, meta_keywords: e.target.value })}
                   placeholder="Comma-separated keywords..."
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-medium placeholder:text-slate-300 bg-white"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-medium placeholder:text-slate-300 bg-white"
                 />
               </div>
               <div className="space-y-2">
@@ -674,13 +700,13 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   onChange={(e) => setSeoConfig({ ...seoConfig, meta_description: e.target.value })}
                   rows={4}
                   placeholder="Brief meta snippet for search results..."
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-medium resize-none placeholder:text-slate-300 bg-white"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-medium resize-none placeholder:text-slate-300 bg-white"
                 />
               </div>
               <button
                 type="submit"
                 disabled={processing}
-                className="flex items-center gap-2.5 px-8 py-3 bg-primary text-white text-[13px] font-bold rounded-xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95 disabled:opacity-50"
+                className="flex items-center gap-2.5 px-8 py-3 bg-primary text-white text-[13px] font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95 disabled:opacity-50"
               >
                 <Save size={16} /> {processing ? "Synchronizing..." : "Save SEO Strategy"}
               </button>
