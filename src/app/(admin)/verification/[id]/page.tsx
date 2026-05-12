@@ -16,12 +16,11 @@ import {
   SaveAll,
   Loader2,
   Trash2,
-  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 import Badge from "@/components/ui/Badge";
-import { getEmployer, approveVerification, rejectVerification, deleteEmployer, verifyEmployer } from "@/services/admin.service";
+import { getEmployer, approveVerification, rejectVerification, deleteEmployer } from "@/services/admin.service";
 import { Employer, EmployerDocument } from "@/types";
 import { resolveMediaUrl } from "@/lib/media";
 
@@ -126,19 +125,7 @@ export default function VerificationDetailPage({ params }: { params: Promise<{ i
     router.push("/verification");
   };
 
-  const handleVerifyInstitute = async () => {
-    if (!employer || isSubmitting) return;
-    try {
-      setIsSubmitting(true);
-      await verifyEmployer(employer.id);
-      setEmployer(prev => prev ? { ...prev, is_verified: true } : null);
-      toast.success("Institute verified successfully");
-    } catch {
-      toast.error("Failed to verify institute");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+
 
   const handleDeleteInstitute = async () => {
     if (!employer || isSubmitting) return;
@@ -219,16 +206,7 @@ export default function VerificationDetailPage({ params }: { params: Promise<{ i
                 <Building size={16} className="text-primary-600" />
                 Institute Information
               </h3>
-              {!employer.is_verified && (
-                <button
-                  onClick={handleVerifyInstitute}
-                  disabled={isSubmitting}
-                  className="flex items-center gap-1.5 px-4 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all shadow-sm active:scale-95 disabled:opacity-50"
-                >
-                  <ShieldCheck size={14} />
-                  Verify Institute
-                </button>
-              )}
+
             </div>
             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
               <div>

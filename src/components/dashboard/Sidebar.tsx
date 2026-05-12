@@ -221,7 +221,7 @@ export default function Sidebar({
       >
         {/* Brand Logo */}
         <div className={clsx(
-          "h-14 flex items-center border-b border-slate-100 shrink-0",
+          "h-16 flex items-center border-b border-slate-100 shrink-0",
           collapsed ? "justify-center px-0" : "px-4 gap-2.5"
         )}>
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 shadow-md shadow-blue-600/20">

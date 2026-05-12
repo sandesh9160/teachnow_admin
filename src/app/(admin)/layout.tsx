@@ -27,7 +27,7 @@ export default function AdminLayout({
       />
       <main
         className={clsx(
-          "transition-all duration-300 pt-16 min-h-screen",
+          "transition-[padding-left] duration-300 pt-16 min-h-screen",
           collapsed ? "lg:pl-[78px]" : "lg:pl-[240px]"
         )}
       >

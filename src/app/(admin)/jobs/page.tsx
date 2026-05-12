@@ -59,6 +59,8 @@ export default function JobsPage() {
     // UI State
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [isSearchingInst, setIsSearchingInst] = useState(false);
+    const [instSearch, setInstSearch] = useState("");
 
     // Core Data Fetcher
     const fetchJobs = useCallback(async (customParams: any = {}) => {
@@ -77,7 +79,6 @@ export default function JobsPage() {
                 ...customParams
             };
 
-            console.log("[Jobs] Fetching with params:", params);
             const res: any = await getJobs(params);
 
             let list = [];
@@ -161,10 +162,9 @@ export default function JobsPage() {
     useEffect(() => {
         const boot = async () => {
             try {
-                const [catsRes, locsRes, employersRes] = await Promise.all([
+                const [catsRes, locsRes] = await Promise.all([
                     getCategories({ per_page: 500 }),
                     getLocations({ per_page: 500 }),
-                    getEmployers({ per_page: 500 })
                 ]);
 
                 const extractData = (res: any) => {
@@ -174,18 +174,22 @@ export default function JobsPage() {
                     return [];
                 };
 
-                const fetchedEmployers = extractData(employersRes);
                 setCategories(extractData(catsRes));
                 setLocations(extractData(locsRes));
-                setEmployers(fetchedEmployers);
 
                 // Check for employer_id in URL to set initial filter
                 const initialParams: any = {};
                 if (employerIdParam) {
-                    const emp = fetchedEmployers.find((e: Employer) => String(e.id) === employerIdParam);
-                    if (emp) {
-                        setInstFilter({ id: emp.id, name: emp.company_name });
-                        initialParams.employer_id = emp.id;
+                    try {
+                        const res = await getEmployers({ id: employerIdParam });
+                        const emp = (res as any)?.data || (res as any);
+                        if (emp && !Array.isArray(emp)) {
+                            setInstFilter({ id: emp.id, name: emp.company_name });
+                            initialParams.employer_id = emp.id;
+                            setEmployers([emp]);
+                        }
+                    } catch (e) {
+                        console.error("Failed to fetch initial employer", e);
                     }
                 }
 
@@ -206,7 +210,36 @@ export default function JobsPage() {
         setStatusFilter({ id: 'all', name: 'Status' });
         setFeatureFilter({ id: 'all', name: 'Feature' });
         setPagination({ currentPage: 1, lastPage: 1, total: 0 });
+        setEmployers([]);
     };
+
+    // Debounced Institute Search Effect
+    useEffect(() => {
+        if (activeDropdown !== 'institute' || !instSearch.trim()) {
+            if (activeDropdown === 'institute' && !instSearch.trim()) setEmployers([]);
+            return;
+        }
+
+        const timer = setTimeout(async () => {
+            try {
+                setIsSearchingInst(true);
+                const res = await getEmployers({ search: instSearch, per_page: 20 });
+                const extractData = (r: any) => {
+                    if (r?.data?.data && Array.isArray(r.data.data)) return r.data.data;
+                    if (r?.data && Array.isArray(r.data)) return r.data;
+                    if (Array.isArray(r)) return r;
+                    return [];
+                };
+                setEmployers(extractData(res));
+            } catch (e) {
+                console.error("Institute search failed", e);
+            } finally {
+                setIsSearchingInst(false);
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [instSearch, activeDropdown]);
 
     const filteredJobs = jobs.filter((j: Job) => {
         // Search is now handled server-side, but we can keep a client-side check for immediate UI updates if needed.
@@ -327,8 +360,15 @@ export default function JobsPage() {
                     ]}
                     onSelect={(opt: any) => setInstFilter({ id: opt.id, name: opt.id === 'all' ? 'Institute' : opt.name })}
                     isOpen={activeDropdown === 'institute'}
-                    setOpen={() => setActiveDropdown(activeDropdown === 'institute' ? null : 'institute')}
+                    setOpen={() => {
+                        setActiveDropdown(activeDropdown === 'institute' ? null : 'institute');
+                        if (activeDropdown !== 'institute') setInstSearch("");
+                    }}
                     currentValue={instFilter.id}
+                    onSearchChange={setInstSearch}
+                    searchValue={instSearch}
+                    isAsync={true}
+                    loading={isSearchingInst}
                 />
 
                 <FilterDropdown
@@ -489,15 +529,20 @@ export default function JobsPage() {
                                     </tr>
                                 );
                             })}
+
+                            {loading && [...Array(10)].map((_, i) => (
+                                <tr key={`skeleton-${i}`} className="animate-pulse">
+                                    <td className="px-4 py-4"><div className="h-4 bg-slate-100 rounded w-3/4" /></td>
+                                    <td className="px-4 py-4"><div className="h-4 bg-slate-50 rounded w-1/2" /></td>
+                                    <td className="px-4 py-4"><div className="h-4 bg-slate-50 rounded w-2/3" /></td>
+                                    <td className="px-4 py-4"><div className="h-4 bg-slate-100 rounded w-10 mx-auto" /></td>
+                                    <td className="px-4 py-4"><div className="h-4 bg-slate-100 rounded w-16 mx-auto" /></td>
+                                    <td className="px-4 py-4"><div className="h-4 bg-slate-50 rounded w-20" /></td>
+                                    <td className="px-4 py-4 text-center"><div className="h-6 w-16 bg-slate-50 rounded-lg mx-auto" /></td>
+                                </tr>
+                            ))}
                         </tbody>
                     </table>
-
-                    {loading && (
-                        <div className="px-5 py-24 flex flex-col items-center justify-center">
-                            <Loader2 className="animate-spin text-primary/40 mb-3" size={40} />
-                            <span className="text-[13px] font-semibold text-slate-400">Loading...</span>
-                        </div>
-                    )}
 
                     {!loading && filteredJobs.length === 0 && (
                         <div className="px-5 py-24 flex flex-col items-center justify-center opacity-50">
@@ -546,9 +591,12 @@ export default function JobsPage() {
     );
 }
 
-function FilterDropdown({ label, options, onSelect, isOpen, setOpen, currentValue }: any) {
+function FilterDropdown({ 
+    label, options, onSelect, isOpen, setOpen, currentValue, 
+    onSearchChange, searchValue, isAsync, loading 
+}: any) {
     const ref = useRef<HTMLDivElement>(null);
-    const [innerSearch, setInnerSearch] = useState("");
+    const [localSearch, setLocalSearch] = useState("");
     const searchRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -563,18 +611,29 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen, currentValu
 
     useEffect(() => {
         if (isOpen) {
-            setInnerSearch("");
+            setLocalSearch("");
+            if (onSearchChange) onSearchChange("");
             setTimeout(() => searchRef.current?.focus(), 50);
         }
-    }, [isOpen]);
+    }, [isOpen, onSearchChange]);
 
-    const showSearch = options.length > 7;
+    const displaySearch = isAsync ? searchValue : localSearch;
 
-    const filteredOptions = showSearch && innerSearch
-        ? options.filter((opt: any) =>
-            opt.name.toLowerCase().includes(innerSearch.toLowerCase())
-        )
-        : options;
+    const filteredOptions = isAsync 
+        ? options 
+        : (options.length > 7 && localSearch
+            ? options.filter((opt: any) => opt.name.toLowerCase().includes(localSearch.toLowerCase()))
+            : options);
+
+    const showSearchInput = isAsync || options.length > 7;
+
+    const handleSearchInput = (val: string) => {
+        if (isAsync) {
+            if (onSearchChange) onSearchChange(val);
+        } else {
+            setLocalSearch(val);
+        }
+    };
 
     return (
         <div className="relative" ref={ref}>
@@ -592,25 +651,36 @@ function FilterDropdown({ label, options, onSelect, isOpen, setOpen, currentValu
 
             {isOpen && (
                 <div className="absolute top-full left-0 mt-2 w-[240px] bg-white border border-slate-200 rounded-2xl shadow-xl z-[100] animate-in fade-in slide-in-from-top-2 duration-200 flex flex-col overflow-hidden">
-                    {showSearch && (
+                    {showSearchInput && (
                         <div className="px-3 pt-2.5 pb-1.5 border-b border-slate-100 shrink-0">
                             <div className="relative">
                                 <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
                                 <input
                                     ref={searchRef}
                                     type="text"
-                                    value={innerSearch}
-                                    onChange={(e) => setInnerSearch(e.target.value)}
-                                    placeholder="Search..."
+                                    value={displaySearch}
+                                    onChange={(e) => handleSearchInput(e.target.value)}
+                                    placeholder={isAsync ? "Type to search..." : "Search..."}
                                     className="w-full pl-7 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[11px] font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/30 transition-all"
                                     onClick={(e) => e.stopPropagation()}
                                 />
+                                {loading && (
+                                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                                        <Loader2 size={12} className="text-primary animate-spin" />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
                     <div className="overflow-y-auto max-h-[220px] py-1.5">
-                        {filteredOptions.length === 0 ? (
-                            <p className="px-5 py-3 text-[12px] text-slate-400 font-medium text-center">No results</p>
+                        {loading ? (
+                             <p className="px-5 py-4 text-[11px] text-slate-400 font-medium text-center flex items-center justify-center gap-2">
+                                <Loader2 size={12} className="animate-spin" /> Searching...
+                             </p>
+                        ) : filteredOptions.length === 0 ? (
+                            <p className="px-5 py-3 text-[12px] text-slate-400 font-medium text-center">
+                                {isAsync && !displaySearch ? "Type to search institutes" : "No results"}
+                            </p>
                         ) : filteredOptions.map((opt: any) => {
                             const isActive = currentValue === opt.id;
                             return (

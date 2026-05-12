@@ -144,9 +144,49 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
 
   if (loading) {
     return (
-      <div className="h-[50vh] flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-5 h-5 animate-spin text-primary" />
-        <p className="text-[11px] font-semibold text-surface-400">Loading...</p>
+      <div className="max-w-5xl mx-auto space-y-6 pb-20 animate-pulse px-4">
+        <div className="h-10 w-24 bg-white border border-slate-200 rounded-xl" />
+        
+        {/* Header Card Skeleton */}
+        <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex items-center gap-5">
+            <div className="w-16 h-16 rounded-xl bg-slate-200" />
+            <div className="space-y-2">
+              <div className="h-6 w-48 bg-slate-200 rounded" />
+              <div className="h-4 w-32 bg-slate-100 rounded" />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <div className="h-10 w-32 bg-slate-100 rounded-xl" />
+            <div className="h-10 w-10 bg-slate-100 rounded-xl" />
+          </div>
+        </div>
+
+        {/* Metrics Skeleton */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-slate-100" />
+              <div className="space-y-2">
+                <div className="h-3 w-12 bg-slate-100 rounded" />
+                <div className="h-4 w-20 bg-slate-200 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tabs Skeleton */}
+        <div className="flex gap-8 border-b border-slate-200 px-2">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-10 w-20 bg-slate-50 rounded-t-lg" />
+          ))}
+        </div>
+
+        {/* Content Skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 h-64 bg-white rounded-xl border border-slate-200" />
+          <div className="h-64 bg-white rounded-xl border border-slate-200" />
+        </div>
       </div>
     );
   }
@@ -158,23 +198,28 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <>
-      <div className="max-w-5xl mx-auto space-y-6 pb-20 antialiased animate-fade-in-up px-4">
+      <div className="max-w-5xl mx-auto space-y-6 pb-20 antialiased px-4">
       <Link
         href="/jobseekers"
-        className="flex items-center w-fit gap-2 text-[12px] font-semibold text-slate-600 hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
+        className="flex items-center w-fit gap-2 text-[12px] font-semibold text-slate-600 hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95 animate-fade-in-up"
       >
         <ChevronLeft size={14} /> Back
       </Link>
 
       {/* Primary Header Card */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-in-up [animation-delay:100ms]">
         <div className="flex items-center gap-5">
           <div
             className="w-16 h-16 rounded-xl bg-blue-600 border border-slate-200 flex items-center justify-center text-white text-xl font-bold shadow-sm shrink-0 overflow-hidden cursor-zoom-in group/avatar relative"
             onClick={() => seeker.profile_photo && setPreviewImage(resolveMediaUrl(seeker.profile_photo))}
           >
             {seeker.profile_photo ? (
-              <img src={resolveMediaUrl(seeker.profile_photo)} alt="" className="w-full h-full object-cover transition-transform group-hover/avatar:scale-110" />
+              <img 
+                src={resolveMediaUrl(seeker.profile_photo)} 
+                alt={seeker.user?.name || "Profile"} 
+                className="w-full h-full object-cover transition-transform group-hover/avatar:scale-110"
+                loading="eager"
+              />
             ) : (
               <span>{initials}</span>
             )}
@@ -232,7 +277,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
           </button>
         </div>
       </div>      {/* Secondary Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in-up [animation-delay:200ms]">
         {[
           { label: "Experience", value: `${seeker.experience_years || 0} Years`, icon: Briefcase, color: "text-blue-600", bg: "bg-blue-50" },
           { label: "Availability", value: seeker.availability?.replace('_', ' ') || "Looking", icon: Zap, color: "text-amber-600", bg: "bg-amber-50" },
@@ -274,7 +319,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
       </div>
 
       {/* Detailed Content Content Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2 animate-fade-in-up [animation-delay:300ms]">
         {activeTab === "Overview" && (
           <>
             <div className="lg:col-span-2 space-y-6">

@@ -58,20 +58,44 @@ export default function DashboardPage() {
     }
   };
 
-  if (!mounted) return null;
-
-  if (loading) {
+  if (loading || !mounted) {
     return (
-        <div className="flex items-center justify-center min-h-[500px]">
-           <Loader2 className="animate-spin text-primary" size={32} strokeWidth={2} />
+      <div className="space-y-6 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="space-y-2">
+            <div className="h-8 w-48 bg-slate-200 rounded-lg" />
+            <div className="h-4 w-64 bg-slate-100 rounded-lg" />
+          </div>
+          <div className="h-10 w-24 bg-slate-200 rounded-xl" />
         </div>
+
+        {/* Stats Grid Skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 py-2">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-white rounded-xl border border-slate-100 p-5 flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="h-3 w-16 bg-slate-100 rounded" />
+                <div className="h-6 w-12 bg-slate-200 rounded" />
+              </div>
+              <div className="h-10 w-10 bg-slate-100 rounded-xl" />
+            </div>
+          ))}
+        </div>
+
+        {/* Main Content Area Skeleton */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="h-[400px] bg-white rounded-xl border border-slate-100 p-6" />
+          <div className="h-[400px] bg-white rounded-xl border border-slate-100 p-6" />
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="space-y-3 pb-5 antialiased animate-fade-in-up">
+    <div className="space-y-3 pb-5 antialiased">
       {/* Page Header */}
-      <div className="page-header">
+      <div className="page-header animate-fade-in-up">
         <div>
           <h1 className="page-title">System Overview</h1>
           <p className="page-subtitle">Platform metrics and recent activity</p>
@@ -85,7 +109,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 py-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 py-2 animate-fade-in-up [animation-delay:100ms]">
         <StatWidget label="Total Jobs" value={stats?.total_jobs || 0} icon={<Briefcase />} color="emerald" />
         <StatWidget label="Job Seekers" value={stats?.total_job_seekers || 0} icon={<Users />} color="blue" />
         <StatWidget label="Recruiters" value={stats?.total_recruiters || 0} icon={<UserCheck />} color="cyan" />
@@ -93,7 +117,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Activity Tables */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 animate-fade-in-up [animation-delay:200ms]">
         {/* Recent Applications */}
         <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
             <div className="px-4 py-4 border-b border-slate-100 flex items-center justify-between">

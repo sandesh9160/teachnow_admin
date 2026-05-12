@@ -32,6 +32,43 @@ import type {
  * Admin Service — Using dashboardServerFetch for secure server-side requests.
  */
 
+// ─── Cache Layer (Client-side Memory) ───────────────────────────────────────
+const _masterCache = new Map<string, { data: any; timestamp: number }>();
+const _pendingRequests = new Map<string, Promise<any>>(); // Track active requests to prevent duplicates
+const CACHE_TTL = 10 * 60 * 1000; // 10 minutes (Cache master data for 10 mins)
+
+async function withCache<T>(key: string, fetcher: () => Promise<T>, force = false): Promise<T> {
+  if (typeof window === "undefined") return fetcher(); // No caching on SSR
+  
+  // 1. Check if we have a valid cached result
+  const cached = _masterCache.get(key);
+  if (!force && cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
+    return cached.data;
+  }
+
+  // 2. Check if a request is already in progress
+  if (_pendingRequests.has(key)) {
+    return _pendingRequests.get(key);
+  }
+
+  // 3. Create and track the promise
+  const fetchPromise = fetcher().finally(() => {
+    _pendingRequests.delete(key);
+  });
+
+  _pendingRequests.set(key, fetchPromise);
+
+  try {
+    const data = await fetchPromise;
+    _masterCache.set(key, { data, timestamp: Date.now() });
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const clearMasterCache = () => _masterCache.clear();
+
 // ─── Dashboard ───────────────────────────────────────────────────────────────
 
 export const getDashboardStats = () =>
@@ -39,8 +76,14 @@ export const getDashboardStats = () =>
 
 // ─── Master Data (Categories, Locations, Skills, etc.) ──────────────────────
 
-export const getCategories = (params?: Record<string, unknown>) =>
-  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/categories", { params: { ...params, _t: Date.now() } });
+export const getCategories = (params?: Record<string, unknown>) => {
+  const isGeneric = !params?.search && params?.per_page === 500;
+  if (!isGeneric) return dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/categories", { params: { ...params, _t: Date.now() } });
+  
+  return withCache("categories", () => 
+    dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/categories", { params: { ...params, _t: Date.now() } })
+  );
+};
 
 export const createCategory = (data: Partial<MasterDataItem>) =>
   dashboardServerFetch("/admin/categories", { method: "POST", data });
@@ -58,8 +101,14 @@ export const updateCategory = (id: number, data: any) =>
 export const deleteCategory = (id: number) =>
   dashboardServerFetch(`/admin/categories/${id}`, { method: "DELETE" });
 
-export const getLocations = (params?: Record<string, unknown>) =>
-  dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/locations", { params: { ...params, _t: Date.now() } });
+export const getLocations = (params?: Record<string, unknown>) => {
+  const isGeneric = !params?.search && (params?.per_page === 500 || params?.per_page === 100);
+  if (!isGeneric) return dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/locations", { params: { ...params, _t: Date.now() } });
+
+  return withCache(`locations-${params?.per_page || 500}`, () =>
+    dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/locations", { params: { ...params, _t: Date.now() } })
+  );
+};
 
 export const createLocation = (data: Partial<MasterDataItem>) =>
   dashboardServerFetch("/admin/locations", { method: "POST", data });
@@ -162,8 +211,14 @@ export const deleteRecruiter = (id: number) =>
 
 // ─── Employers ───────────────────────────────────────────────────────────────
 
-export const getEmployers = (params?: Record<string, unknown>) =>
-  dashboardServerFetch<PaginatedResponse<Employer>>("/admin/employers", { params });
+export const getEmployers = (params?: Record<string, unknown>) => {
+  const isGeneric = !params?.search && params?.per_page === 500;
+  if (!isGeneric) return dashboardServerFetch<PaginatedResponse<Employer>>("/admin/employers", { params });
+
+  return withCache("employers", () =>
+    dashboardServerFetch<PaginatedResponse<Employer>>("/admin/employers", { params })
+  );
+};
 
 export const getEmployer = (id: number) =>
   dashboardServerFetch<ApiResponse<Employer>>(`/admin/employers/${id}`);
