@@ -43,6 +43,10 @@ export default function CMSFooterSectionModal({ isOpen, onClose, onSuccess, item
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.title?.trim()) {
+      toast.error("Header Name is required");
+      return;
+    }
     try {
       setLoading(true);
       const payload = {
@@ -106,7 +110,7 @@ export default function CMSFooterSectionModal({ isOpen, onClose, onSuccess, item
             {/* ─── Body ─────────────────────────────────────────────── */}
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
                 <div>
-                    <label className="text-[11px] font-bold text-slate-400 mb-1.5 flex items-center gap-2 px-1">
+                    <label className="text-[11px] font-bold text-slate-900 mb-1.5 flex items-center gap-2 px-1">
                         <Type size={14} className="text-indigo-500" /> Header Name
                     </label>
                     <input 
@@ -114,13 +118,13 @@ export default function CMSFooterSectionModal({ isOpen, onClose, onSuccess, item
                         required
                         value={formData.title}
                         onChange={e => setFormData({ ...formData, title: e.target.value })}
-                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-400 transition-all placeholder:text-slate-300"
+                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-400 transition-all placeholder:text-slate-300"
                         placeholder="e.g. Quick Links"
                     />
                 </div>
 
                 <div>
-                    <label className="text-[11px] font-bold text-slate-400 mb-1.5 flex items-center gap-2 px-1">
+                    <label className="text-[11px] font-bold text-slate-900 mb-1.5 flex items-center gap-2 px-1">
                         <Hash size={14} className="text-indigo-500" /> Placement Order
                     </label>
                     <input 
@@ -129,7 +133,7 @@ export default function CMSFooterSectionModal({ isOpen, onClose, onSuccess, item
                         min="1"
                         value={formData.display_order}
                         onChange={e => setFormData({ ...formData, display_order: parseInt(e.target.value) || 1 })}
-                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-800 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-400 transition-all"
+                        className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[13px] font-bold text-slate-900 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-400 transition-all"
                     />
                 </div>
 

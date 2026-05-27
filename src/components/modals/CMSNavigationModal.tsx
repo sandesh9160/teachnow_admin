@@ -78,6 +78,19 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.title?.trim()) {
+      toast.error("Link Title is required");
+      return;
+    }
+    if (!formData.url?.trim()) {
+      toast.error("URL Path is required");
+      return;
+    }
+    if (!formData.slug?.trim()) {
+      toast.error("Slug is required");
+      return;
+    }
+
     try {
       setLoading(true);
       const payload = {
@@ -146,7 +159,7 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
           <div className="space-y-4">
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+              <label className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-1.5 block ml-0.5">
                  Link Title
               </label>
               <input 
@@ -161,7 +174,7 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+                <label className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-1.5 block ml-0.5">
                    Parent Link
                 </label>
                 <select
@@ -179,7 +192,7 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
               </div>
               
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+                <label className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-1.5 block ml-0.5">
                    Display Order
                 </label>
                 <input 
@@ -194,7 +207,7 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+              <label className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-1.5 block ml-0.5">
                  URL Path
               </label>
               <input 
@@ -208,7 +221,7 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+              <label className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-1.5 block ml-0.5">
                  Slug
               </label>
               <input 
@@ -216,9 +229,10 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
                 required
                 value={formData.slug}
                 onChange={e => setFormData({ ...formData, slug: e.target.value })}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-mono text-slate-500 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-sm"
+                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-mono text-slate-900 focus:outline-none focus:border-indigo-400 focus:bg-white transition-all shadow-sm"
                 placeholder="faqs"
               />
+              <p className="text-[10px] text-red-500 mt-1.5 ml-1 font-medium">Please enter a unique slug. This is required.</p>
             </div>
 
             <div className="pt-2 border-t border-slate-100 mt-4">
@@ -228,7 +242,7 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
               
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+                  <label className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-1.5 block ml-0.5">
                      Meta Title
                   </label>
                   <input 
@@ -241,7 +255,7 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+                  <label className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-1.5 block ml-0.5">
                      Meta Description
                   </label>
                   <textarea 
@@ -253,7 +267,7 @@ export default function CMSNavigationModal({ isOpen, onClose, onSuccess, item, p
                 </div>
 
                 <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block ml-0.5">
+                  <label className="text-[10px] font-bold text-slate-900 uppercase tracking-widest mb-1.5 block ml-0.5">
                      Meta Keywords
                   </label>
                   <input 

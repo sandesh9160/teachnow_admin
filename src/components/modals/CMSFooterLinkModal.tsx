@@ -103,6 +103,18 @@ export default function CMSFooterLinkModal({ isOpen, onClose, onSuccess, item }:
         toast.error("Please select a Footer Column");
         return;
     }
+    if (!formData.title?.trim()) {
+        toast.error("Link Name / Title is required");
+        return;
+    }
+    if (!formData.url?.trim()) {
+        toast.error("Destination URL is required");
+        return;
+    }
+    if (!formData.slug?.trim()) {
+        toast.error("Slug is required");
+        return;
+    }
     
     try {
       setLoading(true);
@@ -181,7 +193,7 @@ export default function CMSFooterLinkModal({ isOpen, onClose, onSuccess, item }:
             
             <div className="space-y-4">
               <div>
-                <label className="text-[12px] font-bold text-slate-700 mb-1.5 block">Assign to Column</label>
+                <label className="text-[12px] font-bold text-slate-900 mb-1.5 block">Assign to Column</label>
                 <select 
                    value={formData.section_id}
                    onChange={e => setFormData({ ...formData, section_id: e.target.value })}
@@ -196,7 +208,7 @@ export default function CMSFooterLinkModal({ isOpen, onClose, onSuccess, item }:
               </div>
 
               <div>
-                <label className="text-[12px] font-bold text-slate-700 mb-1.5 block">Link Name / Title</label>
+                <label className="text-[12px] font-bold text-slate-900 mb-1.5 block">Link Name / Title</label>
                 <input 
                   type="text"
                   required
@@ -208,7 +220,7 @@ export default function CMSFooterLinkModal({ isOpen, onClose, onSuccess, item }:
               </div>
 
               <div>
-                <label className="text-[12px] font-bold text-slate-700 mb-1.5 block">Destination URL</label>
+                <label className="text-[12px] font-bold text-slate-900 mb-1.5 block">Destination URL</label>
                 <input 
                   type="text"
                   required
@@ -221,7 +233,7 @@ export default function CMSFooterLinkModal({ isOpen, onClose, onSuccess, item }:
 
               <div className="grid grid-cols-2 gap-4">
                  <div>
-                    <label className="text-[12px] font-bold text-slate-700 mb-1.5 block">Display Order</label>
+                    <label className="text-[12px] font-bold text-slate-900 mb-1.5 block">Display Order</label>
                     <input 
                       type="number"
                       required
@@ -289,18 +301,20 @@ export default function CMSFooterLinkModal({ isOpen, onClose, onSuccess, item }:
               </h3>
 
               <div>
-                <label className="text-[12px] font-bold text-slate-700 mb-1.5 block">Slug</label>
+                <label className="text-[12px] font-bold text-slate-900 mb-1.5 block">Slug</label>
                 <input
                   type="text"
+                  required
                   value={formData.slug}
                   onChange={e => setFormData({ ...formData, slug: e.target.value })}
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-mono text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-300"
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-[12px] font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all placeholder:text-slate-300"
                   placeholder="e.g. about-us"
                 />
+                <p className="text-[10px] text-red-500 mt-1.5 ml-1 font-medium">Please enter a unique slug. This is required.</p>
               </div>
 
               <div>
-                <label className="text-[12px] font-bold text-slate-700 mb-1.5 block">Meta Title</label>
+                <label className="text-[12px] font-bold text-slate-900 mb-1.5 block">Meta Title</label>
                 <input
                   type="text"
                   value={formData.meta_title}
@@ -311,7 +325,7 @@ export default function CMSFooterLinkModal({ isOpen, onClose, onSuccess, item }:
               </div>
 
               <div>
-                <label className="text-[12px] font-bold text-slate-700 mb-1.5 block">Meta Description</label>
+                <label className="text-[12px] font-bold text-slate-900 mb-1.5 block">Meta Description</label>
                 <textarea
                   value={formData.meta_description}
                   onChange={e => setFormData({ ...formData, meta_description: e.target.value })}
@@ -321,7 +335,7 @@ export default function CMSFooterLinkModal({ isOpen, onClose, onSuccess, item }:
               </div>
 
               <div>
-                <label className="text-[12px] font-bold text-slate-700 mb-1.5 block">Meta Keywords</label>
+                <label className="text-[12px] font-bold text-slate-900 mb-1.5 block">Meta Keywords</label>
                 <input
                   type="text"
                   value={formData.meta_keywords}

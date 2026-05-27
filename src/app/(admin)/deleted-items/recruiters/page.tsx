@@ -3,32 +3,32 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "@/components/tables/DataTable";
 import Badge from "@/components/ui/Badge";
-import { RotateCcw, Trash2, Search, ArrowLeft, Loader2 } from "lucide-react";
+import { RotateCcw, Search, ArrowLeft, Loader2, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { getDeletedItems, restoreItem, permanentDelete } from "@/services/admin.service";
 import { toast } from "sonner";
 import type { DeletedItem } from "@/types";
 
-export default function DeletedTestimonialsPage() {
+export default function DeletedRecruitersPage() {
   const [items, setItems] = useState<DeletedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetchDeletedTestimonials();
+    fetchDeletedRecruiters();
   }, []);
 
-  const fetchDeletedTestimonials = async () => {
+  const fetchDeletedRecruiters = async () => {
     try {
       setLoading(true);
-      const response = await getDeletedItems("testimonials");
-      console.log("Deleted testimonials API response:", response);
+      const response = await getDeletedItems("recruiters");
+      console.log("Deleted recruiters API response:", response);
       const data = response && typeof response === "object" && "data" in response ? (response as any).data : response;
-      console.log("Deleted testimonials parsed data:", data);
+      console.log("Deleted recruiters parsed data:", data);
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Failed to fetch deleted testimonials:", error);
-      toast.error("Failed to load deleted testimonials");
+      console.error("Failed to fetch deleted recruiters:", error);
+      toast.error("Failed to load deleted recruiters");
     } finally {
       setLoading(false);
     }
@@ -36,40 +36,51 @@ export default function DeletedTestimonialsPage() {
 
   const handleRestore = async (id: number) => {
     try {
-      await restoreItem("testimonials", id);
-      toast.success("Testimonial restored successfully");
+      await restoreItem("recruiters", id);
+      toast.success("Recruiter restored successfully");
       setItems(prev => prev.filter(item => item.id !== id));
     } catch (error) {
-      toast.error("Failed to restore testimonial");
+      toast.error("Failed to restore recruiter");
     }
   };
 
   const handlePermanentDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to permanently delete this testimonial?")) return;
     try {
-      await permanentDelete("testimonials", id);
-      toast.success("Testimonial permanently deleted");
-      setItems(prev => prev.filter(item => item.id !== id));
+      if (confirm("Are you sure you want to permanently delete this recruiter? This action cannot be undone.")) {
+        await permanentDelete("recruiters", id);
+        toast.success("Recruiter permanently deleted");
+        setItems(prev => prev.filter(item => item.id !== id));
+      }
     } catch (error) {
-      toast.error("Failed to delete permanently");
+      toast.error("Failed to permanently delete recruiter");
     }
   };
 
   const filtered = items.filter(item => 
     item.name?.toLowerCase().includes(search.toLowerCase()) ||
-    (item as any).message?.toLowerCase().includes(search.toLowerCase())
+    item.email?.toLowerCase().includes(search.toLowerCase()) ||
+    (item as any).employer?.company_name?.toLowerCase().includes(search.toLowerCase())
   );
 
   const columns = [
     { 
-      key: "message", 
-      title: "Testimonial", 
-      render: (v: unknown) => <span className="text-slate-900 text-[13px] truncate max-w-[300px] block">{typeof v === "string" && v ? v : "N/A"}</span> 
+      key: "name", 
+      title: "Recruiter Name", 
+      render: (v: unknown) => <span className="font-semibold text-slate-900 text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
     },
     { 
-      key: "name", 
-      title: "Author", 
+      key: "email", 
+      title: "Email Address", 
       render: (v: unknown) => <span className="text-slate-900 font-medium text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
+    },
+    { 
+      key: "employer", 
+      title: "Organization", 
+      render: (_: unknown, row: Record<string, unknown>) => {
+        const item = row as any;
+        const companyName = item.employer?.company_name || item.company_name || "N/A";
+        return <span className="text-slate-900 font-medium text-[13px]">{companyName}</span>;
+      }
     },
     { 
       key: "deleted_at", 
@@ -96,11 +107,10 @@ export default function DeletedTestimonialsPage() {
           >
             <RotateCcw size={13} /> Restore
           </button>
-          <div className="w-px h-3 bg-surface-100 mx-1" />
           <button 
             onClick={() => handlePermanentDelete(item.id)}
-            title="Delete" 
-            className="text-red-500 hover:text-red-600 text-[10px] font-bold uppercase transition-all cursor-pointer"
+            title="Delete Permanently" 
+            className="flex items-center gap-1.5 text-rose-600 hover:text-rose-700 text-[10px] font-bold uppercase transition-all cursor-pointer"
           >
             <Trash2 size={13} /> Delete
           </button>
@@ -113,12 +123,12 @@ export default function DeletedTestimonialsPage() {
   return (
     <div className="space-y-6 pb-12 antialiased">
       <div className="flex items-center gap-4">
-        <Link href="/deleted-items" className="w-8 h-8 rounded-lg bg-white border border-surface-200 flex items-center justify-center text-surface-400 hover:text-primary-600 shadow-xs transition-all">
+        <Link href="/deleted-items" className="w-8 h-8 rounded-lg bg-white border border-surface-200 flex items-center justify-center text-surface-400 hover:text-primary-600 shadow-xs transition-colors">
           <ArrowLeft size={16} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-surface-900 tracking-tight">Deleted Testimonials</h1>
-          <p className="text-[13px] text-surface-400 font-medium italic">Archived reviews and testimonials</p>
+          <h1 className="text-2xl font-bold text-surface-900 tracking-tight">Deleted Recruiters</h1>
+          <p className="text-[13px] text-surface-400 font-medium italic">Archived recruiter team members</p>
         </div>
       </div>
 
@@ -128,7 +138,7 @@ export default function DeletedTestimonialsPage() {
             <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400" />
             <input 
               type="text" 
-              placeholder="Search snippet or author..." 
+              placeholder="Search name, email or organization..." 
               value={search} 
               onChange={(e) => setSearch(e.target.value)} 
               className="w-80 pl-9 pr-4 py-1.5 bg-white border border-[#E2E8F0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all" 
@@ -143,7 +153,7 @@ export default function DeletedTestimonialsPage() {
           data={filtered as unknown as Record<string, unknown>[]} 
           compact={true} 
           loading={loading}
-          emptyMessage="No deleted testimonials found"
+          emptyMessage="No deleted recruiters found"
         />
       </div>
     </div>

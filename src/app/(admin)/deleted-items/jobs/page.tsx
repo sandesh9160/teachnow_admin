@@ -22,7 +22,9 @@ export default function DeletedJobsPage() {
     try {
       setLoading(true);
       const response = await getDeletedItems("jobs");
+      console.log("Deleted jobs API response:", response);
       const data = response && typeof response === "object" && "data" in response ? (response as any).data : response;
+      console.log("Deleted jobs parsed data:", data);
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch deleted jobs:", error);
@@ -64,14 +66,18 @@ export default function DeletedJobsPage() {
       render: (v: unknown) => <span className="font-semibold text-surface-900 text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
     },
     { 
-      key: "email", 
+      key: "employer", 
       title: "Institute name", 
-      render: (v: unknown) => <span className="text-surface-500 font-medium text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
+      render: (_: unknown, row: Record<string, unknown>) => {
+        const item = row as any;
+        const companyName = item.employer?.company_name || item.company_name || "N/A";
+        return <span className="text-slate-900 font-medium text-[13px]">{companyName}</span>;
+      }
     },
     { 
       key: "deleted_at", 
       title: "Deleted On", 
-      render: (v: unknown) => <span className="text-surface-400 font-medium text-[12px] uppercase">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
+      render: (v: unknown) => <span className="text-slate-900 font-medium text-[12px] uppercase">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
     },
     { 
       key: "deleted_by", 
@@ -129,6 +135,7 @@ export default function DeletedJobsPage() {
               value={search} 
               onChange={(e) => setSearch(e.target.value)} 
               className="w-80 pl-9 pr-4 py-1.5 bg-white border border-[#E2E8F0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all" 
+              suppressHydrationWarning={true}
             />
           </div>
           {loading && <Loader2 size={18} className="animate-spin text-primary-500" />}

@@ -31,15 +31,25 @@ import {
   getRecruiters,
   disableRecruiter,
   deleteRecruiter,
+  getEmployers,
 } from "@/services/admin.service";
 import { Recruiter } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
 
-export default function RecruitersPage() {
+export default function RecruitersPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<any>;
+  searchParams: Promise<any>;
+}) {
+  const resolvedParams = React.use(params);
+  const resolvedSearchParams = React.use(searchParams);
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [recruiters, setRecruiters] = useState<Recruiter[]>([]);
+  const [employersMap, setEmployersMap] = useState<Record<number, any>>({});
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<number | null>(null);
 
@@ -50,11 +60,23 @@ export default function RecruitersPage() {
   const fetchRecruiters = async () => {
     try {
       setLoading(true);
-      const res = await getRecruiters();
+      const [res, empRes] = await Promise.all([
+        getRecruiters(),
+        getEmployers()
+      ]);
       const list = (res as any).data?.data || (res as any).data || [];
       setRecruiters(Array.isArray(list) ? list : []);
+      
+      const empList = (empRes as any).data?.data || (empRes as any).data || [];
+      const map: Record<number, any> = {};
+      if (Array.isArray(empList)) {
+        empList.forEach((emp: any) => {
+          map[emp.id] = emp;
+        });
+      }
+      setEmployersMap(map);
     } catch (err: any) {
-      toast.error("Failed to fetch recruiter list");
+      toast.error("Failed to fetch data");
     } finally {
       setLoading(false);
     }
@@ -103,12 +125,14 @@ export default function RecruitersPage() {
     }
   };
 
-  const filtered = recruiters.filter(
-    (r) =>
+  const filtered = recruiters.filter((r) => {
+    const employer = r.employer || employersMap[r.employer_id];
+    return (
       r.name?.toLowerCase().includes(search.toLowerCase()) ||
       r.email?.toLowerCase().includes(search.toLowerCase()) ||
-      r.employer?.company_name?.toLowerCase().includes(search.toLowerCase()),
-  );
+      employer?.company_name?.toLowerCase().includes(search.toLowerCase())
+    );
+  });
 
   const columns = [
     {
@@ -180,6 +204,7 @@ export default function RecruitersPage() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            suppressHydrationWarning
             onClick={fetchRecruiters}
             className="p-2 bg-white border border-slate-200 rounded-xl text-slate-400 hover:text-primary transition-all active:scale-95 shadow-sm"
           >
@@ -212,6 +237,7 @@ export default function RecruitersPage() {
         <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" />
         <input
           type="text"
+          suppressHydrationWarning
           placeholder="Search by name, company or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -233,9 +259,11 @@ export default function RecruitersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
-              
+
               {!loading &&
-                filtered.map((row: any, i: number) => (
+                filtered.map((row: any, i: number) => {
+                  const employer = row.employer || employersMap[row.employer_id];
+                  return (
                   <tr
                     key={i}
                     className="group hover:bg-slate-50/30 transition-all duration-200 cursor-pointer"
@@ -244,20 +272,20 @@ export default function RecruitersPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="relative w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
-                          {row.employer?.company_logo ? (
+                          {employer?.company_logo ? (
                             <Image
                               // Combines the Base API URL with the image path
-                              src={`${process.env.NEXT_PUBLIC_LARAVEL_API_URL}/${row.employer.company_logo}`}
-                                                            
+                              src={`${process.env.NEXT_PUBLIC_LARAVEL_API_URL}/${employer.company_logo}`}
+
                               alt="Company Logo"
                               fill
                               sizes="32px"
                               className="object-cover"
                             />
-                           
+
                           ) : (
                             <span className="text-slate-400 font-bold text-[11px]">
-                              {row.employer?.company_name?.charAt(0) || "C"}
+                              {employer?.company_name?.charAt(0) || "C"}
                             </span>
                           )}
                         </div>
@@ -279,7 +307,7 @@ export default function RecruitersPage() {
                         </div>
                         <div className="max-w-[180px]">
                           <p className="truncate">
-                            {row.employer?.company_name || (
+                            {employer?.company_name || (
                               <span className="text-slate-300 italic font-normal">
                                 Independent
                               </span>
@@ -291,9 +319,9 @@ export default function RecruitersPage() {
 
                     <td className="px-4 py-3 text-center">
                       <div className="inline-flex">
-                        <Badge 
-                          variant={row.is_active ? "success" : "danger"} 
-                          dot 
+                        <Badge
+                          variant={row.is_active ? "success" : "danger"}
+                          dot
                           className="capitalize"
                         >
                           {row.is_active ? "Active" : "Inactive"}
@@ -355,10 +383,11 @@ export default function RecruitersPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
             </tbody>
           </table>
-          
+
 
           {loading && (
             <div className="py-24 flex flex-col items-center justify-center">

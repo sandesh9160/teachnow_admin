@@ -95,7 +95,7 @@ export default function DeletedResumesPage() {
     { 
       key: "deleted_at", 
       title: "Deleted On", 
-      render: (v: unknown) => <span className="text-surface-400 font-medium text-[12px] uppercase">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
+      render: (v: unknown) => <span className="text-slate-900 font-medium text-[12px] uppercase">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
     },
     { 
       key: "deleted_by", 
@@ -124,10 +124,10 @@ export default function DeletedResumesPage() {
           <div className="w-px h-3 bg-surface-100 mx-1" />
           <button 
             onClick={() => handlePermanentDelete(item.id)}
-            title="Purge" 
+            title="Delete" 
             className="flex items-center gap-1.5 text-red-500 hover:text-red-600 text-[10px] font-bold uppercase cursor-pointer"
           >
-            <Trash2 size={13} /> Purge
+            <Trash2 size={13} /> Delete
           </button>
         </div>
         );

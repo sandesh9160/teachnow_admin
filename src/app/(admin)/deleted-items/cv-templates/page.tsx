@@ -108,7 +108,7 @@ export default function DeletedCVsPage() {
       title: "Removal Date", 
       render: (v: any) => (
         <div className="flex flex-col">
-          <span className="text-slate-600 font-bold text-[11px]">{v ? new Date(v as string).toLocaleDateString() : "N/A"}</span>
+          <span className="text-slate-900 font-bold text-[11px]">{v ? new Date(v as string).toLocaleDateString() : "N/A"}</span>
           <span className="text-[9px] text-slate-400 font-medium">{v ? new Date(v as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}</span>
         </div>
       )
@@ -129,7 +129,7 @@ export default function DeletedCVsPage() {
             onClick={() => handlePermanentDelete(row.id)}
             className="flex items-center gap-1 text-rose-500 hover:text-rose-600 text-[10px] font-bold uppercase tracking-wider"
           >
-            <Trash2 size={13} /> PURGE
+            <Trash2 size={13} /> DELETE
           </button>
         </div>
       )

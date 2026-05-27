@@ -388,7 +388,7 @@ export default function MasterDataPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Master Data</h1>
-                    <p className="text-[13px] text-surface-400 font-medium mt-0.5">Manage platform taxonomy</p>
+                    <p className="text-[13px] text-surface-400 font-medium mt-0.5">Manage categories, locations, and skills</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button
@@ -495,7 +495,7 @@ export default function MasterDataPage() {
                                 <h3 className="text-sm font-bold text-surface-900 leading-none">
                                     {(editingItem as any).isNew ? "Create New Entry" : "Edit Entry"}
                                 </h3>
-                                <p className="text-[10px] text-surface-400 font-medium mt-1">Configure taxonomy details</p>
+                                <p className="text-[10px] text-surface-400 font-medium mt-1">Configure entry details</p>
                             </div>
                             <button onClick={() => setEditingItem(null)} className="p-1 hover:bg-surface-100 rounded-lg text-surface-400 transition-colors">
                                 <X size={16} />
@@ -557,7 +557,7 @@ export default function MasterDataPage() {
                                 <div className={activeTab === "skills" ? "col-span-8 space-y-4" : "col-span-7"}>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className={activeTab === "skills" ? "col-span-2" : "col-span-2"}>
-                                            <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Name</label>
+                                            <label className="text-[10px] font-bold text-surface-900 uppercase tracking-wider block mb-1">Name</label>
                                             <input
                                                 type="text"
                                                 placeholder={activeTab === 'locations' ? "e.g. New York" : activeTab === 'skills' ? "e.g. Next.js" : "e.g. Data Science"}
@@ -568,19 +568,20 @@ export default function MasterDataPage() {
                                         </div>
                                         {(activeTab === "categories" || activeTab === "locations") && (
                                             <div className={activeTab === "locations" ? "col-span-1" : "col-span-2"}>
-                                                <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Slug (Auto-generated)</label>
+                                                <label className="text-[10px] font-bold text-surface-900 uppercase tracking-wider block mb-1">Slug (Auto-generated)</label>
                                                 <input
                                                     type="text"
                                                     placeholder={activeTab === 'locations' ? "new-york" : "data-science"}
                                                     value={editingItem.slug || ""}
                                                     onChange={(e) => setEditingItem({ ...editingItem, slug: e.target.value })}
-                                                    className="w-full px-3 py-1.5 bg-surface-50 border border-surface-100 rounded-lg text-[12px] text-surface-400 focus:outline-none focus:border-primary-500 transition-all font-medium italic"
+                                                    className="w-full px-3 py-1.5 bg-surface-50 border border-surface-100 rounded-lg text-[12px] text-surface-900 focus:outline-none focus:border-primary-500 transition-all font-medium italic"
                                                 />
+                                                <p className="text-[10px] text-red-500 mt-1 font-medium">Please enter a unique slug. This is required.</p>
                                             </div>
                                         )}
                                         {activeTab === "locations" && (
                                             <div className="col-span-1">
-                                                <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Country</label>
+                                                <label className="text-[10px] font-bold text-surface-900 uppercase tracking-wider block mb-1">Country</label>
                                                 <input
                                                     type="text"
                                                     placeholder="e.g. INDIA"
@@ -595,7 +596,7 @@ export default function MasterDataPage() {
 
                                 {/* ─── STATUS AND TOGGLES ─── */}
                                 <div className={activeTab === "skills" ? "col-span-4 space-y-2" : "col-span-5 space-y-2"}>
-                                    <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Status & Visibility</label>
+                                    <label className="text-[10px] font-bold text-surface-900 uppercase tracking-wider block mb-1">Status & Visibility</label>
 
                                     {(activeTab === "categories" || activeTab === "locations") && (
                                         <div className="flex items-center justify-between p-2.5 bg-surface-50 rounded-xl border border-surface-100">

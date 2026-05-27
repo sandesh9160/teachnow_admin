@@ -10,6 +10,7 @@ const categories = [
   { key: "jobseekers", label: "Job Seekers", icon: Users, color: "emerald", desc: "Disabled accounts" },
   { key: "jobs", label: "Jobs", icon: Briefcase, color: "amber", desc: "Archived postings" },
   { key: "employers", label: "Employers", icon: Building2, color: "indigo", desc: "Suspended profiles" },
+  { key: "recruiters", label: "Recruiters", icon: Users, color: "purple", desc: "Deleted recruiters" },
   { key: "cv-templates", label: "Candidate CVs", icon: FileText, color: "orange", desc: "Soft-deleted CV files" },
   { key: "testimonials", label: "Testimonials", icon: MessageSquare, color: "pink", desc: "Deleted reviews" },
   { key: "users", label: "System Users", icon: ShieldCheck, color: "cyan", desc: "Deleted admins" },

@@ -100,6 +100,13 @@ export async function dashboardServerFetch<T = any>(
 
         if (error.response) {
             message = error.response.data?.message;
+            const errors = error.response.data?.errors;
+            if (errors && typeof errors === 'object') {
+                const firstError = Object.values(errors)[0];
+                if (Array.isArray(firstError) && firstError.length > 0) {
+                    message = firstError[0];
+                }
+            }
             if (!message && error.response.status === 401) {
                 message = "Session expired. Please log in again.";
             } else if (!message) {
