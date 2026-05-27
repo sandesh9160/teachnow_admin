@@ -16,6 +16,7 @@ import {
   SaveAll,
   Loader2,
   Trash2,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { clsx } from "clsx";
@@ -41,6 +42,8 @@ export default function VerificationDetailPage({ params }: { params: Promise<{ i
   const [activeDocId, setActiveDocId] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [decisions, setDecisions] = useState<Record<number, DocDecision>>({});
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectFeedback, setRejectFeedback] = useState("");
 
   const handleDownload = (url: string, filename: string) => {
     try {
@@ -94,12 +97,11 @@ export default function VerificationDetailPage({ params }: { params: Promise<{ i
     }));
   };
 
-  const setDocStatus = async (status: "Approved" | "Rejected") => {
+  const setDocStatus = async (status: "Approved" | "Rejected", feedback?: string) => {
     if (!activeDocId || !currentDecision) return;
     
-    if (status === "Rejected" && !currentDecision.feedback.trim()) {
+    if (status === "Rejected" && (!feedback || !feedback.trim())) {
       toast.error("Please provide feedback for rejection.");
-      feedbackRef.current?.focus();
       return;
     }
 
@@ -108,10 +110,13 @@ export default function VerificationDetailPage({ params }: { params: Promise<{ i
       if (status === "Approved") {
         await approveVerification(activeDocId);
       } else {
-        await rejectVerification(activeDocId, currentDecision.feedback);
+        await rejectVerification(activeDocId, feedback || "");
       }
       
       handleUpdateDecision("status", status);
+      if (feedback) {
+        handleUpdateDecision("feedback", feedback);
+      }
       toast.success(`${activeDoc?.document_name} marked as ${status}`);
     } catch {
       toast.error(`Failed to update ${activeDoc?.document_name} status`);
@@ -120,9 +125,37 @@ export default function VerificationDetailPage({ params }: { params: Promise<{ i
     }
   };
 
-  const handleSubmitAll = async () => {
-    toast.info("Decisions are saved individually as you verify.");
-    router.push("/verification");
+  const handleApproveAllDocs = async () => {
+    if (!employer?.documents || employer.documents.length === 0) return;
+    try {
+      setIsSubmitting(true);
+      const pendingDocs = employer.documents.filter(doc => {
+        const docStat = decisions[doc.id]?.status || "Pending";
+        return docStat !== "Approved";
+      });
+
+      if (pendingDocs.length === 0) {
+        toast.info("All documents are already approved.");
+        router.push("/verification");
+        return;
+      }
+
+      for (const doc of pendingDocs) {
+        await approveVerification(doc.id);
+        
+        setDecisions((prev) => ({
+          ...prev,
+          [doc.id]: { ...prev[doc.id], status: "Approved" },
+        }));
+      }
+
+      toast.success("All documents approved successfully!");
+      router.push("/verification");
+    } catch {
+      toast.error("Failed to approve all documents");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
 
@@ -177,12 +210,12 @@ export default function VerificationDetailPage({ params }: { params: Promise<{ i
             <ChevronLeft size={14} /> Back
           </Link>
           <button
-            onClick={handleSubmitAll}
+            onClick={handleApproveAllDocs}
             disabled={isSubmitting}
-            className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 disabled:opacity-50 transition-all shadow-sm"
+            className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-all shadow-sm active:scale-95"
           >
-            {isSubmitting ? "Submitting..." : "Submit All Decisions"}
-            {!isSubmitting && <SaveAll size={18} />}
+            {isSubmitting ? "Approving..." : "Approve All Docs"}
+            {!isSubmitting && <CheckCircle2 size={18} />}
           </button>
         </div>
 
@@ -196,195 +229,238 @@ export default function VerificationDetailPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* ─── Left Column (Info & Viewer) ─────────────────────────────────── */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Institute Info Card */}
-          <div className="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
-            <div className="p-3 px-4 border-b border-surface-100 flex items-center justify-between bg-surface-50">
-              <h3 className="font-semibold text-surface-900 flex items-center gap-2 text-sm">
-                <Building size={16} className="text-primary-600" />
-                Institute Information
-              </h3>
-
-            </div>
-            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
-              <div>
-                <p className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-0.5">
-                  Institute Name
-                </p>
-                <p className="text-sm font-semibold text-surface-900">
-                  {employer.company_name}
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-0.5 flex items-center gap-1">
-                  <Mail size={12} /> Email
-                </p>
-                <p className="text-sm font-medium text-surface-700">{employer.email}</p>
-              </div>
-              <div>
-                <p className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-0.5 flex items-center gap-1">
-                  <Phone size={12} /> Phone
-                </p>
-                <p className="text-sm font-medium text-surface-700">{employer.phone}</p>
-              </div>
-              <div>
-                <p className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-0.5 flex items-center gap-1">
-                  <MapPin size={12} /> Address
-                </p>
-                <p className="text-sm font-medium text-surface-700">{employer.address}</p>
-              </div>
-            </div>
+      <div className="max-w-4xl mx-auto space-y-4">
+        {/* Institute Info Card */}
+        <div className="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
+          <div className="p-3 px-4 border-b border-surface-100 flex items-center justify-between bg-surface-50">
+            <h3 className="font-semibold text-surface-900 flex items-center gap-2 text-sm">
+              <Building size={16} className="text-primary-600" />
+              Institute Information
+            </h3>
           </div>
-
-          {/* Documents Selection & Viewer */}
-          <div className="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
-            {/* Document Tabs / List */}
-            <div className="p-4 border-b border-surface-100 bg-surface-50">
-              <h3 className="text-sm font-semibold text-surface-900 mb-3">
-                Uploaded Documents ({employer.documents?.length || 0})
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {employer.documents?.map((doc) => {
-                  const docStat = decisions[doc.id]?.status || "Pending";
-                  return (
-                    <button
-                      key={doc.id}
-                      onClick={() => setActiveDocId(doc.id)}
-                      className={clsx(
-                        "relative flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all duration-200",
-                        activeDocId === doc.id
-                          ? "border-primary-500 bg-primary-50 shadow-sm shadow-primary-500/10"
-                          : "border-surface-200 bg-white hover:border-primary-300 hover:bg-surface-50"
-                      )}
-                    >
-                      {getStatusBadge(docStat)}
-                      <div className={clsx("p-1.5 rounded-lg shrink-0", activeDocId === doc.id ? "bg-primary-100 text-primary-600" : "bg-surface-100 text-surface-500")}>
-                        <FileText size={16} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className={clsx("text-[13px] leading-tight font-semibold truncate", activeDocId === doc.id ? "text-primary-900" : "text-surface-900")}>
-                          {doc.document_name}
-                        </p>
-                        <p className={clsx("text-[11px] truncate mt-0.5", activeDocId === doc.id ? "text-primary-600" : "text-surface-500")}>
-                          Uploaded: {new Date(doc.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-6">
+            <div>
+              <p className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-0.5">
+                Institute Name
+              </p>
+              <p className="text-sm font-semibold text-surface-900">
+                {employer.company_name}
+              </p>
             </div>
-
-            {/* Active Document Header */}
-            <div className="px-4 py-2.5 flex items-center justify-between border-b border-surface-100">
-              <div>
-                <h4 className="font-semibold text-surface-900 text-sm">
-                  {activeDoc?.document_name} Preview
-                </h4>
-                <p className="text-[11px] text-surface-500">
-                   {activeDoc?.document_type}
-                </p>
-              </div>
-              {activeDoc && (
-                <button 
-                  onClick={() => handleDownload(resolveMediaUrl(activeDoc.document_file), activeDoc.document_name)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-surface-600 bg-white border border-surface-200 hover:bg-surface-50 rounded-lg transition-colors shadow-sm"
-                >
-                  <Download size={14} /> Download
-                </button>
-              )}
+            <div>
+              <p className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                <Mail size={12} /> Email
+              </p>
+              <p className="text-sm font-medium text-surface-700">{employer.email}</p>
             </div>
-
-            {/* Document Preview Area */}
-            <div className="w-full bg-slate-50 min-h-[450px] flex flex-col items-center justify-center border-b border-surface-100 overflow-hidden relative">
-              {activeDoc ? (
-                activeDoc.document_file.toLowerCase().endsWith('.pdf') ? (
-                  <iframe 
-                    src={`/api/download?url=${encodeURIComponent(resolveMediaUrl(activeDoc.document_file))}&mode=inline`}
-                    className="w-full h-[600px] border-none"
-                    title={activeDoc.document_name}
-                  />
-                ) : (
-                  <div className="p-4 flex items-center justify-center w-full h-full">
-                    <img 
-                      src={resolveMediaUrl(activeDoc.document_file)} 
-                      alt={activeDoc.document_name}
-                      className="max-w-full max-h-[600px] object-contain rounded-lg shadow-sm border border-slate-200 bg-white"
-                    />
-                  </div>
-                )
-              ) : (
-                <div className="flex flex-col items-center opacity-40">
-                  <FileText size={48} className="text-surface-300 mb-3" />
-                  <p className="text-surface-600 text-sm font-medium italic">No document selected</p>
-                </div>
-              )}
+            <div>
+              <p className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                <Phone size={12} /> Phone
+              </p>
+              <p className="text-sm font-medium text-surface-700">{employer.phone}</p>
+            </div>
+            <div>
+              <p className="text-[10px] font-medium text-surface-400 uppercase tracking-wider mb-0.5 flex items-center gap-1">
+                <MapPin size={12} /> Address
+              </p>
+              <p className="text-sm font-medium text-surface-700">{employer.address}</p>
             </div>
           </div>
         </div>
 
-        {/* ─── Right Column (Actions & Feedback) ───────────────────────────── */}
-        <div className="lg:col-span-1 space-y-4">
-          <div className="bg-white rounded-xl border border-surface-200 shadow-sm sticky top-6">
-            <div className="p-4 border-b border-surface-100 bg-surface-50">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-surface-900">Document Verdict</h3>
-                {currentDecision && (
-                  <Badge 
-                    variant={
-                      currentDecision.status === "Approved" ? "success" : 
-                      currentDecision.status === "Rejected" ? "danger" : "warning"
-                    } 
-                    dot 
-                    className="capitalize"
+        {/* Documents Selection & Viewer */}
+        <div className="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
+          {/* Document Tabs / List */}
+          <div className="p-4 border-b border-surface-100 bg-surface-50">
+            <h3 className="text-sm font-semibold text-surface-900 mb-3">
+              Uploaded Documents ({employer.documents?.length || 0})
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {employer.documents?.map((doc) => {
+                const docStat = decisions[doc.id]?.status || "Pending";
+                return (
+                  <button
+                    key={doc.id}
+                    onClick={() => setActiveDocId(doc.id)}
+                    className={clsx(
+                      "relative flex items-center gap-2.5 p-2.5 rounded-xl border text-left transition-all duration-200",
+                      activeDocId === doc.id
+                        ? "border-primary-500 bg-primary-50 shadow-sm shadow-primary-500/10"
+                        : "border-surface-200 bg-white hover:border-primary-300 hover:bg-surface-50"
+                    )}
                   >
-                    {currentDecision.status}
-                  </Badge>
-                )}
-              </div>
-              <p className="text-xs text-surface-500 mt-1">
-                Reviewing: <span className="font-medium text-surface-700">{activeDoc?.document_name}</span>
+                    {getStatusBadge(docStat)}
+                    <div className={clsx("p-1.5 rounded-lg shrink-0", activeDocId === doc.id ? "bg-primary-100 text-primary-600" : "bg-surface-100 text-surface-500")}>
+                      <FileText size={16} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className={clsx("text-[13px] leading-tight font-semibold truncate", activeDocId === doc.id ? "text-primary-900" : "text-surface-900")}>
+                        {doc.document_name}
+                      </p>
+                      <p className={clsx("text-[11px] truncate mt-0.5", activeDocId === doc.id ? "text-primary-600" : "text-surface-500")}>
+                        Uploaded: {new Date(doc.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Active Document Header */}
+          <div className="px-4 py-2.5 flex items-center justify-between border-b border-surface-100">
+            <div>
+              <h4 className="font-semibold text-surface-900 text-sm">
+                {activeDoc?.document_name} Preview
+              </h4>
+              <p className="text-[11px] text-surface-500">
+                 {activeDoc?.document_type}
               </p>
             </div>
-            
-            <div className="p-4 space-y-4">
-              {/* Feedback Field */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-surface-700">
-                  Document Feedback <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  ref={feedbackRef}
-                  value={currentDecision?.feedback || ""}
-                  onChange={(e) => handleUpdateDecision("feedback", e.target.value)}
-                  placeholder="Provide precise feedback..."
-                  className="w-full h-24 px-3 py-2.5 rounded-lg border border-surface-200 text-surface-900 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 transition-all resize-none text-[13px] bg-surface-50"
-                />
-              </div>
+            {activeDoc && (
+              <button 
+                onClick={() => handleDownload(resolveMediaUrl(activeDoc.document_file), activeDoc.document_name)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-surface-600 bg-white border border-surface-200 hover:bg-surface-50 rounded-lg transition-colors shadow-sm"
+              >
+                <Download size={14} /> Download
+              </button>
+            )}
+          </div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => setDocStatus("Approved")}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm bg-emerald-600 text-white border border-emerald-700"
-                >
-                  <CheckCircle2 size={16} />
-                  Approve
-                </button>
-                <button
-                  onClick={() => setDocStatus("Rejected")}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm bg-red-600 text-white border border-red-700"
-                >
-                  <XCircle size={16} />
-                  Reject
-                </button>
+          {/* Document Preview Area */}
+          <div className="w-full bg-slate-50 min-h-[450px] flex flex-col items-center justify-center border-b border-surface-100 overflow-hidden relative">
+            {activeDoc ? (
+              activeDoc.document_file.toLowerCase().endsWith('.pdf') ? (
+                <iframe 
+                  src={`/api/download?url=${encodeURIComponent(resolveMediaUrl(activeDoc.document_file))}&mode=inline`}
+                  className="w-full h-[600px] border-none"
+                  title={activeDoc.document_name}
+                />
+              ) : (
+                <div className="p-4 flex items-center justify-center w-full h-full">
+                  <img 
+                    src={resolveMediaUrl(activeDoc.document_file)} 
+                    alt={activeDoc.document_name}
+                    className="max-w-full max-h-[600px] object-contain rounded-lg shadow-sm border border-slate-200 bg-white"
+                  />
+                </div>
+              )
+            ) : (
+              <div className="flex flex-col items-center opacity-40">
+                <FileText size={48} className="text-surface-300 mb-3" />
+                <p className="text-surface-600 text-sm font-medium italic">No document selected</p>
               </div>
+            )}
+          </div>
+
+          {/* Document Verdict Section */}
+          <div className="p-6 bg-slate-50 border-t border-surface-100 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <h3 className="text-sm font-bold text-surface-900">Document Verdict</h3>
+                <p className="text-xs text-surface-500">
+                  Reviewing: <span className="font-semibold text-surface-700">{activeDoc?.document_name}</span>
+                </p>
+              </div>
+              {currentDecision && (
+                <Badge 
+                  variant={
+                    currentDecision.status === "Approved" ? "success" : 
+                    currentDecision.status === "Rejected" ? "danger" : "warning"
+                  } 
+                  dot 
+                  className="capitalize"
+                >
+                  {currentDecision.status}
+                </Badge>
+              )}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 max-w-sm pt-1">
+              <button
+                onClick={() => setDocStatus("Approved")}
+                disabled={isSubmitting}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-700 active:scale-95 disabled:opacity-50"
+              >
+                <CheckCircle2 size={16} />
+                Approve
+              </button>
+              <button
+                onClick={() => {
+                  setRejectFeedback("");
+                  setIsRejectModalOpen(true);
+                }}
+                disabled={isSubmitting}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm bg-red-600 hover:bg-red-700 text-white border border-red-700 active:scale-95 disabled:opacity-50"
+              >
+                <XCircle size={16} />
+                Reject
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Reject Reason Modal Popup */}
+      {isRejectModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-[#1E1B4B]/30 backdrop-blur-sm" 
+            onClick={() => setIsRejectModalOpen(false)} 
+          />
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col p-6 space-y-4 border border-slate-100">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-[#1E1B4B]">Reject Document</h3>
+              <button 
+                onClick={() => setIsRejectModalOpen(false)} 
+                className="p-1.5 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-400" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-500 font-medium">
+              Please provide precise feedback explaining the reason for rejecting <span className="font-bold text-slate-700">{activeDoc?.document_name}</span>.
+            </p>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 block">
+                Document Feedback *
+              </label>
+              <textarea
+                value={rejectFeedback}
+                onChange={(e) => setRejectFeedback(e.target.value)}
+                placeholder="Enter document rejection feedback..."
+                className="w-full p-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 bg-white"
+                rows={4}
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setIsRejectModalOpen(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-500 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (!rejectFeedback.trim()) {
+                    toast.error("Feedback is required for rejection");
+                    return;
+                  }
+                  setIsRejectModalOpen(false);
+                  await setDocStatus("Rejected", rejectFeedback);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all"
+              >
+                Confirm Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

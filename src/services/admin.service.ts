@@ -503,11 +503,16 @@ export const permanentDelete = (type: string, id: number) =>
 export const getVerificationRequests = (params?: Record<string, unknown>) =>
   dashboardServerFetch("/admin/documents/pending", { params });
 
-export const approveVerification = (id: number) =>
-  dashboardServerFetch(`/admin/verifications/${id}/approve`, { method: "POST" });
+export const approveVerification = (id: number) => {
+  console.log(`Approving verification ${id}`);
+  return dashboardServerFetch(`/admin/verifications/${id}/approve`, { method: "POST" });
+};
 
-export const rejectVerification = (id: number, reason: string) =>
-  dashboardServerFetch(`/admin/verifications/${id}/reject`, { method: "POST", data: { reason } });
+
+export const rejectVerification = (id: number, reason: string) => {
+  console.log(`Rejecting verification ${id} with reason: ${reason}`);
+  return dashboardServerFetch(`/admin/verifications/${id}/reject`, { method: "POST", data: { reason } });
+};
 
 // ─── Notifications ────────────────────────────────────────────────────────
 export const getNotifications = (params?: Record<string, unknown>) =>

@@ -7,12 +7,12 @@ import {
   ShieldCheck, ShieldAlert, Star, Calendar, Clock,
   Trash2, Users, Briefcase, ExternalLink, Loader2,
   CheckCircle2, FileText, Hash, Info, Tag, CreditCard,
-  Link2, Image as ImageIcon, Download, ArrowUpRight, Eye
+  Link2, Image as ImageIcon, Download, ArrowUpRight, Eye, X, XCircle
 } from "lucide-react";
 import { clsx } from "clsx";
 import DataTable from "@/components/tables/DataTable";
 import Badge from "@/components/ui/Badge";
-import { getEmployer, verifyEmployer, featureEmployer, deleteEmployer, updateEmployer, updateEmployerSEO } from "@/services/admin.service";
+import { getEmployer, verifyEmployer, featureEmployer, deleteEmployer, updateEmployer, updateEmployerSEO, approveVerification, rejectVerification } from "@/services/admin.service";
 import { Employer } from "@/types";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -25,7 +25,64 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [activeTab, setActiveTab] = useState("Overview");
-  const [previewDoc, setPreviewDoc] = useState<any>(null);
+  const [activeDocId, setActiveDocId] = useState<number | null>(null);
+  const [decisions, setDecisions] = useState<Record<number, { status: string; feedback: string }>>({});
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectFeedback, setRejectFeedback] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rejectingDoc, setRejectingDoc] = useState<any>(null);
+
+  const setDocStatus = async (docId: number, status: "Approved" | "Rejected", feedback?: string) => {
+    if (!docId) return;
+    
+    if (status === "Rejected" && (!feedback || !feedback.trim())) {
+      toast.error("Please provide feedback for rejection.");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      if (status === "Approved") {
+        await approveVerification(docId);
+      } else {
+        await rejectVerification(docId, feedback || "");
+      }
+      
+      toast.success(`Document marked as ${status}`);
+      await fetchDetails();
+    } catch {
+      toast.error(`Failed to update document status`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleApproveAllDocs = async () => {
+    if (!employer?.documents || employer.documents.length === 0) return;
+    try {
+      setIsSubmitting(true);
+      const pendingDocs = employer.documents.filter(doc => {
+        const docStat = decisions[doc.id]?.status || "Pending";
+        return docStat !== "Approved";
+      });
+
+      if (pendingDocs.length === 0) {
+        toast.info("All documents are already approved.");
+        return;
+      }
+
+      for (const doc of pendingDocs) {
+        await approveVerification(doc.id);
+      }
+
+      toast.success("All documents approved successfully!");
+      await fetchDetails();
+    } catch {
+      toast.error("Failed to approve all documents");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleDownload = (url: string, filename: string) => {
     try {
@@ -51,9 +108,25 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
     try {
       setLoading(true);
       const res = await getEmployer(Number(resolvedParams.id));
-      if (res?.data) setEmployer(res.data);
-    } catch { toast.error("Failed to load employer details"); }
-    finally { setLoading(false); }
+      if (res?.data) {
+        setEmployer(res.data);
+        const init: Record<number, { status: string; feedback: string }> = {};
+        res.data.documents?.forEach((doc: any) => {
+          init[doc.id] = { 
+            status: (doc.status?.charAt(0).toUpperCase() + doc.status?.slice(1)) || "Pending", 
+            feedback: "" 
+          };
+        });
+        setDecisions(init);
+        if (res.data.documents && res.data.documents.length > 0) {
+          setActiveDocId(res.data.documents[0].id);
+        }
+      }
+    } catch { 
+      toast.error("Failed to load employer details"); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
   const handleAction = async (action: "verify" | "feature" | "delete" | "toggle-status") => {
@@ -119,6 +192,8 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
   const fmt = (d?: string | null) => d ? new Date(d).toLocaleDateString() : "—";
 
   const initials = employer.company_name?.charAt(0).toUpperCase() || "E";
+  const activeDoc = employer?.documents?.find((d: any) => d.id === activeDocId);
+  const currentDecision = activeDocId ? decisions[activeDocId] : null;
 
   return (
     <>
@@ -176,6 +251,16 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
               )} />
             </button>
           </div>
+          {employer.documents && employer.documents.length > 0 && (
+            <button
+              onClick={handleApproveAllDocs}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-[13px] font-bold rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-all shadow-md shadow-indigo-100 active:scale-95"
+            >
+              {isSubmitting ? "Approving..." : "Approve All Docs"}
+              {!isSubmitting && <CheckCircle2 size={16} />}
+            </button>
+          )}
           {!employer.is_verified && (
             <button
               onClick={() => handleAction("verify")}
@@ -468,87 +553,189 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
             <DataTable
               columns={[
                 {
-                  key: "document_name", title: "Reference", render: (v: any) => (
-                    <div className="flex items-center gap-3">
-                      <FileText size={16} className="text-slate-400" />
-                      <span className="font-bold text-slate-900">{v}</span>
-                    </div>
+                  key: "document_name", title: "Reference", render: (v: any, r: any) => (
+                    <button 
+                      onClick={() => setActiveDocId(r.id)}
+                      className="flex items-center gap-3 text-left w-full hover:text-indigo-600 transition-colors focus:outline-none"
+                    >
+                      <FileText size={16} className="text-slate-400 shrink-0" />
+                      <span className="font-bold text-slate-900 truncate">{v}</span>
+                    </button>
                   )
                 },
                 { key: "document_type", title: "Classification", render: (v: any) => <span className="font-bold text-slate-500 uppercase text-[11px] tracking-tight">{v?.replace(/_/g, " ")}</span> },
                 { key: "status", title: "Status", render: (v: any) => <Badge variant={v === "approved" ? "success" : "warning"} dot>{v}</Badge> },
                 { key: "created_at", title: "Upload Date", render: (v: any) => <span className="text-[11px] font-bold text-slate-400">{fmt(v)}</span> },
-                {
-                  key: "document_file", title: "", render: (v: any, r: any) => (
-                    <div className="flex justify-end gap-2">
-                      <button 
-                        onClick={() => setPreviewDoc(r)}
-                        className="flex items-center gap-2 h-8 px-4 bg-indigo-50 border border-indigo-100 rounded-xl text-[11px] font-bold text-indigo-600 hover:bg-indigo-100 transition-all active:scale-95 shadow-sm">
-                        <Eye size={14} /> View
-                      </button>
-                    </div>
-                  )
-                },
               ]}
               data={employer.documents || []}
               emptyMessage="No organizational documents available."
             />
-            {/* ─── Danger Zone ─────────────────────────────────────────── */}
-      <div className="bg-white rounded-xl border border-rose-100 shadow-sm p-8 space-y-4">
-        <div className="space-y-2">
-          <h3 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
-            <Trash2 size={16} className="text-rose-500" /> Danger Zone
-          </h3>
-          <p className="text-[13px] text-slate-600 font-medium">This action will permanently delete this organization profile along with all associated job postings and recruiter accounts.</p>
-        </div>
-      </div>
-    </div>
+
+            {/* Document Preview & Verdict Section (Copied from verification details page) */}
+            {activeDoc && (
+              <div className="mt-6 border-t border-slate-100 bg-white">
+                {/* Active Document Header */}
+                <div className="px-6 py-4 flex items-center justify-between border-b border-slate-100 bg-slate-50">
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-sm">
+                      {activeDoc.document_name} Preview
+                    </h4>
+                    <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mt-0.5">
+                       {activeDoc.document_type?.replace(/_/g, " ")}
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => handleDownload(resolveMediaUrl(activeDoc.document_file), activeDoc.document_name)}
+                    className="flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-all shadow-md shadow-indigo-100 active:scale-95"
+                  >
+                    <Download size={14} /> Download
+                  </button>
+                </div>
+
+                {/* Document Preview Area */}
+                <div className="w-full bg-slate-50 min-h-[450px] flex flex-col items-center justify-center border-b border-slate-100 overflow-hidden relative">
+                  {activeDoc.document_file.toLowerCase().endsWith('.pdf') ? (
+                    <iframe 
+                      src={`/api/download?url=${encodeURIComponent(resolveMediaUrl(activeDoc.document_file))}&mode=inline`}
+                      className="w-full h-[600px] border-none"
+                      title={activeDoc.document_name}
+                    />
+                  ) : (
+                    <div className="p-4 flex items-center justify-center w-full h-full">
+                      <img 
+                        src={resolveMediaUrl(activeDoc.document_file)} 
+                        alt={activeDoc.document_name}
+                        className="max-w-full max-h-[600px] object-contain rounded-lg shadow-sm border border-slate-200 bg-white"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Document Verdict & Actions Section */}
+                <div className="p-6 bg-slate-50 border-t border-slate-100 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <h3 className="text-sm font-bold text-slate-900">Document Verdict</h3>
+                      <p className="text-xs text-slate-500">
+                        Reviewing: <span className="font-semibold text-slate-700">{activeDoc.document_name}</span>
+                      </p>
+                    </div>
+                    {currentDecision && (
+                      <Badge 
+                        variant={
+                          currentDecision.status === "Approved" ? "success" : 
+                          currentDecision.status === "Rejected" ? "danger" : "warning"
+                        } 
+                        dot 
+                        className="capitalize font-bold text-xs"
+                      >
+                        {currentDecision.status}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 max-w-sm pt-1">
+                    <button
+                      onClick={() => setDocStatus(activeDoc.id, "Approved")}
+                      disabled={isSubmitting}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-700 active:scale-95 disabled:opacity-50"
+                    >
+                      <CheckCircle2 size={16} />
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => {
+                        setRejectingDoc(activeDoc);
+                        setRejectFeedback("");
+                        setIsRejectModalOpen(true);
+                      }}
+                      disabled={isSubmitting}
+                      className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all shadow-sm bg-red-600 hover:bg-red-700 text-white border border-red-700 active:scale-95 disabled:opacity-50"
+                    >
+                      <XCircle size={16} />
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
       </div>
 
+
     </div>
 
-      {/* ─── Document Preview Modal ───────────────────────────────── */}
-      {previewDoc && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={() => setPreviewDoc(null)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                    <FileText size={20} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-slate-900 leading-tight">{previewDoc.document_name}</h3>
-                    <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">{previewDoc.document_type?.replace(/_/g, " ")}</p>
-                  </div>
-                </div>
-              </div>
+
+
+      {/* Reject Reason Modal Popup */}
+      {isRejectModalOpen && rejectingDoc && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-[#1E1B4B]/30 backdrop-blur-sm" 
+            onClick={() => {
+              setIsRejectModalOpen(false);
+              setRejectingDoc(null);
+            }} 
+          />
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col p-6 space-y-4 border border-slate-100">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-[#1E1B4B]">Reject Document</h3>
               <button 
-                onClick={() => handleDownload(resolveMediaUrl(previewDoc.document_file), previewDoc.document_name)}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-[12px] font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 active:scale-95"
+                onClick={() => {
+                  setIsRejectModalOpen(false);
+                  setRejectingDoc(null);
+                }} 
+                className="p-1.5 hover:bg-slate-100 rounded-full transition-colors"
               >
-                <Download size={15} /> Download
+                <X className="w-5 h-5 text-slate-400" />
               </button>
             </div>
-            <div className={clsx("flex-1 bg-slate-50 overflow-hidden", !previewDoc.document_file?.toLowerCase().endsWith('.pdf') && "p-8 flex items-center justify-center")}>
-               {previewDoc.document_file?.toLowerCase().endsWith('.pdf') ? (
-                  <div className="w-full h-full relative group">
-                    <iframe 
-                      src={`/api/download?url=${encodeURIComponent(resolveMediaUrl(previewDoc.document_file))}&mode=inline`}
-                      className="w-full h-[75vh] border-none" 
-                    />
-                  </div>
-               ) : (
-                  <img src={resolveMediaUrl(previewDoc.document_file)} alt="Document Preview" className="max-w-full max-h-full object-contain rounded-xl shadow-lg border border-slate-200" />
-               )}
+
+            <p className="text-xs text-slate-500 font-medium">
+              Please provide precise feedback explaining the reason for rejecting <span className="font-bold text-slate-700">{rejectingDoc.document_name}</span>.
+            </p>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 block">
+                Document Feedback *
+              </label>
+              <textarea
+                value={rejectFeedback}
+                onChange={(e) => setRejectFeedback(e.target.value)}
+                placeholder="Enter document rejection feedback..."
+                className="w-full p-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 bg-white"
+                rows={4}
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setIsRejectModalOpen(false);
+                  setRejectingDoc(null);
+                }}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-500 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (!rejectFeedback.trim()) {
+                    toast.error("Feedback is required for rejection");
+                    return;
+                  }
+                  setIsRejectModalOpen(false);
+                  const docId = rejectingDoc.id;
+                  setRejectingDoc(null);
+                  await setDocStatus(docId, "Rejected", rejectFeedback);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all"
+              >
+                Confirm Reject
+              </button>
             </div>
           </div>
         </div>

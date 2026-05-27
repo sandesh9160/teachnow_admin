@@ -288,7 +288,7 @@ export default function Sidebar({
                             "flex items-center justify-between transition-all duration-200 group relative",
                             collapsed ? "justify-center px-0 py-2 rounded-lg mb-0.5" : "px-3 py-1.5 rounded-lg mb-0.5",
                             active && !hasChildren
-                              ? "bg-blue-50/60 ring-1 ring-blue-100/50 text-blue-600 shadow-sm"
+                              ? "bg-blue-200 text-blue-800 font-medium border border-blue-500"
                               : "text-slate-900 hover:bg-slate-50"
                           )}
                         >
