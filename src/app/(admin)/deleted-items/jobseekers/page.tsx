@@ -22,6 +22,7 @@ export default function DeletedJobSeekersPage() {
     try {
       setLoading(true);
       const response = await getDeletedItems("job-seekers");
+      console.log("Deleted Job Seekers API Response:", response);
       const data = response && typeof response === "object" && "data" in response ? (response as any).data : response;
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -53,56 +54,56 @@ export default function DeletedJobSeekersPage() {
     }
   };
 
-  const filtered = items.filter(item => 
+  const filtered = items.filter(item =>
     item.name?.toLowerCase().includes(search.toLowerCase()) ||
     item.email?.toLowerCase().includes(search.toLowerCase())
   );
 
   const columns = [
-    { 
-      key: "name", 
-      title: "Name", 
-      render: (v: unknown) => <span className="font-semibold text-surface-900 text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
+    {
+      key: "name",
+      title: "Name",
+      render: (v: unknown) => <span className="font-semibold text-surface-900 text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span>
     },
-    { 
-      key: "email", 
-      title: "Email", 
-      render: (v: unknown) => <span className="text-slate-900 font-medium text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span> 
+    {
+      key: "email",
+      title: "Email",
+      render: (v: unknown) => <span className="text-slate-900 font-medium text-[13px]">{typeof v === "string" && v ? v : "N/A"}</span>
     },
-    { 
-      key: "deleted_at", 
-      title: "Deleted On", 
-      render: (v: unknown) => <span className="text-slate-900 font-medium text-[12px] uppercase">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
+    {
+      key: "deleted_at",
+      title: "Deleted On",
+      render: (v: unknown) => <span className="text-slate-900 font-medium text-[12px] uppercase" suppressHydrationWarning>{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span>
     },
-    { 
-      key: "deleted_by", 
-      title: "Deleted By", 
-      render: (v: unknown) => <Badge variant="default" className="text-[10px] uppercase font-semibold">{typeof v === "string" && v ? v : "System"}</Badge> 
+    {
+      key: "deleted_by",
+      title: "Deleted By",
+      render: (v: unknown) => <Badge variant="default" className="text-[10px] uppercase font-semibold">{typeof v === "string" && v ? v : "System"}</Badge>
     },
-    { 
-      key: "actions", 
-      title: "Actions", 
+    {
+      key: "actions",
+      title: "Actions",
       render: (_: unknown, row: Record<string, unknown>) => {
         const item = row as unknown as DeletedItem;
 
         return (
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => handleRestore(item.id)}
-            title="Restore" 
-            className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 text-[10px] font-bold uppercase transition-all"
-          >
-            <RotateCcw size={13} /> Restore
-          </button>
-          <div className="w-px h-3 bg-surface-100 mx-1" />
-          <button 
-            onClick={() => handlePermanentDelete(item.id)}
-            title="Delete" 
-            className="text-red-500 hover:text-red-600 text-[10px] font-bold uppercase transition-all"
-          >
-            <Trash2 size={13} /> Delete
-          </button>
-        </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => handleRestore(item.id)}
+              title="Restore"
+              className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 text-[10px] font-bold uppercase transition-all"
+            >
+              <RotateCcw size={13} /> Restore
+            </button>
+            <div className="w-px h-3 bg-surface-100 mx-1" />
+            <button
+              onClick={() => handlePermanentDelete(item.id)}
+              title="Delete"
+              className="text-red-500 hover:text-red-600 text-[10px] font-bold uppercase transition-all"
+            >
+              <Trash2 size={13} /> Delete
+            </button>
+          </div>
         );
       }
     }
@@ -124,21 +125,22 @@ export default function DeletedJobSeekersPage() {
         <div className="p-4 border-b border-[#F1F5F9] bg-[#F8FAFC]/50 flex items-center justify-between">
           <div className="relative max-w-sm">
             <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-surface-400" />
-            <input 
-              type="text" 
-              placeholder="Search by name..." 
-              value={search} 
-              onChange={(e) => setSearch(e.target.value)} 
-              className="w-80 pl-9 pr-4 py-1.5 bg-white border border-[#E2E8F0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all" 
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-80 pl-9 pr-4 py-1.5 bg-white border border-[#E2E8F0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all"
+              suppressHydrationWarning
             />
           </div>
           {loading && <Loader2 size={18} className="animate-spin text-primary-500" />}
         </div>
-        
-        <DataTable 
-          columns={columns} 
-          data={filtered as unknown as Record<string, unknown>[]} 
-          compact={true} 
+
+        <DataTable
+          columns={columns}
+          data={filtered as unknown as Record<string, unknown>[]}
+          compact={true}
           loading={loading}
           emptyMessage="No deleted job seekers found"
         />

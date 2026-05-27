@@ -72,7 +72,7 @@ export default function DeletedUsersPage() {
     { 
       key: "deleted_at", 
       title: "Deleted On", 
-      render: (v: unknown) => <span className="text-slate-900 font-medium text-[12px] uppercase">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
+      render: (v: unknown) => <span className="text-slate-900 font-medium text-[12px] uppercase" suppressHydrationWarning>{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
     },
     { 
       key: "deleted_by", 
@@ -130,6 +130,7 @@ export default function DeletedUsersPage() {
               value={search} 
               onChange={(e) => setSearch(e.target.value)} 
               className="w-80 pl-9 pr-4 py-1.5 bg-white border border-[#E2E8F0] rounded-lg text-[13px] focus:outline-none focus:ring-1 focus:ring-primary-500 transition-all" 
+              suppressHydrationWarning
             />
           </div>
           {loading && <Loader2 size={18} className="animate-spin text-primary-500" />}

@@ -85,7 +85,7 @@ export default function DeletedRecruitersPage() {
     { 
       key: "deleted_at", 
       title: "Deleted On", 
-      render: (v: unknown) => <span className="text-slate-900 font-medium text-[12px] uppercase">{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
+      render: (v: unknown) => <span className="text-slate-900 font-medium text-[12px] uppercase" suppressHydrationWarning>{typeof v === "string" && v ? new Date(v).toLocaleDateString() : "N/A"}</span> 
     },
     { 
       key: "deleted_by", 

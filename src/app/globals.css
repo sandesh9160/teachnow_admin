@@ -393,7 +393,7 @@
 }
 
 .admin-table thead tr {
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.4); /* Extremely soft border */
   background-color: #f8fafc;
 }
 
@@ -407,7 +407,7 @@
 }
 
 .admin-table tbody tr {
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.2); /* Soft, barely visible inside line */
   transition: background-color 0.1s;
 }
 
@@ -424,19 +424,20 @@
 .stat-card {
   background: white;
   border-radius: 0.75rem;
-  border: 1px solid #f1f5f9;
-  padding: 1rem 1.25rem;
+  border: 1px solid #cbd5e1; /* Slate-300: a little bit more visible outside border */
+  padding: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  transition: box-shadow 0.2s, border-color 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stat-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-  border-color: #e2e8f0;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.07);
+  border-color: var(--color-primary); /* Brand blue border on hover */
+  transform: translateY(-2px); /* Beautiful premium micro-animation */
 }
 
 .stat-card-icon {
@@ -488,3 +489,20 @@
 /* ─── No scrollbar utility ─────────────────────────────────────────────── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+
+
+/* Ensure all table card containers have a clear slate-300 outside border */
+div:has(> table),
+div:has(> div > table),
+.rounded-xl.border.border-slate-200,
+.rounded-lg.border.border-slate-200 {
+  border-color: #cbd5e1 !important; /* Highly visible slate-300 outside border */
+}
+
+/* Force a highly visible slate-100 background color for all table header rows globally */
+table thead tr,
+table thead,
+.admin-table thead tr {
+  background-color: #f1f5f9 !important; /* Clearly visible slate-100 background */
+}

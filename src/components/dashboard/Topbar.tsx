@@ -40,7 +40,7 @@ export default function Topbar({ onMenuToggle, collapsed }: TopbarProps) {
           <button
             suppressHydrationWarning
             onClick={onMenuToggle}
-            className="lg:hidden p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors"
+            className="lg:hidden p-2 rounded-xl text-slate-900 hover:bg-slate-100 transition-colors"
           >
             <Menu size={20} />
           </button>

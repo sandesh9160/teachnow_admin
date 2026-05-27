@@ -45,7 +45,7 @@ interface SidebarProps {
 const navGroups: { label: string; color: string; headerIcon: any; items: SidebarItem[] }[] = [
   {
     label: "Main",
-    color: "text-slate-400",
+    color: "text-blue-500",
     headerIcon: null,
     items: [
       { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -54,7 +54,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
   },
   {
     label: "Management",
-    color: "text-slate-400",
+    color: "text-violet-500",
     headerIcon: null,
     items: [
       { title: "Jobs", href: "/jobs", icon: Briefcase },
@@ -66,7 +66,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
   },
   {
     label: "Platform",
-    color: "text-slate-400",
+    color: "text-emerald-500",
     headerIcon: null,
     items: [
       { title: "Manage Plans", href: "/plans", icon: CreditCard },
@@ -78,7 +78,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
   },
   {
     label: "Deleted",
-    color: "text-slate-400",
+    color: "text-slate-900",
     headerIcon: null,
     items: [
       { 
@@ -99,7 +99,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
   },
   {
     label: "CMS",
-    color: "text-slate-400",
+    color: "text-slate-900",
     headerIcon: null,
     items: [
       { 
@@ -126,7 +126,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
   },
   {
     label: "Resources",
-    color: "text-slate-400",
+    color: "text-teal-500",
     headerIcon: null,
     items: [
       { title: "Teaching Resources", href: "/resources", icon: GraduationCap },
@@ -135,7 +135,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
   },
   {
     label: "System & Templates",
-    color: "text-slate-400",
+    color: "text-orange-400",
     headerIcon: null,
     items: [
       { title: "Resume Templates", href: "/cv-templates", icon: Layout },
@@ -214,7 +214,7 @@ export default function Sidebar({
       <aside
         className={clsx(
           "fixed top-0 left-0 h-full z-50 flex flex-col transition-all duration-300 ease-in-out",
-          "bg-white border-r border-slate-100",
+          "bg-white border-r border-slate-200",
           collapsed ? "w-[78px]" : "w-[240px]",
           "lg:translate-x-0",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
@@ -222,7 +222,7 @@ export default function Sidebar({
       >
         {/* Brand Logo */}
         <div className={clsx(
-          "h-16 flex items-center border-b border-slate-100 shrink-0",
+          "h-16 flex items-center border-b border-slate-200 shrink-0",
           collapsed ? "justify-center px-0" : "px-4 gap-2.5"
         )}>
           <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 shadow-md shadow-blue-600/20">
@@ -267,10 +267,10 @@ export default function Sidebar({
 
           {navGroups.map((group, groupIndex) => {
             return (
-            <div key={groupIndex} className="space-y-0.5 pb-2">
+            <div key={groupIndex} className={clsx("space-y-0.5 pb-1.5", groupIndex > 0 && "border-t border-slate-200 pt-2 mt-1.5")}>
               {!collapsed && (
                 <div className="px-3 flex items-center mb-1 pt-2">
-                    <p className="text-[9.5px] font-bold text-slate-300 tracking-widest uppercase">
+                    <p className={clsx("text-[9.5px] font-bold tracking-widest uppercase", "text-slate-900")}>
                         {group.label}
                     </p>
                 </div>
@@ -289,17 +289,17 @@ export default function Sidebar({
                             collapsed ? "justify-center px-0 py-2 rounded-lg mb-0.5" : "px-3 py-1.5 rounded-lg mb-0.5",
                             active && !hasChildren
                               ? "bg-blue-50/60 ring-1 ring-blue-100/50 text-blue-600 shadow-sm"
-                              : "text-slate-500 hover:bg-slate-50"
+                              : "text-slate-900 hover:bg-slate-50"
                           )}
                         >
                           {!hasChildren ? (
                             <Link href={item.href} className="flex items-center gap-3 w-full">
                                <div className="relative">
-                                 <Icon size={18} className={clsx("transition-transform group-hover:scale-110", active ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} strokeWidth={active ? 2 : 1.5} />
+                                 <Icon size={18} className={clsx("transition-transform group-hover:scale-110", active ? "text-blue-600" : "text-slate-900 group-hover:text-slate-600")} strokeWidth={active ? 2 : 1.5} />
                                </div>
                                {!collapsed && (
                                  <div className="flex items-center justify-between flex-1">
-                                   <span className={clsx("text-[13px] font-semibold tracking-tight", active ? "text-blue-600" : "text-slate-500 group-hover:text-slate-900")}>{item.title}</span>
+                                   <span className={clsx("text-[13px] font-semibold tracking-tight", active ? "text-blue-600" : "text-slate-900 group-hover:text-slate-900")}>{item.title}</span>
                                  </div>
                                )}
                             </Link>
@@ -311,9 +311,9 @@ export default function Sidebar({
                                  className="flex items-center justify-between w-full cursor-pointer bg-transparent border-none outline-none appearance-none"
                             >
                                <div className="flex items-center gap-3">
-                                  <Icon size={18} className={clsx("transition-transform group-hover:scale-110", isOpen ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600")} strokeWidth={isOpen ? 2 : 1.5} />
+                                  <Icon size={18} className={clsx("transition-transform group-hover:scale-110", isOpen ? "text-blue-600" : "text-slate-900")} strokeWidth={isOpen ? 2 : 1.5} />
                                   {!collapsed && <span className={clsx("text-[13px] font-semibold tracking-tight", isOpen ? "text-blue-600" : "text-slate-500 group-hover:text-slate-900")}>{item.title}</span>}
-                               </div>
+                                </div>
                                {!collapsed && <ChevronDown size={14} className={clsx("text-slate-300 transition-transform duration-300 group-hover:text-slate-600", isOpen && "rotate-180")} />}
                             </button>
                           )}
@@ -336,14 +336,14 @@ export default function Sidebar({
                                         href={child.href}
                                         className={clsx(
                                             "flex items-center py-1 text-[12px] transition-all",
-                                            childActive ? "text-blue-600 font-semibold" : "text-slate-400 hover:text-blue-600 font-medium"
+                                            childActive ? "text-blue-600 font-semibold" : (group.label === "Deleted" || group.label === "CMS" ? "text-slate-900 font-medium" : "text-slate-900 hover:text-blue-600 font-medium")
                                         )}
                                        >
                                           {childActive && <div className="w-1 h-1 rounded-full bg-blue-600 mr-2" />}
                                           {child.title}
                                        </Link>
                                    );
-                               })}
+                                })}
                            </div>
                         </div>
                     )}
@@ -356,17 +356,17 @@ export default function Sidebar({
         </nav>
 
         {/* Footer */}
-        <div className="px-3 py-3 border-t border-slate-100">
+        <div className="px-3 py-3 border-t border-slate-200">
           <button
             onClick={handleLogout}
             suppressHydrationWarning
             className={clsx(
               "w-full flex items-center gap-3 rounded-lg px-3 py-2 transition-all duration-200 group active:scale-95",
-              "text-slate-400 hover:text-rose-500 hover:bg-rose-50/60 text-[12.5px] font-semibold",
+              "bg-rose-600 text-white hover:bg-rose-700 text-[12.5px] font-semibold",
               collapsed && "justify-center px-0"
             )}
           >
-            <LogOut size={16} className="text-slate-300 group-hover:text-rose-500 transition-colors shrink-0" />
+            <LogOut size={16} className="text-slate-900 group-hover:text-rose-500 transition-colors shrink-0" />
             {!collapsed && <span className="tracking-tight">Sign Out</span>}
           </button>
         </div>

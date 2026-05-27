@@ -117,107 +117,151 @@ export default function DashboardPage() {
       </div>
 
       {/* Activity Tables */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 animate-fade-in-up [animation-delay:200ms]">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 animate-fade-in-up [animation-delay:200ms]">
         {/* Recent Applications */}
-        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
-            <div className="px-4 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="text-[13px] font-bold text-slate-900 tracking-tight">Recent Applications</h3>
-                <Link href="/jobseekers" className="text-[12px] font-semibold text-primary hover:text-primary/80 flex items-center gap-1 transition-all group">
+        <div className="bg-white rounded-xl border border-slate-300 overflow-hidden shadow-sm flex flex-col">
+            <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
+                <h3 className="text-[14px] font-bold text-slate-900 tracking-tight">Recent Applications</h3>
+                <Link href="/jobseekers" className="text-[12px] font-bold text-primary hover:text-primary/80 flex items-center gap-1 transition-all group">
                     View All <ArrowUpRight size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </Link>
             </div>
-            <div className="divide-y divide-slate-50">
-                {(stats?.recent_applications || []).length > 0 ? (stats?.recent_applications || []).map((r: any, i: number) => {
-                    const name = r.job_seeker?.user?.name || `User${r.job_seeker_id}`;
-                    const photo = r.job_seeker?.profile_photo;
-                    const position = r.job?.title || "Position Not Found";
-                    const employer = r.job?.employer?.company_name || "Self Employed";
-                    const status = (r.status || "applied").toLowerCase();
-                    const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Apr 18, 2026";
-                    
-                    return (
-                        <div key={i} className="px-4 py-2.5 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => router.push(`/jobseekers/${r.job_seeker_id}`)}>
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-900 overflow-hidden shrink-0">
-                                    {photo ? (
-                                        <img src={resolveMediaUrl(photo)} alt="" className="w-full h-full object-cover" />
-                                    ) : (
-                                        name.charAt(0)
-                                    )}
-                                </div>
-                                <div>
-                                    <h5 className="text-[12.5px] font-semibold text-slate-900 leading-tight">{position}</h5>
-                                    <p className="text-[11px] text-slate-900 font-medium">{employer}</p>
-                                </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[500px]">
+                <thead>
+                  <tr className="bg-slate-100">
+                    <th className="px-5 py-3 text-[11px] font-bold text-slate-900 uppercase tracking-wider">Position / Employer</th>
+                    <th className="px-5 py-3 text-[11px] font-bold text-slate-900 uppercase tracking-wider">Applicant</th>
+                    <th className="px-5 py-3 text-[11px] font-bold text-slate-900 uppercase tracking-wider text-center">Status</th>
+                    <th className="px-5 py-3 text-[11px] font-bold text-slate-900 uppercase tracking-wider text-right">Applied Date</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y-0">
+                  {(stats?.recent_applications || []).length > 0 ? (
+                    (stats?.recent_applications || []).map((r: any, i: number) => {
+                      const name = r.job_seeker?.user?.name || `User${r.job_seeker_id}`;
+                      const photo = r.job_seeker?.profile_photo;
+                      const position = r.job?.title || "Position Not Found";
+                      const employer = r.job?.employer?.company_name || "Self Employed";
+                      const status = (r.status || "applied").toLowerCase();
+                      const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Apr 18, 2026";
+
+                      return (
+                        <tr key={i} className="hover:bg-slate-50/50 transition-colors cursor-pointer group" onClick={() => router.push(`/jobseekers/${r.job_seeker_id}`)}>
+                          <td className="px-5 py-3.5">
+                            <h5 className="text-[12.5px] font-medium text-slate-900 leading-tight group-hover:text-primary transition-colors">{position}</h5>
+                            <p className="text-[11px] text-slate-900 font-normal mt-0.5">{employer}</p>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-900 overflow-hidden shrink-0 border border-slate-200">
+                                {photo ? (
+                                  <img src={resolveMediaUrl(photo)} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  name.charAt(0)
+                                )}
+                              </div>
+                              <span className="text-[12.5px] font-medium text-slate-900">{name}</span>
                             </div>
-                            <div className="flex flex-col items-end gap-1">
-                                <Badge 
-                                    variant={status === "shortlisted" ? "success" : status === "applied" ? "indigo" : "default"} 
-                                    className="text-[10px] px-2 rounded-full font-semibold"
-                                >
-                                    {status}
-                                </Badge>
-                                <span className="text-[10.5px] font-medium text-slate-900">{date}</span>
+                          </td>
+                          <td className="px-5 py-3.5 text-center">
+                            <div className="inline-flex">
+                              <Badge 
+                                variant={status === "shortlisted" ? "success" : status === "applied" ? "indigo" : "default"} 
+                                className="text-[10px] px-2.5 py-0.5 rounded-full font-medium uppercase tracking-wider"
+                              >
+                                {status}
+                              </Badge>
                             </div>
-                        </div>
-                    );
-                }) : (
-                    <div className="px-5 py-12 flex flex-col items-center justify-center opacity-40">
-                        <Users size={28} className="text-slate-900 mb-2" />
-                        <span className="text-[11px] font-medium text-slate-900">No applications found</span>
-                    </div>
-                )}
+                          </td>
+                          <td className="px-5 py-3.5 text-right text-[11px] font-normal text-slate-900">
+                            {date}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="py-16 text-center">
+                        <Users size={32} className="text-slate-900 mx-auto mb-2 opacity-40" />
+                        <span className="text-[12px] font-bold text-slate-900 opacity-55">No applications found</span>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
         </div>
 
         {/* Recent Jobs */}
-        <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-            <div className="px-4 py-4 border-b border-slate-100 flex items-center justify-between">
-                <h3 className="text-[13px] font-bold text-slate-900 tracking-tight">Recent Jobs</h3>
-                <Link href="/jobs" className="text-[12px] font-semibold text-primary hover:text-primary/80 flex items-center gap-1 transition-all group">
+        <div className="bg-white rounded-xl border border-slate-300 overflow-hidden shadow-sm flex flex-col">
+            <div className="px-5 py-4 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
+                <h3 className="text-[14px] font-bold text-slate-900 tracking-tight">Recent Jobs</h3>
+                <Link href="/jobs" className="text-[12px] font-bold text-primary hover:text-primary/80 flex items-center gap-1 transition-all group">
                     View All <ArrowUpRight size={13} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </Link>
             </div>
-            <div className="divide-y divide-slate-50">
-                {(stats?.recent_jobs || []).length > 0 ? (stats?.recent_jobs || []).map((j: any, i: number) => {
-                    const title = j.title || "Untitled Job";
-                    const employer = j.employer?.company_name || "Institution";
-                    const logo = j.employer?.company_logo;
-                    const status = (j.status || "pending").toLowerCase();
-                    const date = j.created_at ? new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Just now";
-                    
-                    return (
-                        <div key={i} className="px-4 py-2.5 flex items-center justify-between hover:bg-slate-50/50 transition-colors cursor-pointer" onClick={() => router.push(`/jobs/edit/${j.id}`)}>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[500px]">
+                <thead>
+                  <tr className="bg-slate-100">
+                    <th className="px-5 py-3 text-[11px] font-bold text-slate-900 uppercase tracking-wider">Job Role / Institution</th>
+                    <th className="px-5 py-3 text-[11px] font-bold text-slate-900 uppercase tracking-wider text-center">Status</th>
+                    <th className="px-5 py-3 text-[11px] font-bold text-slate-900 uppercase tracking-wider text-right">Posted On</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y-0">
+                  {(stats?.recent_jobs || []).length > 0 ? (
+                    (stats?.recent_jobs || []).map((j: any, i: number) => {
+                      const title = j.title || "Untitled Job";
+                      const employer = j.employer?.company_name || "Institution";
+                      const logo = j.employer?.company_logo;
+                      const status = (j.status || "pending").toLowerCase();
+                      const date = j.created_at ? new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "Just now";
+
+                      return (
+                        <tr key={i} className="hover:bg-slate-50/50 transition-colors cursor-pointer group" onClick={() => router.push(`/jobs/edit/${j.id}`)}>
+                          <td className="px-5 py-3.5">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-900 overflow-hidden shrink-0">
-                                    {logo ? (
-                                        <img src={resolveMediaUrl(logo)} alt="" className="w-full h-full object-cover" />
-                                    ) : (
-                                        title.charAt(0)
-                                    )}
-                                </div>
-                                <div>
-                                    <h5 className="text-[12.5px] font-semibold text-slate-900 leading-tight">{title}</h5>
-                                    <p className="text-[11px] text-slate-900 font-medium">{employer}</p>
-                                </div>
+                              <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-semibold text-slate-900 overflow-hidden shrink-0 border border-slate-200">
+                                {logo ? (
+                                  <img src={resolveMediaUrl(logo)} alt="" className="w-full h-full object-cover" />
+                                ) : (
+                                  title.charAt(0)
+                                )}
+                              </div>
+                              <div>
+                                <h5 className="text-[12.5px] font-medium text-slate-900 leading-tight group-hover:text-primary transition-colors">{title}</h5>
+                                <p className="text-[11px] text-slate-900 font-normal mt-0.5">{employer}</p>
+                              </div>
                             </div>
-                            <div className="flex flex-col items-end gap-1">
-                                <Badge 
-                                    variant={status === "approved" ? "success" : status === "rejected" ? "danger" : "warning"} 
-                                    className="text-[10px] px-2 rounded-full font-semibold"
-                                >
-                                    {status}
-                                </Badge>
-                                <span className="text-[10.5px] font-medium text-slate-900">{date}</span>
+                          </td>
+                          <td className="px-5 py-3.5 text-center">
+                            <div className="inline-flex">
+                              <Badge 
+                                variant={status === "approved" ? "success" : status === "rejected" ? "danger" : "warning"} 
+                                className="text-[10px] px-2.5 py-0.5 rounded-full font-medium uppercase tracking-wider"
+                              >
+                                {status}
+                              </Badge>
                             </div>
-                        </div>
-                    );
-                }) : (
-                    <div className="px-5 py-12 flex flex-col items-center justify-center opacity-40">
-                        <Briefcase size={28} className="text-slate-900 mb-2" />
-                        <span className="text-[11px] font-medium text-slate-900">No job posts found</span>
-                    </div>
-                )}
+                          </td>
+                          <td className="px-5 py-3.5 text-right text-[11px] font-normal text-slate-900">
+                            {date}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan={3} className="py-16 text-center">
+                        <Briefcase size={32} className="text-slate-900 mx-auto mb-2 opacity-40" />
+                        <span className="text-[12px] font-bold text-slate-900 opacity-55">No job posts found</span>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
         </div>
       </div>

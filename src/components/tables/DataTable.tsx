@@ -34,7 +34,7 @@ export default function DataTable<T>({
 
   return (
     <div className={clsx(
-        "relative w-full overflow-hidden bg-white rounded-lg border border-slate-200 shadow-sm",
+        "relative w-full overflow-hidden bg-white rounded-lg border border-slate-300 shadow-sm",
         compact && "border-none shadow-none bg-transparent rounded-none"
     )}>
       <table suppressHydrationWarning className="w-full caption-bottom text-sm border-separate border-spacing-0">
@@ -104,11 +104,11 @@ export default function DataTable<T>({
 
 function DataTableSkeleton({ columns }: { columns: number }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm">
+    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-slate-100 bg-slate-50">
+            <tr className="border-b border-slate-200 bg-slate-50">
               {Array.from({ length: columns }).map((_, i) => (
                 <th key={i} className="px-5 py-3">
                   <div className="h-2 w-16 bg-slate-200 rounded-full animate-pulse" />
@@ -116,7 +116,7 @@ function DataTableSkeleton({ columns }: { columns: number }) {
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody className="divide-y divide-slate-100">
             {Array.from({ length: 5 }).map((_, rowIndex) => (
               <tr key={rowIndex}>
                 {Array.from({ length: columns }).map((_, colIndex) => (

@@ -108,8 +108,8 @@ export default function DeletedCVsPage() {
       title: "Removal Date", 
       render: (v: any) => (
         <div className="flex flex-col">
-          <span className="text-slate-900 font-bold text-[11px]">{v ? new Date(v as string).toLocaleDateString() : "N/A"}</span>
-          <span className="text-[9px] text-slate-400 font-medium">{v ? new Date(v as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}</span>
+          <span className="text-slate-900 font-bold text-[11px]" suppressHydrationWarning>{v ? new Date(v as string).toLocaleDateString() : "N/A"}</span>
+          <span className="text-[9px] text-slate-400 font-medium" suppressHydrationWarning>{v ? new Date(v as string).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ""}</span>
         </div>
       )
     },
@@ -158,6 +158,7 @@ export default function DeletedCVsPage() {
                     value={search} 
                     onChange={(e) => setSearch(e.target.value)} 
                     className="w-80 pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-4 focus:ring-indigo-600/5 focus:border-indigo-600 transition-all font-semibold" 
+                    suppressHydrationWarning
                 />
             </div>
             {loading && <Loader2 size={18} className="animate-spin text-indigo-600" />}
