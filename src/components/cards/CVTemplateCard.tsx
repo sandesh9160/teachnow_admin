@@ -93,24 +93,24 @@ export default function CVTemplateCard({
           </button>
         </div>
 
-        <div className="flex items-center gap-2 mt-0.5 pt-2.5 border-t border-slate-50">
-           <button 
-              onClick={() => onToggleStatus?.(template)}
-              className={clsx(
-                "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-semibold transition-all border",
-                template.is_active 
-                  ? "bg-amber-50/50 text-amber-600 border-amber-100 hover:bg-amber-100" 
-                  : "bg-emerald-50/50 text-emerald-600 border-emerald-100 hover:bg-emerald-100"
-              )}
-           >
-              {template.is_active ? "Disable" : "Enable"}
-           </button>
-           <button 
-              onClick={() => onDelete?.(template)}
-              className="w-9 h-9 flex items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-600 hover:bg-rose-100 transition-all shadow-sm select-none"
-           >
-              <Trash2 size={14} />
-           </button>
+         <div className="flex items-center gap-2 mt-0.5 pt-2.5 border-t border-slate-50">
+            <button 
+               onClick={() => onToggleStatus?.(template)}
+               className={clsx(
+                 "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-bold transition-all border-none",
+                 template.is_active 
+                   ? "bg-slate-600 text-white hover:bg-slate-700 shadow-sm active:scale-95" 
+                   : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm active:scale-95"
+               )}
+            >
+               {template.is_active ? "Disable" : "Enable"}
+            </button>
+            <button 
+               onClick={() => onDelete?.(template)}
+               className="w-9 h-9 flex items-center justify-center rounded-lg bg-rose-600 text-white hover:bg-rose-700 transition-all shadow-sm active:scale-95 border-none select-none"
+            >
+               <Trash2 size={14} />
+            </button>
         </div>
       </div>
     </div>

@@ -662,7 +662,7 @@ export default function BlogsPage() {
                   </div>
                   <button
                     onClick={() => handleDelete(blog)}
-                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                    className="p-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-all"
                     title="Delete"
                   >
                     <Trash2 size={16} />
