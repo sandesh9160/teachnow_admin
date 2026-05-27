@@ -408,84 +408,85 @@ export default function MasterDataPage() {
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-surface-100 shadow-xs overflow-hidden">
-                <div className="px-6 pt-5 pb-1 flex items-center justify-between">
-                    <div className="flex items-center gap-6 border-b border-surface-50 pb-px">
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab.key}
-                                onClick={() => setActiveTab(tab.key)}
-                                className={clsx(
-                                    "pb-3 text-[13px] font-semibold transition-all whitespace-nowrap relative px-0.5 flex items-center gap-1.5 cursor-pointer",
-                                    activeTab === tab.key
-                                        ? "text-primary-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary-600"
-                                        : "text-surface-400 hover:text-surface-600"
-                                )}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="relative max-w-xs pb-3">
-                        <Search
-                            size={14}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full pl-9 pr-4 py-1.5 bg-surface-50 border border-surface-100 rounded-xl text-[13px] text-surface-700 focus:outline-none focus:border-primary-500 transition-all font-medium"
-                        />
-                    </div>
+            {/* Table Controls */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 py-2">
+                <div className="flex items-center gap-6 border-b border-slate-200 pb-px overflow-x-auto no-scrollbar">
+                    {tabs.map((tab) => (
+                        <button
+                            key={tab.key}
+                            onClick={() => setActiveTab(tab.key)}
+                            className={clsx(
+                                "pb-3 text-[13px] font-semibold transition-all whitespace-nowrap relative px-0.5 flex items-center gap-1.5 cursor-pointer",
+                                activeTab === tab.key
+                                    ? "text-primary-600 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary-600"
+                                    : "text-slate-500 hover:text-slate-700"
+                            )}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
                 </div>
 
+                <div className="relative max-w-xs w-full">
+                    <Search
+                        size={14}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                    />
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-[13px] text-slate-700 focus:outline-none focus:border-primary-500 transition-all font-medium shadow-sm"
+                    />
+                </div>
+            </div>
+
+            {/* ─── Main Table ─────────────────────────────────────── */}
+            <div className="relative">
                 <DataTable
                     columns={columns}
                     data={filtered}
-                    compact={true}
                     loading={loading}
                 />
-
-                {/* ─── PAGINATION CONSOLE ─── */}
-                {!loading && pagination.lastPage > 1 && (
-                    <div className="px-6 py-4 border-t border-surface-50 flex items-center justify-between bg-white">
-                        <p className="text-[12px] font-semibold text-surface-500">
-                            Showing <span className="text-surface-900 font-bold">{filtered.length}</span> of {pagination.total} entries
-                        </p>
-
-                        <div className="flex items-center gap-3">
-                            <button
-                                disabled={pagination.currentPage === 1 || loading}
-                                onClick={() => fetchData(pagination.currentPage - 1)}
-                                className="h-9 px-4 flex items-center gap-2 rounded-xl border border-surface-200 bg-white text-surface-700 disabled:opacity-30 hover:bg-surface-50 transition-all shadow-sm text-[11px] font-bold active:scale-95 cursor-pointer disabled:cursor-not-allowed"
-                            >
-                                <ChevronLeft size={14} strokeWidth={2.5} /> Previous
-                            </button>
-
-                            <div className="flex items-center gap-1.5">
-                                <span className="text-[11px] font-bold text-surface-900 bg-primary-50 text-primary-600 w-8 h-8 flex items-center justify-center rounded-lg border border-primary-100">
-                                    {pagination.currentPage}
-                                </span>
-                                <span className="text-[11px] font-bold text-surface-400 mx-1">/</span>
-                                <span className="text-[11px] font-bold text-surface-500 w-8 h-8 flex items-center justify-center">
-                                    {pagination.lastPage}
-                                </span>
-                            </div>
-
-                            <button
-                                disabled={pagination.currentPage === pagination.lastPage || loading}
-                                onClick={() => fetchData(pagination.currentPage + 1)}
-                                className="h-9 px-4 flex items-center gap-2 rounded-xl border border-surface-200 bg-white text-surface-700 disabled:opacity-30 hover:bg-surface-50 transition-all shadow-sm text-[11px] font-bold active:scale-95 cursor-pointer disabled:cursor-not-allowed"
-                            >
-                                Next <ChevronRight size={14} strokeWidth={2.5} />
-                            </button>
-                        </div>
-                    </div>
-                )}
             </div>
+
+            {/* ─── PAGINATION CONSOLE ─── */}
+            {!loading && pagination.lastPage > 1 && (
+                <div className="flex items-center justify-between px-6 py-4 bg-white rounded-xl border border-slate-200 shadow-sm mt-6">
+                    <p className="text-[12px] font-semibold text-slate-500">
+                        Showing <span className="text-slate-900 font-bold">{filtered.length}</span> of {pagination.total} entries
+                    </p>
+
+                    <div className="flex items-center gap-3">
+                        <button
+                            disabled={pagination.currentPage === 1 || loading}
+                            onClick={() => fetchData(pagination.currentPage - 1)}
+                            className="h-9 px-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[11px] font-bold active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+                        >
+                            <ChevronLeft size={14} strokeWidth={2.5} /> Previous
+                        </button>
+
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-[11px] font-bold text-slate-900 bg-indigo-50 text-indigo-600 w-8 h-8 flex items-center justify-center rounded-lg border border-indigo-100">
+                                {pagination.currentPage}
+                            </span>
+                            <span className="text-[11px] font-bold text-slate-400 mx-1">/</span>
+                            <span className="text-[11px] font-bold text-slate-500 w-8 h-8 flex items-center justify-center">
+                                {pagination.lastPage}
+                            </span>
+                        </div>
+
+                        <button
+                            disabled={pagination.currentPage === pagination.lastPage || loading}
+                            onClick={() => fetchData(pagination.currentPage + 1)}
+                            className="h-9 px-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[11px] font-bold active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+                        >
+                            Next <ChevronRight size={14} strokeWidth={2.5} />
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {editingItem && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-900/40 backdrop-blur-sm">
