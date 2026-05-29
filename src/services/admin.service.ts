@@ -263,6 +263,7 @@ export const createPlan = (data: Partial<Plan>) =>
 
 export const updatePlan = (id: number, data: Partial<Plan>) =>
   dashboardServerFetch(`/admin/plans/${id}`, { method: "PUT", data });
+// console.log()
 
 export const patchPlan = (id: number, data: Partial<Plan>) =>
   dashboardServerFetch(`/admin/plans/${id}`, { method: "PATCH", data });

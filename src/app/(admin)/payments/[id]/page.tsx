@@ -28,6 +28,8 @@ import { clsx } from "clsx";
 import type { PaymentDetails } from "@/types";
 import { toast } from "sonner";
 
+const backendUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "https://teachnowbackend.jobsvedika.in";
+
 export default function PaymentDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -55,6 +57,31 @@ export default function PaymentDetailsPage() {
       router.push("/payments");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      const urlObj = new URL(url);
+      const proxyUrl = `/backend-assets${urlObj.pathname}${urlObj.search}`;
+      const response = await fetch(proxyUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
@@ -100,14 +127,13 @@ export default function PaymentDetailsPage() {
             <Printer size={14} />
             Print Record
           </button>
-          <a 
-            href={invoice.pdf_url}
-            target="_blank"
-            className="flex items-center gap-2 px-5 py-2 rounded-lg bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
+          <button 
+            onClick={() => handleDownload(invoice.pdf_url, `${invoice.invoice_number || 'invoice'}.pdf`)}
+            className="flex items-center gap-2 px-5 py-2 rounded-lg bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/20 active:scale-95 cursor-pointer"
           >
             <Download size={14} />
             Download Invoice
-          </a>
+          </button>
         </div>
       </div>
 
@@ -313,14 +339,13 @@ export default function PaymentDetailsPage() {
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide">Dated: {invoice.invoice_date}</p>
                 </div>
               </div>
-              <a 
-                href={invoice.pdf_url}
-                target="_blank"
-                className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-100 rounded-lg transition-all shadow-sm group"
-                title="View PDF Invoice"
+              <button 
+                onClick={() => handleDownload(invoice.pdf_url, `${invoice.invoice_number || 'invoice'}.pdf`)}
+                className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-100 rounded-lg transition-all shadow-sm group cursor-pointer"
+                title="Download PDF Invoice"
               >
                 <ExternalLink size={18} className="group-hover:scale-110 transition-transform" />
-              </a>
+              </button>
             </div>
 
             <div className="space-y-2.5 px-1">

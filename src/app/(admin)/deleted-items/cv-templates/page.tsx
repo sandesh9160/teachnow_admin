@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "@/components/tables/DataTable";
 import Badge from "@/components/ui/Badge";
-import { RotateCcw, Trash2, Search, ArrowLeft, Loader2, FileText, Download } from "lucide-react";
+import { RotateCcw, Search, ArrowLeft, Loader2, FileText, Download } from "lucide-react";
 import Link from "next/link";
-import { getDeletedItems, restoreItem, permanentDelete } from "@/services/admin.service";
+import { getDeletedItems, restoreItem } from "@/services/admin.service";
 import { toast } from "sonner";
 import type { DeletedItem } from "@/types";
 
@@ -43,17 +43,6 @@ export default function DeletedCVsPage() {
       setItems(prev => prev.filter(item => item.id !== id));
     } catch (error) {
       toast.error("Failed to restore CV");
-    }
-  };
-
-  const handlePermanentDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to permanently delete this CV? This cannot be undone.")) return;
-    try {
-      await permanentDelete("cvs", id);
-      toast.success("CV permanently deleted");
-      setItems(prev => prev.filter(item => item.id !== id));
-    } catch (error) {
-      toast.error("Failed to delete permanently");
     }
   };
 
@@ -123,13 +112,6 @@ export default function DeletedCVsPage() {
             className="flex items-center gap-1 text-emerald-600 hover:text-emerald-700 text-[10px] font-bold uppercase tracking-wider"
           >
             <RotateCcw size={13} /> RESTORE
-          </button>
-          <div className="w-px h-3 bg-slate-200" />
-          <button 
-            onClick={() => handlePermanentDelete(row.id)}
-            className="flex items-center gap-1 text-rose-500 hover:text-rose-600 text-[10px] font-bold uppercase tracking-wider"
-          >
-            <Trash2 size={13} /> DELETE
           </button>
         </div>
       )

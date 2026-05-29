@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "@/components/tables/DataTable";
 import Badge from "@/components/ui/Badge";
-import { RotateCcw, Search, ArrowLeft, Loader2, Trash2 } from "lucide-react";
+import { RotateCcw, Search, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { getDeletedItems, restoreItem, permanentDelete } from "@/services/admin.service";
+import { getDeletedItems, restoreItem } from "@/services/admin.service";
 import { toast } from "sonner";
 import type { DeletedItem } from "@/types";
 
@@ -41,18 +41,6 @@ export default function DeletedRecruitersPage() {
       setItems(prev => prev.filter(item => item.id !== id));
     } catch (error) {
       toast.error("Failed to restore recruiter");
-    }
-  };
-
-  const handlePermanentDelete = async (id: number) => {
-    try {
-      if (confirm("Are you sure you want to permanently delete this recruiter? This action cannot be undone.")) {
-        await permanentDelete("recruiters", id);
-        toast.success("Recruiter permanently deleted");
-        setItems(prev => prev.filter(item => item.id !== id));
-      }
-    } catch (error) {
-      toast.error("Failed to permanently delete recruiter");
     }
   };
 
@@ -106,13 +94,6 @@ export default function DeletedRecruitersPage() {
             className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 text-[10px] font-bold uppercase transition-all cursor-pointer"
           >
             <RotateCcw size={13} /> Restore
-          </button>
-          <button 
-            onClick={() => handlePermanentDelete(item.id)}
-            title="Delete Permanently" 
-            className="flex items-center gap-1.5 text-rose-600 hover:text-rose-700 text-[10px] font-bold uppercase transition-all cursor-pointer"
-          >
-            <Trash2 size={13} /> Delete
           </button>
         </div>
         );

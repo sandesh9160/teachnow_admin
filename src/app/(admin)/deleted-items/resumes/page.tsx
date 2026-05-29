@@ -3,16 +3,20 @@
 import React, { useState, useEffect } from "react";
 import DataTable from "@/components/tables/DataTable";
 import Badge from "@/components/ui/Badge";
-import { RotateCcw, Trash2, Search, ArrowLeft, Loader2, FileText } from "lucide-react";
+import { RotateCcw, Search, ArrowLeft, Loader2, FileText, X, Eye, Download } from "lucide-react";
 import Link from "next/link";
-import { getDeletedItems, restoreItem, permanentDelete } from "@/services/admin.service";
+import { getDeletedItems, restoreItem } from "@/services/admin.service";
 import { toast } from "sonner";
 import type { DeletedItem } from "@/types";
+
+const backendUrl = process.env.NEXT_PUBLIC_LARAVEL_API_URL || "https://teachnowbackend.jobsvedika.in";
 
 export default function DeletedResumesPage() {
   const [items, setItems] = useState<DeletedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState<string>("");
 
   useEffect(() => {
     fetchDeletedResumes();
@@ -46,14 +50,27 @@ export default function DeletedResumesPage() {
     }
   };
 
-  const handlePermanentDelete = async (id: number) => {
-    if (!confirm("Are you sure you want to permanently delete this resume?")) return;
+  const handleDownload = async (url: string, filename: string) => {
     try {
-      await permanentDelete("resumes", id);
-      toast.success("Resume permanently deleted");
-      setItems(prev => prev.filter(item => item.id !== id));
+      const proxyUrl = url.replace(backendUrl, "/backend-assets");
+      const response = await fetch(proxyUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
-      toast.error("Failed to delete permanently");
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
   };
 
@@ -81,15 +98,16 @@ export default function DeletedResumesPage() {
     { 
       key: "file_url", 
       title: "Document", 
-      render: (v: unknown) => v ? (
-        <a 
-          href={`https://teachnowbackend.jobsvedika.in/${v}`} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="text-primary-600 hover:underline text-[12px] font-bold flex items-center gap-1"
+      render: (v: unknown, row: Record<string, unknown>) => v ? (
+        <button 
+          onClick={() => {
+            setPreviewUrl(`${backendUrl}/${v}`);
+            setPreviewTitle(String(row.file_name || "Untitled.pdf"));
+          }}
+          className="text-primary-600 hover:underline text-[12px] font-bold flex items-center gap-1 cursor-pointer"
         >
-          View PDF
-        </a>
+          <Eye size={12} /> Preview PDF
+        </button>
       ) : <span className="text-surface-300 italic text-[12px]">N/A</span>
     },
     { 
@@ -120,14 +138,6 @@ export default function DeletedResumesPage() {
             className="flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 text-[10px] font-bold uppercase cursor-pointer"
           >
             <RotateCcw size={13} /> Restore
-          </button>
-          <div className="w-px h-3 bg-surface-100 mx-1" />
-          <button 
-            onClick={() => handlePermanentDelete(item.id)}
-            title="Delete" 
-            className="flex items-center gap-1.5 text-red-500 hover:text-red-600 text-[10px] font-bold uppercase cursor-pointer"
-          >
-            <Trash2 size={13} /> Delete
           </button>
         </div>
         );
@@ -173,6 +183,54 @@ export default function DeletedResumesPage() {
           emptyMessage="No deleted resumes found"
         />
       </div>
+
+      {/* PDF Preview Modal */}
+      {previewUrl && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 antialiased">
+          <div 
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" 
+            onClick={() => setPreviewUrl(null)} 
+          />
+          
+          <div className="relative w-full max-w-5xl h-[85vh] bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-100 flex flex-col z-10">
+            {/* Modal Header */}
+            <div className="p-5 flex items-center justify-between border-b border-slate-100 bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-xs">
+                  <FileText size={18} />
+                </div>
+                <div>
+                  <h3 className="text-[13px] font-bold text-slate-900">{previewTitle}</h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Document Preview</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => handleDownload(previewUrl!, previewTitle)}
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center gap-1.5 shadow-xs cursor-pointer"
+                >
+                  <Download size={14} /> Download PDF
+                </button>
+                <button 
+                  onClick={() => setPreviewUrl(null)} 
+                  className="p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-slate-900 transition-all active:scale-95 cursor-pointer"
+                >
+                  <X size={18} strokeWidth={2.5} />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 bg-slate-100 p-4">
+              <iframe 
+                src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewUrl)}&embedded=true`} 
+                className="w-full h-full rounded-2xl border border-slate-200/60 shadow-xs bg-white"
+                title="PDF Document Preview"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -143,7 +143,12 @@ export default function CMSPopularSearchModal({ isOpen, onClose, onSuccess, item
                  </div>
                  <div className="flex flex-col justify-end">
                     <label className="flex items-center justify-between p-3 rounded-lg border border-slate-100 hover:bg-slate-50 cursor-pointer transition-all mb-[1px]">
-                        <span className="text-[12px] font-bold text-slate-700">Featured</span>
+                        <div className="flex flex-col">
+                          <span className="text-[12px] font-bold text-slate-700">Featured</span>
+                          <span className={clsx("text-[10px] font-bold uppercase tracking-wider mt-0.5", formData.is_featured === 1 ? "text-emerald-600 animate-pulse" : "text-slate-400")}>
+                            {formData.is_featured === 1 ? "Active (ON)" : "Inactive (OFF)"}
+                          </span>
+                        </div>
                         <div className="relative flex items-center justify-center">
                           <input
                             type="checkbox"

@@ -42,6 +42,7 @@ export default function EditPlanPage() {
 
   const handleSave = async (data: any) => {
     try {
+      console.log("data sent for edit : ", data)
       setSaving(true);
       await updatePlan(Number(id), data);
       toast.success("Plan updated successfully");
@@ -65,10 +66,10 @@ export default function EditPlanPage() {
 
   return (
     <div className="py-6 px-4">
-      <PlanForm 
-        plan={plan} 
-        saving={saving} 
-        onSave={handleSave} 
+      <PlanForm
+        plan={plan}
+        saving={saving}
+        onSave={handleSave}
       />
     </div>
   );
