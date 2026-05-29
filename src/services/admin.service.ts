@@ -39,7 +39,7 @@ const CACHE_TTL = 10 * 60 * 1000; // 10 minutes (Cache master data for 10 mins)
 
 async function withCache<T>(key: string, fetcher: () => Promise<T>, force = false): Promise<T> {
   if (typeof window === "undefined") return fetcher(); // No caching on SSR
-  
+
   // 1. Check if we have a valid cached result
   const cached = _masterCache.get(key);
   if (!force && cached && (Date.now() - cached.timestamp < CACHE_TTL)) {
@@ -79,8 +79,8 @@ export const getDashboardStats = () =>
 export const getCategories = (params?: Record<string, unknown>) => {
   const isGeneric = !params?.search && params?.per_page === 500;
   if (!isGeneric) return dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/categories", { params: { ...params, _t: Date.now() } });
-  
-  return withCache("categories", () => 
+
+  return withCache("categories", () =>
     dashboardServerFetch<PaginatedResponse<MasterDataItem>>("/admin/categories", { params: { ...params, _t: Date.now() } })
   );
 };
@@ -234,7 +234,10 @@ export const deleteEmployer = (id: number) =>
   dashboardServerFetch(`/admin/employers/${id}`, { method: "DELETE" });
 
 export const verifyEmployer = (id: number) =>
-  dashboardServerFetch<ApiResponse<{ employer_verified: boolean }>>(`/admin/employers/${id}/verify`, { method: "POST", params: { _method: "PATCH" }, data: { status: "approved" } });
+  dashboardServerFetch<ApiResponse<{ employer_verified: boolean }>>(`/admin/employers/${id}/verify`, { method: "PATCH", data: { status: 1 } });
+
+export const RejectEmployer = (id: number) =>
+  dashboardServerFetch<ApiResponse<{ employer_verified: boolean }>>(`/admin/employers/${id}/verify`, { method: "PATCH", data: { status: 2 } });
 
 export const featureEmployer = (id: number) =>
   dashboardServerFetch<ApiResponse<{ employer_featured: boolean }>>(`/admin/employers/${id}/feature`, { method: "POST", params: { _method: "PATCH" } });
