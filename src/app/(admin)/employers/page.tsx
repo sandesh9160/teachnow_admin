@@ -154,15 +154,18 @@ export default function EmployersPage() {
     const matchesLocation = locFilter === "all" || e.city === locFilter;
 
     const matchesStatus = statusFilter === "all" ||
-      (statusFilter === "verified" ? e.is_verified : !e.is_verified);
+      (statusFilter === "verified" 
+        ? (e.is_verified || Number(e.is_profile_verified) === 1) 
+        : Number(e.is_profile_verified) === 4);
 
     const matchesFeatured = featuredFilter === "all" ||
       (() => {
-        const isFeatured = e.is_featured && e.company_featured === 1;
+        const isFeatured = e.is_featured || Number(e.is_featured) === 1;
         const isExpired = e.featured_until ? new Date(e.featured_until) < new Date() : false;
+        const isPending = Number(e.company_featured) === 1 && !isFeatured;
         
         if (featuredFilter === "featured") return isFeatured && !isExpired;
-        if (featuredFilter === "pending") return e.company_featured === 1 && !e.is_featured;
+        if (featuredFilter === "pending") return isPending;
         return false;
       })();
 
@@ -209,9 +212,25 @@ export default function EmployersPage() {
     {
       key: "is_verified",
       title: "Verification",
-      render: (val: any) => (
-        <Badge variant={val ? "success" : "danger"} dot className="capitalize">
-          {val ? "Verified" : "Pending"}
+      render: (_: any, row: Employer) => (
+        <Badge
+          variant={
+            (row.is_verified || Number(row.is_profile_verified) === 1)
+              ? "success"
+              : Number(row.is_profile_verified) === 2
+              ? "danger"
+              : "warning"
+          }
+          dot
+          className="capitalize"
+        >
+          {
+            (row.is_verified || Number(row.is_profile_verified) === 1)
+              ? "Verified"
+              : Number(row.is_profile_verified) === 2
+              ? "Rejected"
+              : "Pending"
+          }
         </Badge>
       )
     },
@@ -220,22 +239,39 @@ export default function EmployersPage() {
       key: "featured",
       title: "Featured",
       render: (_: any, row: Employer) => {
-        const isFeatured = row.is_featured;
-        const hasRequest = row.company_featured === 1;
+        const isFeatured = row.is_featured || Number(row.is_featured) === 1;
+        const isExpired = row.featured_until ? new Date(row.featured_until) < new Date() : false;
+        const isPending = Number(row.company_featured) === 1 && !isFeatured;
 
-        if (isFeatured && hasRequest) {
+        if (isFeatured && !isExpired) {
           return (
             <Badge variant="warning" className="capitalize">
-              <Star size={11} fill="currentColor" className="mr-0.5" /> Featured
+              Admin Featured
             </Badge>
           );
         }
         
-        if (hasRequest && !isFeatured) {
-          return <Badge variant="warning" dot className="capitalize">Pending</Badge>;
+        if (isFeatured && isExpired) {
+          return (
+            <Badge variant="danger" dot className="capitalize">
+              Expired
+            </Badge>
+          );
         }
 
-        return <span className="text-surface-400 text-[10px] font-medium">—</span>;
+        if (isPending) {
+          return (
+            <Badge variant="warning" dot className="capitalize">
+              Pending Request
+            </Badge>
+          );
+        }
+
+        return (
+          <Badge variant="default" className="capitalize">
+            Not Requested
+          </Badge>
+        );
       }
     },
 
@@ -253,7 +289,7 @@ export default function EmployersPage() {
       title: "",
       render: (_: any, row: Employer) => (
         <div className="flex items-center justify-end gap-0.5">
-          {!row.is_verified && (
+          {!(row.is_verified || Number(row.is_profile_verified) === 1) && (
             <button
               onClick={(e) => { e.stopPropagation(); handleAction(row.id, "verify"); }}
               disabled={processingId === row.id}
@@ -314,9 +350,13 @@ export default function EmployersPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
           { label: "Total Employers", value: employers.length, icon: Building2, color: "text-indigo-500", bg: "bg-indigo-50" },
-          { label: "Verified", value: employers.filter(e => e.is_verified).length, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
-          { label: "Pending Verification", value: employers.filter(e => !e.is_verified).length, icon: Activity, color: "text-rose-500", bg: "bg-rose-50" },
-          { label: "Featured", value: employers.filter(e => e.is_featured).length, icon: Star, color: "text-amber-500", bg: "bg-amber-50" }
+          { label: "Verified", value: employers.filter(e => e.is_verified || Number(e.is_profile_verified) === 1).length, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50" },
+          { label: "Pending Verification", value: employers.filter(e => Number(e.is_profile_verified) === 4).length, icon: Activity, color: "text-rose-500", bg: "bg-rose-50" },
+          { label: "Featured", value: employers.filter(e => {
+            const isFeatured = e.is_featured || Number(e.is_featured) === 1;
+            const isExpired = e.featured_until ? new Date(e.featured_until) < new Date() : false;
+            return isFeatured && !isExpired;
+          }).length, icon: Star, color: "text-amber-500", bg: "bg-amber-50" }
         ].map((stat, i) => (
           <div key={i} className="stat-card">
             <div>
@@ -426,8 +466,24 @@ export default function EmployersPage() {
 
                   <td className="px-6 py-4 text-center">
                     <div className="inline-flex">
-                      <Badge variant={row.is_verified ? "success" : "danger"} dot className="capitalize">
-                        {row.is_verified ? "Verified" : "Pending"}
+                      <Badge
+                        variant={
+                          (row.is_verified || Number(row.is_profile_verified) === 1)
+                            ? "success"
+                            : Number(row.is_profile_verified) === 2
+                            ? "danger"
+                            : "warning"
+                        }
+                        dot
+                        className="capitalize"
+                      >
+                        {
+                          (row.is_verified || Number(row.is_profile_verified) === 1)
+                            ? "Verified"
+                            : Number(row.is_profile_verified) === 2
+                            ? "Rejected"
+                            : "Pending"
+                        }
                       </Badge>
                     </div>
                   </td>
@@ -438,13 +494,14 @@ export default function EmployersPage() {
 
                   <td className="px-6 py-4 text-center">
                       {(() => {
-                        const isFeatured = row.is_featured && row.company_featured === 1;
+                        const isFeatured = row.is_featured || Number(row.is_featured) === 1;
                         const isExpired = row.featured_until ? new Date(row.featured_until) < new Date() : false;
+                        const isPending = Number(row.company_featured) === 1 && !isFeatured;
 
                         if (isFeatured && !isExpired) {
                           return (
                             <Badge variant="warning" className="capitalize">
-                              <Star size={11} fill="currentColor" className="mr-0.5" /> Featured
+                              Admin Featured
                             </Badge>
                           );
                         }
@@ -457,15 +514,19 @@ export default function EmployersPage() {
                           );
                         }
 
-                        if (row.company_featured === 1 && !row.is_featured) {
+                        if (isPending) {
                           return (
                             <Badge variant="warning" dot className="capitalize">
-                              Pending
+                              Pending Request
                             </Badge>
                           );
                         }
 
-                        return <span className="text-slate-900 text-[10px] font-semibold">—</span>;
+                        return (
+                          <Badge variant="default" className="capitalize">
+                            Not Requested
+                          </Badge>
+                        );
                       })()}
                   </td>
 

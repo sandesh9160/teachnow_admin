@@ -360,6 +360,8 @@ export interface Employer {
   documents?: EmployerDocument[];
   employer_users?: Recruiter[];
   map_link?: string;
+  latitude?: string | number;
+  longitude?: string | number;
   role?: string;
 }
 

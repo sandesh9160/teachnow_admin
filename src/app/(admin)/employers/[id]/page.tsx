@@ -162,7 +162,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
       setProcessing(true);
       if (action === "verify") {
         const res = await verifyEmployer(employer.id);
-        setEmployer(prev => prev ? { ...prev, is_verified: res.data?.employer_verified ?? true } : null);
+        setEmployer(prev => prev ? { ...prev, is_verified: res.data?.employer_verified ?? true, is_profile_verified: 1 } : null);
         toast.success(res.message || "Employer verified successfully");
         await fetchDetails();
       }
@@ -176,7 +176,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
       else if (action === "rejected") {
         const res = await RejectEmployer(employer.id);
         console.log("reponse for the rejcted : ", res)
-        setEmployer(prev => prev ? { ...prev, is_verified: res.data?.employer_verified ?? false } : null);
+        setEmployer(prev => prev ? { ...prev, is_verified: res.data?.employer_verified ?? false, is_profile_verified: 2 } : null);
         toast.success(res.message || "Employer rejected successfully");
         await fetchDetails();
       }
@@ -227,9 +227,20 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                 <h1 className="text-xl font-bold text-slate-900 tracking-tight">{employer.company_name}</h1>
                 <div className={clsx(
                   "px-2.5 py-0.5 rounded-full text-[10px] font-bold border lowercase",
-                  employer.is_verified ? "bg-emerald-50 text-emerald-600 border-emerald-100" : "bg-slate-50 text-slate-500 border-slate-100"
+                  (employer.is_verified || Number(employer.is_profile_verified) === 1) && "bg-emerald-50 text-emerald-600 border-emerald-100",
+                  Number(employer.is_profile_verified) === 4 && "bg-amber-50 text-amber-600 border-amber-100",
+                  Number(employer.is_profile_verified) === 2 && "bg-rose-50 text-rose-600 border-rose-100",
+                  (!employer.is_verified && Number(employer.is_profile_verified) !== 1 && Number(employer.is_profile_verified) !== 4 && Number(employer.is_profile_verified) !== 2) && "bg-slate-50 text-slate-500 border-slate-100"
                 )}>
-                  <span className="lowercase">{employer.is_verified ? "verified" : "pending"}</span>
+                  <span className="lowercase">
+                    {employer.is_verified || Number(employer.is_profile_verified) === 1
+                      ? "verified"
+                      : Number(employer.is_profile_verified) === 4
+                      ? "pending"
+                      : Number(employer.is_profile_verified) === 2
+                      ? "rejected"
+                      : "pending"}
+                  </span>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-[13px] font-semibold text-slate-500">
@@ -268,25 +279,23 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                 {!isSubmitting && <CheckCircle2 size={16} />}
               </button>
             )}
-            {!employer.is_verified && (
-              <>
-                <button
-                  onClick={() => handleAction("verify")}
-                  disabled={processing}
-                  className="flex items-center gap-2 px-2 py-2 bg-emerald-600 text-white text-[13px] font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100 active:scale-95"
-                >
-                  <ShieldCheck size={16} /> Approve
-                </button>
-                <button
-                  onClick={() => handleAction("rejected")}
-                  disabled={processing}
-                  className="flex items-center gap-2 px-2 py-2 bg-red-600 text-white text-[13px] font-bold rounded-xl hover:bg-red-700 transition-all shadow-md shadow-red-100 active:scale-95"
-                >
-                  <XCircle size={16} /> Reject
-                </button>
-              </>
-
-
+            {!(employer.is_verified || Number(employer.is_profile_verified) === 1) && (
+              <button
+                onClick={() => handleAction("verify")}
+                disabled={processing}
+                className="flex items-center gap-2 px-2 py-2 bg-emerald-600 text-white text-[13px] font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100 active:scale-95"
+              >
+                <ShieldCheck size={16} /> Approve
+              </button>
+            )}
+            {(Number(employer.is_profile_verified) === 4 || employer.is_verified || Number(employer.is_profile_verified) === 1) && (
+              <button
+                onClick={() => handleAction("rejected")}
+                disabled={processing}
+                className="flex items-center gap-2 px-2 py-2 bg-red-600 text-white text-[13px] font-bold rounded-xl hover:bg-red-700 transition-all shadow-md shadow-red-100 active:scale-95"
+              >
+                <XCircle size={16} /> Reject
+              </button>
             )}
             <button
               onClick={() => handleAction("delete")}
@@ -330,12 +339,12 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
 
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-6">
                   <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
-                    <Building2 size={16} className="text-indigo-500" /> Administrative Registry
+                    <Building2 size={16} className="text-indigo-500" /> Institution Detailes
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-8">
                     <Field label="Industry Sector" value={employer.industry} />
                     <Field label="Institution Type" value={employer.institution_type} icon={Tag} />
-                    <Field label="Account Role" value={employer.role} icon={ShieldCheck} />
+                    {/* <Field label="Account Role" value={employer.role} icon={ShieldCheck} /> */}
                     <Field label="Official Address" value={employer.address} icon={MapPin} />
                     <Field label="City" value={employer.city} />
                     <Field label="Country" value={employer.country} />
@@ -348,16 +357,34 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                   <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
                     <Star size={16} className="text-amber-500" /> Feature Request Status
                   </h3>
-                  <div className={clsx(
-                    "px-2 py-2 rounded-xl text-[13px] font-semibold border text-center",
-                    employer.is_featured && employer.company_featured === 1
-                      ? "bg-amber-50 text-amber-700 border-amber-100"
-                      : employer.company_featured === 1
-                        ? "bg-amber-50 text-amber-700 border-amber-100"
-                        : "bg-slate-50 text-slate-600 border-slate-100"
-                  )}>
-                    {employer.is_featured && employer.company_featured === 1 ? "Accepted" : employer.company_featured === 1 ? "Pending Request" : "Not Requested"}
-                  </div>
+                  {(() => {
+                    const isFeatured = employer.is_featured || Number(employer.is_featured) === 1;
+                    const isExpired = employer.featured_until ? new Date(employer.featured_until) < new Date() : false;
+                    const isPending = Number(employer.company_featured) === 1 && !isFeatured;
+
+                    let statusText = "Not Requested";
+                    let bgBorderTextClass = "bg-slate-50 text-slate-600 border-slate-100";
+
+                    if (isFeatured && !isExpired) {
+                      statusText = "Admin Featured";
+                      bgBorderTextClass = "bg-amber-50 text-amber-700 border-amber-100";
+                    } else if (isFeatured && isExpired) {
+                      statusText = "Expired";
+                      bgBorderTextClass = "bg-rose-50 text-rose-700 border-rose-100";
+                    } else if (isPending) {
+                      statusText = "Pending Request";
+                      bgBorderTextClass = "bg-amber-50 text-amber-700 border-amber-100";
+                    }
+
+                    return (
+                      <div className={clsx(
+                        "px-2 py-2 rounded-xl text-[13px] font-semibold border text-center",
+                        bgBorderTextClass
+                      )}>
+                        {statusText}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-5">
@@ -370,8 +397,8 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                         <Mail size={14} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[11px] font-semibold text-slate-500">Email Address</p>
-                        <p className="text-[13px] font-semibold text-slate-900 truncate">{employer.email}</p>
+                        <p className="text-[11px] font-bold text-black">Email Address</p>
+                        <p className="text-[13px] font-medium text-slate-700 break-all">{employer.email}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -379,34 +406,70 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                         <Phone size={14} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[11px] font-semibold text-slate-500">Official Phone</p>
-                        <p className="text-[13px] font-semibold text-slate-900">{employer.phone || "—"}</p>
+                        <p className="text-[11px] font-bold text-black">Official Phone</p>
+                        <p className="text-[13px] font-medium text-slate-700">{employer.phone || "—"}</p>
                       </div>
                     </div>
                     {employer.website && (
-                      <a href={employer.website.startsWith("http") ? employer.website : `https://${employer.website}`} target="_blank"
-                        className="flex items-center gap-2 mt-2 px-3 py-2 bg-slate-50 border border-slate-100 rounded-xl text-[12px] font-bold text-slate-700 hover:text-indigo-600 transition-all">
-                        <Globe size={14} /> Official Site <ExternalLink size={12} className="ml-auto opacity-40" />
-                      </a>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 shrink-0">
+                          <Globe size={14} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-bold text-black">Official Website</p>
+                          <a
+                            href={employer.website.startsWith("http") ? employer.website : `https://${employer.website}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[13px] font-medium text-indigo-600 hover:underline break-all"
+                          >
+                            {employer.website}
+                          </a>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
 
                 <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                  <div className="p-4 border-b border-slate-100 bg-slate-50/50">
+                  <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
                     <h3 className="text-[13px] font-bold text-slate-900 flex items-center gap-2">
                       <MapPin size={14} className="text-indigo-500" /> Verified Location
                     </h3>
+                    {(employer.map_link || (employer.latitude && employer.longitude && Number(employer.latitude) !== 0 && Number(employer.longitude) !== 0)) && (
+                      <a
+                        href={employer.map_link && employer.map_link.startsWith("http")
+                          ? employer.map_link
+                          : `https://www.google.com/maps?q=${employer.latitude || 0},${employer.longitude || 0}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:text-indigo-600 hover:bg-slate-50 transition-all shadow-sm active:scale-95 text-[11.5px] font-bold rounded-xl"
+                      >
+                        See on Map <ExternalLink size={12} className="opacity-70" />
+                      </a>
+                    )}
                   </div>
                   <div className="w-full h-48 relative">
-                    {employer.map_link || (employer.address) ? (
+                    {(employer.latitude && employer.longitude && Number(employer.latitude) !== 0 && Number(employer.longitude) !== 0) || employer.map_link || employer.address ? (
                       <iframe
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}
                         loading="lazy"
                         allowFullScreen
-                        src={`https://www.google.com/maps?q=${encodeURIComponent(employer.map_link || employer.address || employer.city + ", " + employer.country)}&output=embed`}
+                        src={(() => {
+                          const lat = Number(employer.latitude);
+                          const lng = Number(employer.longitude);
+                          if (lat && lng && lat !== 0 && lng !== 0) {
+                            return `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+                          }
+                          if (employer.map_link && (employer.map_link.includes("embed") || employer.map_link.includes("output="))) {
+                            return employer.map_link;
+                          }
+                          const isUrl = employer.map_link?.startsWith("http");
+                          const query = (!isUrl && employer.map_link) || employer.address || `${employer.city || ""}, ${employer.country || ""}`;
+                          return `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
+                        })()}
                       />
                     ) : (
                       <div className="h-full flex items-center justify-center text-slate-300 italic text-[12px]">No data found.</div>
@@ -462,7 +525,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                       key: "title", title: "Opportunity", render: (v: any, r: any) => (
                         <div>
                           <p className="font-bold text-slate-900 leading-tight">{v}</p>
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">#{r.id} · {r.job_type?.replace("_", " ")}</p>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{r.job_type?.replace("_", " ")}</p>
                         </div>
                       )
                     },
@@ -765,10 +828,10 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
 function Field({ label, value, icon: Icon }: { label: string; value?: React.ReactNode | string | number | null; icon?: any }) {
   return (
     <div className="space-y-1.5">
-      <p className="text-[11px] font-semibold text-slate-500">{label}</p>
-      <div className="flex items-center gap-2 min-h-[20px]">
-        {Icon && <Icon size={14} className="text-slate-400 shrink-0" />}
-        <div className="text-[14px] text-slate-900 font-semibold truncate leading-tight flex items-center">
+      <p className="text-[11px] font-bold text-black">{label}</p>
+      <div className="flex items-start gap-2 min-h-[20px]">
+        {Icon && <Icon size={14} className="text-slate-400 shrink-0 mt-0.5" />}
+        <div className="text-[14px] text-slate-900 font-medium leading-relaxed break-words">
           {value || <span className="text-slate-400 font-medium">—</span>}
         </div>
       </div>

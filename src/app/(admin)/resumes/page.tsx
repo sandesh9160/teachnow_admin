@@ -352,17 +352,45 @@ export default function ResumesPage() {
                 <Download size={15} /> Download
               </button>
             </div>
-            <div className={clsx("flex-1 bg-slate-50 overflow-hidden", !previewDoc.file_url?.toLowerCase().endsWith('.pdf') && "p-8 flex items-center justify-center")}>
-               {previewDoc.file_url?.toLowerCase().endsWith('.pdf') ? (
-                  <div className="w-full h-full relative group">
-                    <iframe 
-                      src={`/api/download?url=${encodeURIComponent(resolveMediaUrl(previewDoc.file_url))}&mode=inline`}
-                      className="w-full h-[75vh] border-none" 
-                    />
-                  </div>
-               ) : (
-                  <img src={resolveMediaUrl(previewDoc.file_url)} alt="Resume Preview" className="max-w-full max-h-full object-contain rounded-xl shadow-lg border border-slate-200" />
-               )}
+            <div className="flex-1 bg-slate-50 overflow-hidden">
+               {(() => {
+                 const fileUrl = previewDoc.file_url || "";
+                 const lowercaseUrl = fileUrl.toLowerCase();
+                 const isPdf = lowercaseUrl.endsWith('.pdf');
+                 const isImage = lowercaseUrl.endsWith('.jpg') || lowercaseUrl.endsWith('.jpeg') || lowercaseUrl.endsWith('.png') || lowercaseUrl.endsWith('.gif') || lowercaseUrl.endsWith('.webp');
+
+                 if (isPdf) {
+                   return (
+                     <div className="w-full h-full relative group">
+                       <iframe 
+                         src={`/api/download?url=${encodeURIComponent(resolveMediaUrl(previewDoc.file_url))}&mode=inline`}
+                         className="w-full h-[75vh] border-none" 
+                       />
+                     </div>
+                   );
+                 }
+
+                 if (isImage) {
+                   return (
+                     <div className="p-8 flex items-center justify-center w-full h-full">
+                       <img 
+                         src={resolveMediaUrl(previewDoc.file_url)} 
+                         alt="Resume Preview" 
+                         className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-lg border border-slate-200 bg-white" 
+                       />
+                     </div>
+                   );
+                 }
+
+                 return (
+                   <div className="w-full h-full relative group">
+                     <iframe 
+                       src={`https://docs.google.com/viewer?url=${encodeURIComponent(resolveMediaUrl(previewDoc.file_url))}&embedded=true`}
+                       className="w-full h-[75vh] border-none" 
+                     />
+                   </div>
+                 );
+               })()}
             </div>
           </div>
         </div>

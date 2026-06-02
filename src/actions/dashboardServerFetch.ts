@@ -40,19 +40,27 @@ export async function dashboardServerFetch<T = any>(
         // All dashboard calls use the shared API client (cookies forwarded below).
         const apiInstance = api;
 
-        // Prepare headers with cookies
+        // Prepare headers with cookies + cache control to prevent stale responses
         const headers = {
             ...(options?.headers || {}),
             ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
         };
 
         // Determine method from options or default to GET
         const method = (options?.method?.toLowerCase() || "get") as "get" | "post" | "put" | "delete" | "patch";
 
+        // For GET requests, add cache-busting timestamp to prevent stale cached responses
+        const params = method === "get"
+            ? { ...options?.params, _t: Date.now() }
+            : options?.params;
+
         // Prepare request config
         const requestConfig: AxiosRequestConfig = {
             ...options,
             headers,
+            params,
             data: options?.data,
         };
 
