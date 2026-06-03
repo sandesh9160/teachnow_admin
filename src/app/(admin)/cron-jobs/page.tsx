@@ -85,36 +85,64 @@ export default function CronJobsPage() {
     }
   };
 
-  const handleSaveAll = async () => {
-    try {
-      setLoading(true);
-      // The user requested to send the update to the same endpoint with PUT
-      const res = await saveMailSettings({
-        setting: {
-          day: schedule.day,
-          time: schedule.time,
-          is_active: schedule.is_active ? 1 : 0
-        },
-        template: {
-            subject: template.subject,
-            html_template: template.html_template,
-            is_active: template.is_active ? 1 : 0
-        }
-      });
+  // const handleSaveAll = async () => {
+  //   try {
+  //     setLoading(true);
+  //     // The user requested to send the update to the same endpoint with PUT
+  //     const res = await saveMailSettings({
+  //       setting: {
+  //         day: schedule.day,
+  //         time: schedule.time,
+  //         is_active: schedule.is_active ? 1 : 0
+  //       },
+  //       template: {
+  //           subject: template.subject,
+  //           html_template: template.html_template,
+  //           is_active: template.is_active ? 1 : 0
+  //       }
+  //     });
       
-      if (res?.status !== false) {
-        toast.success("System mail configuration synchronized");
-        fetchData();
-      } else {
-        toast.error("Failed to sync configuration");
-      }
-    } catch (error) {
-      toast.error("An error occurred during synchronization");
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     if (res?.status !== false) {
+  //       toast.success("System mail configuration synchronized");
+  //       fetchData();
+  //     } else {
+  //       toast.error("Failed to sync configuration");
+  //     }
+  //   } catch (error) {
+  //     toast.error("An error occurred during synchronization");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
+  const handleSaveAll = async () => {
+  try {
+    setLoading(true);
+
+    await saveMailSettings({
+      setting: {
+        day: schedule.day,
+        time: schedule.time,
+        is_active: schedule.is_active ? 1 : 0
+      }
+    });
+
+    await saveCronTemplate({
+      type: template.type,
+      subject: template.subject,
+      html_template: template.html_template,
+      is_active: template.is_active ? 1 : 0
+    });
+
+    toast.success("System mail configuration synchronized");
+    fetchData();
+
+  } catch (error) {
+    toast.error("An error occurred during synchronization");
+  } finally {
+    setLoading(false);
+  }
+};
   const handleToggleTemplate = async () => {
     try {
       setLoading(true);

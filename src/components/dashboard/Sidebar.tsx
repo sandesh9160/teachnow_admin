@@ -240,6 +240,7 @@ export default function Sidebar({
         <div className="lg:hidden px-3 pt-2 flex items-center justify-end">
           <button
             onClick={onMobileClose}
+            suppressHydrationWarning
             className="p-1.5 rounded-lg text-slate-400 hover:text-danger hover:bg-danger/5 transition-all"
           >
             <ChevronLeft size={18} className="rotate-180" />

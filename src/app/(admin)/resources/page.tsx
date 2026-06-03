@@ -37,7 +37,11 @@ import {
 } from "@/services/admin.service";
 import ResourceCard from "@/components/cards/ResourceCard";
 import Pagination from "@/components/ui/Pagination";
-import { TipTapEditor } from "@/components/ui/TipTapEditor";
+import dynamic from "next/dynamic";
+const TipTapEditor = dynamic(() => import("@/components/ui/TipTapEditor").then(mod => mod.TipTapEditor), {
+  ssr: false,
+  loading: () => <div className="h-[400px] w-full bg-slate-50 border border-slate-200 rounded-xl animate-pulse" />
+});
 import type { TeachingResource, PaginatedResponse } from "@/types";
 import { toast } from "sonner";
 import { clsx } from "clsx";
@@ -217,7 +221,12 @@ export default function ManageResourcesPage() {
         }
         toast.success("Resource updated");
       } else {
+        for (const [key, value] of data.entries()) {
+          console.log(key, value);
+        }
         const res = await createResource(data);
+        console.log("data",data);
+        
         if ((res as any).status === false) {
           throw new Error((res as any).message || "Creation failed");
         }
@@ -305,9 +314,10 @@ export default function ManageResourcesPage() {
  
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Resource Title</label>
+                            <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Resource Title</label>
                             <input
                                 required
+                                maxLength={255}
                                 type="text"
                                 placeholder="e.g. Physics Class 10 Notes"
                                 value={formData.title}
@@ -316,51 +326,52 @@ export default function ManageResourcesPage() {
                                   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
                                   setFormData({ ...formData, title, slug: currentResource ? formData.slug : slug });
                                 }}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-[14px] font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-[14px] font-bold text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
  
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">URL Slug</label>
+                            <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">URL Slug</label>
                             <input
+                                maxLength={255}
                                 type="text"
                                 placeholder="physics-class-10-notes"
                                 value={formData.slug}
                                 onChange={e => setFormData({ ...formData, slug: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
  
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Total Pages</label>
+                                <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Total Pages</label>
                                 <input
                                     type="number"
                                     placeholder="0"
                                     value={formData.total_pages}
                                     onChange={e => setFormData({ ...formData, total_pages: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Read Time (min)</label>
+                                <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Read Time (min)</label>
                                 <input
                                     type="number"
                                     placeholder="0"
                                     value={formData.read_time}
                                     onChange={e => setFormData({ ...formData, read_time: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
                                 />
                             </div>
                         </div>
  
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Answer Key</label>
+                                <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Answer Key</label>
                                 <select
                                     value={formData.answer_include}
                                     onChange={e => setFormData({ ...formData, answer_include: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all appearance-none"
+                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all appearance-none"
                                 >
                                     <option value="included">Included</option>
                                     <option value="not_included">Not Included</option>
@@ -420,13 +431,14 @@ export default function ManageResourcesPage() {
                     
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Author Name</label>
+                            <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Author Name</label>
                             <input
+                                maxLength={255}
                                 type="text"
                                 placeholder="eg John Doe"
                                 value={formData.author_name}
                                 onChange={e => setFormData({ ...formData, author_name: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
  
@@ -540,33 +552,36 @@ export default function ManageResourcesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">SEO Title</label>
+                            <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">SEO Title</label>
                             <input
+                                maxLength={255}
                                 type="text"
                                 placeholder="Search engine title..."
                                 value={formData.meta_title}
                                 onChange={e => setFormData({ ...formData, meta_title: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">SEO Keywords</label>
+                            <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">SEO Keywords</label>
                             <input
+                                maxLength={255}
                                 type="text"
                                 placeholder="keywords separated by commas..."
                                 value={formData.meta_keywords}
                                 onChange={e => setFormData({ ...formData, meta_keywords: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
                             />
                         </div>
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">SEO Description</label>
+                        <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">SEO Description</label>
                         <textarea
+                            maxLength={1000}
                             placeholder="Briefly describe this resource for search results..."
                             value={formData.meta_description}
                             onChange={e => setFormData({ ...formData, meta_description: e.target.value })}
-                            className="w-full h-[115px] px-4 py-3 bg-slate-50 border border-slate-100 rounded-lg text-[13px] font-medium focus:bg-white focus:border-indigo-500 outline-none transition-all resize-none"
+                            className="w-full h-[115px] px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all resize-none"
                         />
                     </div>
                 </div>
@@ -589,6 +604,7 @@ export default function ManageResourcesPage() {
         <button
           onClick={handleCreateNew}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-[12.5px] font-semibold transition-all shadow-sm shadow-blue-600/20 active:scale-95"
+          suppressHydrationWarning
         >
           <Plus size={14} /> Add Resource
         </button>
@@ -603,6 +619,7 @@ export default function ManageResourcesPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-[12px] font-medium placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all shadow-sm"
+          suppressHydrationWarning
         />
       </div>
 
