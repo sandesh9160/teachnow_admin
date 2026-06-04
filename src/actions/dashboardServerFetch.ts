@@ -16,7 +16,8 @@ import type { AxiosRequestConfig, AxiosResponse } from "axios";
  */
 export async function dashboardServerFetch<T = any>(
     endpoint: string,
-    options?: AxiosRequestConfig & { data?: any; silentStatusCodes?: number[] }
+    options?: AxiosRequestConfig & { data?: any; silentStatusCodes?: number[] },
+    formDataPayload?: FormData
 ): Promise<T> {
     try {
         const cookieStore = await cookies();
@@ -61,8 +62,9 @@ export async function dashboardServerFetch<T = any>(
             ...options,
             headers,
             params,
-            data: options?.data,
         };
+        
+        const finalData = formDataPayload || options?.data;
 
         let response: AxiosResponse<T>;
 
@@ -71,16 +73,16 @@ export async function dashboardServerFetch<T = any>(
                 response = await apiInstance.get<T>(`/${cleanEndpoint}`, requestConfig);
                 break;
             case "post":
-                response = await apiInstance.post<T>(`/${cleanEndpoint}`, options?.data, requestConfig);
+                response = await apiInstance.post<T>(`/${cleanEndpoint}`, finalData, requestConfig);
                 break;
             case "put":
-                response = await apiInstance.put<T>(`/${cleanEndpoint}`, options?.data, requestConfig);
+                response = await apiInstance.put<T>(`/${cleanEndpoint}`, finalData, requestConfig);
                 break;
             case "delete":
                 response = await apiInstance.delete<T>(`/${cleanEndpoint}`, requestConfig);
                 break;
             case "patch":
-                response = await apiInstance.patch<T>(`/${cleanEndpoint}`, options?.data, requestConfig);
+                response = await apiInstance.patch<T>(`/${cleanEndpoint}`, finalData, requestConfig);
                 break;
             default:
                 response = await apiInstance.get<T>(`/${cleanEndpoint}`, requestConfig);

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { X, Loader2, Link2, UploadCloud, Layout, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { clsx } from "clsx";
-import { createCMSFooterLink, updateCMSFooterLink, getCMSFooterSections } from "@/services/admin.service";
+import { createCMSFooterLink, updateCMSFooterLink, getCMSFooterSections, toggleCMSFooterLink } from "@/services/admin.service";
 
 interface CMSFooterLinkModalProps {
   isOpen: boolean;
@@ -40,7 +40,7 @@ export default function CMSFooterLinkModal({ isOpen, onClose, onSuccess, item }:
           url: item.url || "",
           slug: item.slug || "",
           display_order: item.display_order || 1,
-          is_active: item.is_active !== undefined ? Number(item.is_active) : 1,
+          is_active: (item.is_active === 1 || item.is_active === "1" || item.is_active === true || item.is_active === "true") ? 1 : 0,
           meta_title: item.meta_title || "",
           meta_description: item.meta_description || "",
           meta_keywords: item.meta_keywords || "",
@@ -94,6 +94,25 @@ export default function CMSFooterLinkModal({ isOpen, onClose, onSuccess, item }:
     if (file) {
       const url = URL.createObjectURL(file);
       setPreviewImage(url);
+    }
+  };
+
+  const handleToggleActive = async (checked: boolean) => {
+    setFormData({ ...formData, is_active: checked ? 1 : 0 });
+    
+    // Only hit the API instantly if we're editing an existing link
+    if (item?.id) {
+      try {
+        const res = await toggleCMSFooterLink(item.id);
+        if (res?.status && res?.data) {
+           setFormData(prev => ({ ...prev, is_active: res.data.is_active ? 1 : 0 }));
+           onSuccess(); // Silently update the background table
+           toast.success("Link status toggled");
+        }
+      } catch (err) {
+        setFormData({ ...formData, is_active: checked ? 0 : 1 });
+        toast.error("Failed to toggle status directly");
+      }
     }
   };
 
@@ -250,10 +269,17 @@ export default function CMSFooterLinkModal({ isOpen, onClose, onSuccess, item }:
                             type="checkbox"
                             className="sr-only"
                             checked={formData.is_active === 1}
-                            onChange={e => setFormData({ ...formData, is_active: e.target.checked ? 1 : 0 })}
+                            onChange={e => handleToggleActive(e.target.checked)}
                           />
-                          <div className={clsx("w-8 h-4 bg-slate-200 rounded-full transition-colors", formData.is_active === 1 && "bg-emerald-500")}></div>
-                          <div className={clsx("absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full transition-transform shadow-sm", formData.is_active === 1 && "translate-x-4")}></div>
+                          <div className={clsx(
+                              "w-10 h-5 rounded-full transition-colors relative", 
+                              formData.is_active === 1 ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-slate-300"
+                           )}>
+                             <span className={clsx("absolute text-[8px] font-bold text-white top-1/2 -translate-y-1/2", formData.is_active === 1 ? "left-1.5" : "right-1.5")}>
+                                {formData.is_active === 1 ? "ON" : "OFF"}
+                             </span>
+                             <div className={clsx("absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all shadow-sm", formData.is_active === 1 ? "left-[22px]" : "left-0.5")}></div>
+                           </div>
                         </div>
                     </label>
                  </div>

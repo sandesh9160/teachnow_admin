@@ -47,10 +47,21 @@ export default function CMSFooterSectionsPage() {
   };
 
   const handleToggleActive = async (id: number) => {
+    console.log("Toggling status for footer section with ID:", id);
+    const itemToToggle = items.find(i => i.id === id);
     try {
-      await toggleCMSFooterSection(id);
-      fetchSections();
+      const response = await toggleCMSFooterSection(id);
+      console.log("Toggle status response:", response);
+      if (response?.status && response?.data) {
+        setItems(prev => prev.map(item => 
+          item.id === id ? { ...item, is_active: response.data.is_active } : item
+        ));
+        toast.success("Section status updated");
+      } else {
+        fetchSections();
+      }
     } catch (error) {
+      console.error("Toggle status error:", error);
       toast.error("Failed to update status");
     }
   };
@@ -104,18 +115,21 @@ export default function CMSFooterSectionsPage() {
     {
       key: "is_active",
       title: "Status",
-      render: (v: unknown, item: any) => (
-        <button
-          onClick={() => handleToggleActive(item.id)}
-          className={clsx(
-            "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all",
-            Boolean(v) ? "bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm" : "bg-slate-100 text-slate-500 border border-slate-200"
-          )}
-        >
-          <div className={clsx("w-2 h-2 rounded-full", Boolean(v) ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-slate-400")} />
-          {Boolean(v) ? "Active" : "Hidden"}
-        </button>
-      )
+      render: (v: unknown, item: any) => {
+        const isActive = Number(v) === 1 || v === true || v === "true";
+        return (
+          <button
+            onClick={() => handleToggleActive(item.id)}
+            className={clsx(
+              "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all min-w-[75px] justify-center",
+              isActive ? "bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm" : "bg-slate-100 text-slate-500 border border-slate-200"
+            )}
+          >
+            <div className={clsx("w-2 h-2 rounded-full", isActive ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-slate-400")} />
+            {isActive ? "Active" : "Inactive"}
+          </button>
+        );
+      }
     },
     {
       key: "actions",

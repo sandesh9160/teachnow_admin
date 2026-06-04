@@ -541,6 +541,45 @@ export function TipTapEditor({
           text-decoration: underline;
           font-weight: 600;
         }
+        .prose h1 {
+          font-size: 24px !important;
+          font-weight: 700 !important;
+          margin-top: 1.5em !important;
+          margin-bottom: 0.5em !important;
+          line-height: 1.3 !important;
+          color: #0f172a !important;
+        }
+        .prose h2 {
+          font-size: 20px !important;
+          font-weight: 700 !important;
+          margin-top: 1.5em !important;
+          margin-bottom: 0.5em !important;
+          line-height: 1.35 !important;
+          color: #0f172a !important;
+        }
+        .prose h3 {
+          font-size: 18px !important;
+          font-weight: 600 !important;
+          margin-top: 1.25em !important;
+          margin-bottom: 0.5em !important;
+          line-height: 1.4 !important;
+          color: #0f172a !important;
+        }
+        .prose h4 {
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          margin-top: 1.25em !important;
+          margin-bottom: 0.5em !important;
+          line-height: 1.5 !important;
+          color: #0f172a !important;
+        }
+        .prose p {
+          font-size: 14px !important;
+          line-height: 1.7142857 !important;
+          margin-top: 0 !important;
+          margin-bottom: 1em !important;
+          color: #475569 !important;
+        }
         .prose ul {
           list-style-type: disc;
           padding-left: 1.5rem;

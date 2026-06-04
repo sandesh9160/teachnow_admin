@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { 
-  ArrowLeft, 
-  Plus, 
-  Search, 
-  RotateCcw, 
-  Trash2, 
+import {
+  ArrowLeft,
+  Plus,
+  Search,
+  RotateCcw,
+  Trash2,
   ChevronRight,
   Pencil,
   Loader2,
@@ -15,12 +15,12 @@ import {
   Globe
 } from "lucide-react";
 import Link from "next/link";
-import { 
-  getCMSFooterLinks, 
-  createCMSFooterLink, 
-  updateCMSFooterLink, 
-  deleteCMSFooterLink, 
-  toggleCMSFooterLink 
+import {
+  getCMSFooterLinks,
+  createCMSFooterLink,
+  updateCMSFooterLink,
+  deleteCMSFooterLink,
+  toggleCMSFooterLink
 } from "@/services/admin.service";
 import DataTable from "@/components/tables/DataTable";
 import CMSFooterLinkModal from "@/components/modals/CMSFooterLinkModal";
@@ -44,6 +44,7 @@ export default function CMSFooterLinksPage() {
       setLoading(true);
       const payload = await getCMSFooterLinks();
       const data = Array.isArray(payload) ? payload : (payload as any)?.data ?? payload;
+      console.log("Fetched footer links data:", data);
       setItems(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to fetch footer links:", error);
@@ -54,13 +55,24 @@ export default function CMSFooterLinksPage() {
   };
 
   const handleToggle = async (id: number) => {
+    const itemToToggle = items.find(i => i.id === id);
+    console.log("Toggling status for footer link:", itemToToggle);
+    console.log("Section info:", itemToToggle?.section);
+    
     try {
-      await toggleCMSFooterLink(id);
-      toast.success("Link status updated");
-      setItems(prev => prev.map(item => 
-        item.id === id ? { ...item, is_active: !item.is_active } : item
-      ));
+      const response = await toggleCMSFooterLink(id);
+      console.log("Toggle status response:", response);
+      if (response?.status && response?.data) {
+        setItems(prev => prev.map(item =>
+          item.id === id ? { ...item, is_active: response.data.is_active } : item
+        ));
+        toast.success("Link status updated");
+      } else {
+        toast.success("Link status updated");
+        fetchFooterLinks();
+      }
     } catch (error) {
+      console.error("Toggle status error:", error);
       toast.error("Failed to update status");
     }
   };
@@ -90,43 +102,62 @@ export default function CMSFooterLinksPage() {
     });
 
   const columns = [
-    { 
-      key: "section", 
-      title: "Column Assignment", 
+    {
+      key: "section",
+      title: "Column Assignment",
       render: (_: unknown, item: any) => (
         <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
-                <Columns size={14} />
-            </div>
-            <span className="font-bold text-slate-900 text-[13px]">{item.section?.title || "System General"}</span>
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm shrink-0">
+            <Columns size={14} />
+          </div>
+          <span className="font-bold text-slate-900 text-[13px]">{item.section?.title || "System General"}</span>
         </div>
       )
     },
-    { 
-      key: "title", 
-      title: "Link Target", 
-      render: (v: unknown) => <span className="font-bold text-slate-700 text-[13px]">{typeof v === "string" && v ? v : "Untitled Link"}</span> 
+    {
+      key: "title",
+      title: "Link Target",
+      render: (v: unknown) => <span className="font-bold text-slate-700 text-[13px]">{typeof v === "string" && v ? v : "Untitled Link"}</span>
     },
-    { 
-        key: "actions", 
-        title: "Actions", 
-        render: (_: any, item: any) => (
-            <div className="flex items-center justify-end gap-1.5">
-                <button 
-                    onClick={() => { setEditingItem(item); setIsModalOpen(true); }}
-                    className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
-                >
-                    <Pencil size={16} />
-                </button>
-                <button 
-                    onClick={() => handleDelete(item.id)}
-                    title="Decommission Link"
-                    className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                >
-                    <Trash2 size={16} />
-                </button>
-            </div>
-        ) 
+    {
+      key: "is_active",
+      title: "Status",
+      render: (v: unknown, item: any) => {
+        const isActive = Number(v) === 1 || v === true || v === "true";
+        return (
+          <button
+            onClick={() => handleToggle(item.id)}
+            className={clsx(
+              "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all min-w-[75px] justify-center",
+              isActive ? "bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm" : "bg-slate-100 text-slate-500 border border-slate-200"
+            )}
+          >
+            <div className={clsx("w-2 h-2 rounded-full", isActive ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-slate-400")} />
+            {isActive ? "Active" : "Inactive"}
+          </button>
+        );
+      }
+    },
+    {
+      key: "actions",
+      title: "Actions",
+      render: (_: any, item: any) => (
+        <div className="flex items-center justify-end gap-1.5">
+          <button
+            onClick={() => { setEditingItem(item); setIsModalOpen(true); }}
+            className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
+          >
+            <Pencil size={16} />
+          </button>
+          <button
+            onClick={() => handleDelete(item.id)}
+            title="Decommission Link"
+            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      )
     },
   ];
 

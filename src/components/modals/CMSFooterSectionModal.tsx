@@ -145,13 +145,16 @@ export default function CMSFooterSectionModal({ isOpen, onClose, onSuccess, item
                         type="button"
                         onClick={() => setFormData({ ...formData, is_active: formData.is_active ? 0 : 1 })}
                         className={clsx(
-                            "w-9 h-5 rounded-full relative transition-colors duration-200 outline-none",
-                            formData.is_active ? "bg-emerald-500" : "bg-slate-300"
+                            "w-10 h-5 rounded-full relative transition-colors duration-200 outline-none",
+                            formData.is_active ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-slate-300"
                         )}
                     >
+                         <span className={clsx("absolute text-[8px] font-bold text-white top-1/2 -translate-y-1/2", formData.is_active ? "left-1.5" : "right-1.5")}>
+                            {formData.is_active ? "ON" : "OFF"}
+                         </span>
                         <div className={clsx(
-                            "absolute top-1 w-3 h-3 bg-white rounded-full transition-transform duration-200 shadow-sm",
-                            formData.is_active ? "translate-x-5" : "translate-x-1"
+                            "absolute top-0.5 w-4 h-4 bg-white rounded-full transition-transform duration-200 shadow-sm",
+                            formData.is_active ? "translate-x-[22px]" : "translate-x-0.5"
                         )} />
                     </button>
                 </div>

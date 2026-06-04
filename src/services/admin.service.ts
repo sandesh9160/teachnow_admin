@@ -365,28 +365,34 @@ export const updateCMSFooterSection = (id: number, data: any) =>
 export const deleteCMSFooterSection = (id: number) =>
   dashboardServerFetch(`/admin/cms/footer-sections/${id}`, { method: "DELETE" });
 
-export const toggleCMSFooterSection = (id: number) =>
-  dashboardServerFetch(`/admin/cms/footer-sections/${id}/toggle`, { method: "PATCH" });
+export const toggleCMSFooterSection = async (id: number) => {
+  console.log("--> API Call: toggleCMSFooterSection for ID:", id);
+  const response = await dashboardServerFetch(`/admin/cms/footer-sections/${id}/toggle`, { method: "PATCH" });
+  console.log("<-- API Response: toggleCMSFooterSection", response);
+  return response;
+};
 
 // Footer Links
 export const getCMSFooterLinks = () =>
   dashboardServerFetch<any[]>("/admin/cms/footer-links");
 
 export const createCMSFooterLink = (data: any) =>
-  dashboardServerFetch("/admin/cms/footer-links", { method: "POST", data });
+  dashboardServerFetch("/admin/cms/footer-links", { method: "POST" }, data instanceof FormData ? data : undefined);
 
 export const updateCMSFooterLink = (id: number, data: any) =>
   dashboardServerFetch(`/admin/cms/footer-links/${id}`, {
-    method: "POST",
-    data,
-    params: { _method: "PUT" },
-  });
+    method: "PUT",
+  }, data instanceof FormData ? data : undefined);
 
 export const deleteCMSFooterLink = (id: number) =>
   dashboardServerFetch(`/admin/cms/footer-links/${id}`, { method: "DELETE" });
 
-export const toggleCMSFooterLink = (id: number) =>
-  dashboardServerFetch(`/admin/cms/footer-links/${id}/toggle`, { method: "PATCH" });
+export const toggleCMSFooterLink = async (id: number) => {
+  console.log("--> API Call: toggleCMSFooterLink for ID:", id);
+  const response = await dashboardServerFetch(`/admin/cms/footer-links/${id}/toggle`, { method: "PATCH" });
+  console.log("<-- API Response: toggleCMSFooterLink", response);
+  return response;
+};
 
 // Company Logos / Branding
 export const getCMSCompanyLogos = () =>
