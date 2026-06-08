@@ -212,6 +212,28 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
           <ChevronLeft size={14} /> Back
         </Link>
 
+        {/* Institute Feature Request Alert */}
+        {!employer.is_featured && (
+          Number(employer.company_featured) === 1 ? (
+            <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-2xl shadow-sm animate-in fade-in duration-300">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
+                <Star size={16} className="text-amber-600" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[12px] font-bold text-amber-800">Institute Requested Featured Listing</p>
+                <p className="text-[11px] text-amber-600 font-medium mt-0.5">The institute has requested to be featured on the homepage. Use the toggle below to approve.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl">
+              <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                <Star size={14} className="text-slate-700" />
+              </div>
+              <p className="text-[11px] font-semibold text-slate-700">No feature request from institute</p>
+            </div>
+          )
+        )}
+
         {/* ─── Header Card ────────────────────────────────────────────── */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
@@ -236,10 +258,10 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                     {employer.is_verified || Number(employer.is_profile_verified) === 1
                       ? "verified"
                       : Number(employer.is_profile_verified) === 4
-                      ? "pending"
-                      : Number(employer.is_profile_verified) === 2
-                      ? "rejected"
-                      : "pending"}
+                        ? "pending"
+                        : Number(employer.is_profile_verified) === 2
+                          ? "rejected"
+                          : "pending"}
                   </span>
                 </div>
               </div>
@@ -358,7 +380,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                     <Star size={16} className="text-amber-500" /> Feature Request Status
                   </h3>
                   {(() => {
-                    const isFeatured = employer.is_featured || Number(employer.is_featured) === 1;
+                    const isFeatured = Number(employer.is_featured) === 1 || employer.is_featured === true;
                     const isExpired = employer.featured_until ? new Date(employer.featured_until) < new Date() : false;
                     const isPending = Number(employer.company_featured) === 1 && !isFeatured;
 
@@ -377,11 +399,18 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                     }
 
                     return (
-                      <div className={clsx(
-                        "px-2 py-2 rounded-xl text-[13px] font-semibold border text-center",
-                        bgBorderTextClass
-                      )}>
-                        {statusText}
+                      <div className="flex flex-col gap-2">
+                        <div className={clsx(
+                          "px-2 py-2 rounded-xl text-[13px] font-semibold border text-center",
+                          bgBorderTextClass
+                        )}>
+                          {statusText}
+                        </div>
+                        {isFeatured && employer.featured_until && (
+                          <div className="text-center text-[11px] font-medium text-slate-500">
+                            Active until {new Date(employer.featured_until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
