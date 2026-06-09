@@ -54,7 +54,7 @@ export const adminSignIn = async (data: { email: string; password: string }) => 
     });
 
     if (res.data.status === false) {
-      throw new Error(res.data.message || "Invalid credentials");
+      return { error: res.data.message || "Invalid credentials" };
     }
     // 3. Set login cookies
     const resCookies = res.headers["set-cookie"] || [];
@@ -86,7 +86,7 @@ export const adminSignIn = async (data: { email: string; password: string }) => 
     cookieStore.set("userData", JSON.stringify(userData), cookieOptions);
     return { user: userData };
   } catch (err: any) {
-    throw new Error(err.response?.data?.message || err.message || "Login failed");
+    return { error: err.response?.data?.message || err.message || "Login failed" };
   }
 };
 

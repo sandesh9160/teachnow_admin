@@ -34,9 +34,13 @@ export default function LoginForm() {
 
     setLoading(true);
     try {
-      await adminSignIn({ email, password });
-      toast.success("Welcome back");
-      router.push("/dashboard");
+      const result = await adminSignIn({ email, password });
+      if (result && 'error' in result && result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Welcome back");
+        router.push("/dashboard");
+      }
     } catch (err: any) {
       toast.error(err.message || "Invalid credentials");
     } finally {
