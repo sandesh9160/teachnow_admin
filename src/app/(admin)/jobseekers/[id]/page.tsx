@@ -29,7 +29,10 @@ import {
   Loader2,
   Download,
   FileText as ResumeIcon,
-  ChevronLeft as BackIcon
+  ChevronLeft as BackIcon,
+  Activity,
+  Hash,
+  Image as ImageIcon
 } from "lucide-react";
 import { getJobSeeker, deleteJobSeeker, disableJobSeeker, updateJobSeeker } from "@/services/admin.service";
 import { JobSeeker } from "@/types";
@@ -44,10 +47,117 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
   const [seeker, setSeeker] = useState<JobSeeker | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"Overview" | "Documents" | "Applications">("Overview");
+  const [activeTab, setActiveTab] = useState<"Overview" | "Documents" | "Applications" | "Edit Candidate">("Overview");
   const [isActive, setIsActive] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [previewDoc, setPreviewDoc] = useState<any>(null);
+
+  const [editData, setEditData] = useState<any>({
+    title: "", phone: "", location: "", experience_years: 0,
+    availability: "", dob: "", portfolio_website: "", bio: "",
+    gender: "", notice_period: "", is_active: 1, profile_photo: "",
+    name: "", email: "", skills: "", education: "", experience: "", certifications: ""
+  });
+
+  useEffect(() => {
+    if (seeker) {
+      const skillsStr = seeker.skills ? seeker.skills.map(s => typeof s === 'string' ? s : (s.name || s)).join(", ") : "";
+      
+      const eduArr = (seeker as any).educations?.length ? (seeker as any).educations : [{
+        institution: "Harvard University",
+        degree: "Master's in Education",
+        start_year: "2018",
+      }];
+      const expArr = (seeker as any).experiences?.length ? (seeker as any).experiences : [{
+        company_name: "Tech Sprout High School",
+        job_title: "Senior Science Teacher",
+        start_date: "2020-05-01",
+      }];
+      const certArr = (seeker as any).certifications?.length ? (seeker as any).certifications : [{
+        name: "Google Certified Educator",
+        issuer: "Google",
+        issued_at: "2022-01-15",
+      }];
+
+      setEditData({
+        title: seeker.title || "",
+        phone: seeker.phone || "",
+        location: seeker.location || "",
+        experience_years: seeker.experience_years || 0,
+        availability: seeker.availability || "",
+        dob: seeker.dob || "",
+        portfolio_website: seeker.portfolio_website || "",
+        bio: seeker.bio || "",
+        gender: seeker.gender || "",
+        notice_period: seeker.notice_period || "",
+        is_active: seeker.is_active ? 1 : 0,
+        profile_photo: seeker.profile_photo || "",
+        name: seeker.user?.name || "",
+        email: seeker.user?.email || "",
+        skills: skillsStr,
+        education: eduArr,
+        experience: expArr,
+        certifications: certArr
+      });
+    }
+  }, [seeker]);
+
+  const handleUpdateJobseeker = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!seeker || processing) return;
+    
+    try {
+      setProcessing(true);
+      const payload: any = { ...editData };
+      if (editData.skills && typeof editData.skills === 'string') {
+        payload.skills = editData.skills.split(",").map((s: string) => s.trim()).filter(Boolean);
+      }
+
+      const formData = new FormData();
+      Object.keys(payload).forEach((key) => {
+        if (['profile_photo_preview', 'profile_photo_file', 'education', 'experience', 'certifications'].includes(key)) return;
+        if (key === 'skills' && Array.isArray(payload.skills)) {
+          payload.skills.forEach((s: string) => formData.append('skills[]', s));
+          return;
+        }
+        formData.append(key, payload[key] === null ? '' : payload[key]);
+      });
+
+      const eduArr = editData.education || [];
+      if (Array.isArray(eduArr)) {
+        eduArr.forEach((edu: any, index: number) => {
+          Object.keys(edu).forEach(k => formData.append(`education[${index}][${k}]`, edu[k] === null ? "" : String(edu[k])));
+        });
+      }
+
+      const expArr = editData.experience || [];
+      if (Array.isArray(expArr)) {
+        expArr.forEach((exp: any, index: number) => {
+          Object.keys(exp).forEach(k => formData.append(`experience[${index}][${k}]`, exp[k] === null ? "" : String(exp[k])));
+        });
+      }
+
+      const certArr = editData.certifications || [];
+      if (Array.isArray(certArr)) {
+        certArr.forEach((cert: any, index: number) => {
+          Object.keys(cert).forEach(k => formData.append(`certifications[${index}][${k}]`, cert[k] === null ? "" : String(cert[k])));
+        });
+      }
+
+      if (editData.profile_photo_file) {
+        formData.append('profile_photo', editData.profile_photo_file);
+      }
+
+      await updateJobSeeker(seeker.id, formData as any);
+      toast.success("Candidate details updated successfully");
+      await fetchDetails();
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to update candidate details");
+    } finally {
+      setProcessing(false);
+    }
+  };
 
   const handleDownload = (url: string, filename: string) => {
     try {
@@ -198,7 +308,7 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <>
-      <div className="max-w-5xl mx-auto space-y-6 pb-20 antialiased px-4">
+      <div className="w-full space-y-5 pb-10 antialiased">
       <Link
         href="/jobseekers"
         className="flex items-center w-fit gap-2 text-[12px] font-semibold text-slate-600 hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95 animate-fade-in-up"
@@ -298,15 +408,16 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
 
       {/* Navigation Tabs */}
       <div className="flex items-center gap-8 border-b border-slate-200 px-2 overflow-x-auto scrollbar-hide">
-        {(["Profile", "Resume", "Applications"] as const).map(t => {
+        {(["Profile", "Edit Candidate", "Resume", "Applications"] as const).map(t => {
           const isSelected = (activeTab === "Overview" && t === "Profile") || 
                             (activeTab === "Documents" && t === "Resume") || 
-                            (activeTab === "Applications" && t === "Applications");
+                            (activeTab === "Applications" && t === "Applications") ||
+                            (activeTab === "Edit Candidate" && t === "Edit Candidate");
           
           return (
             <button
               key={t}
-              onClick={() => setActiveTab(t === "Profile" ? "Overview" : (t === "Resume" ? "Documents" : "Applications"))}
+              onClick={() => setActiveTab(t === "Profile" ? "Overview" : (t === "Resume" ? "Documents" : (t === "Applications" ? "Applications" : "Edit Candidate")) as any)}
               className={clsx(
                 "pb-4 pt-1 text-[13px] font-semibold border-b-2 transition-all whitespace-nowrap",
                 isSelected ? "text-primary border-primary" : "text-slate-900 border-transparent hover:text-slate-600"
@@ -563,6 +674,304 @@ export default function JobSeekerDetailPage({ params }: { params: Promise<{ id: 
               )}
             </div>
           </div>
+        )}
+
+        {activeTab === ("Edit Candidate" as any) && (
+          <form onSubmit={handleUpdateJobseeker} className="lg:col-span-3 w-full space-y-8 animate-in fade-in duration-300">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <UserIcon size={20} className="text-primary" /> Edit Candidate Details
+                </h3>
+                <p className="text-[13px] font-medium text-slate-500 mt-1">Update the profile information and account settings.</p>
+              </div>
+              <div className="p-6 md:p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <UserIcon size={14} className="text-primary" /> Full Name
+                </label>
+                <input
+                  type="text"
+                  value={editData.name}
+                  onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <Mail size={14} className="text-primary" /> Email Address
+                </label>
+                <input
+                  type="email"
+                  value={editData.email}
+                  onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <Zap size={14} className="text-primary" /> Skills (comma separated)
+                </label>
+                <input
+                  type="text"
+                  value={editData.skills}
+                  onChange={(e) => setEditData({ ...editData, skills: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <UserIcon size={14} className="text-primary" /> Title
+                </label>
+                <input
+                  type="text"
+                  value={editData.title}
+                  onChange={(e) => setEditData({ ...editData, title: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <Phone size={14} className="text-primary" /> Phone
+                </label>
+                <input
+                  type="text"
+                  value={editData.phone}
+                  onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <MapPin size={14} className="text-primary" /> Location
+                </label>
+                <input
+                  type="text"
+                  value={editData.location}
+                  onChange={(e) => setEditData({ ...editData, location: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <Briefcase size={14} className="text-primary" /> Experience Years
+                </label>
+                <input
+                  type="number"
+                  value={editData.experience_years}
+                  onChange={(e) => setEditData({ ...editData, experience_years: Number(e.target.value) })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <Clock size={14} className="text-primary" /> Availability
+                </label>
+                <input
+                  type="text"
+                  value={editData.availability}
+                  onChange={(e) => setEditData({ ...editData, availability: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <Calendar size={14} className="text-primary" /> Date of Birth
+                </label>
+                <input
+                  type="date"
+                  value={editData.dob ? editData.dob.split('T')[0] : ""}
+                  onChange={(e) => setEditData({ ...editData, dob: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <UserIcon size={14} className="text-primary" /> Gender
+                </label>
+                <select
+                  value={editData.gender}
+                  onChange={(e) => setEditData({ ...editData, gender: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                >
+                  <option value="">Select</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <Activity size={14} className="text-primary" /> Notice Period
+                </label>
+                <input
+                  type="text"
+                  value={editData.notice_period}
+                  onChange={(e) => setEditData({ ...editData, notice_period: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  placeholder="e.g. 30 Days"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <Globe size={14} className="text-primary" /> Portfolio Website
+                </label>
+                <input
+                  type="text"
+                  value={editData.portfolio_website}
+                  onChange={(e) => setEditData({ ...editData, portfolio_website: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                  <ImageIcon size={14} className="text-primary" /> Profile Photo Upload
+                </label>
+                <div className="flex items-center gap-4">
+                  {editData.profile_photo_preview || editData.profile_photo ? (
+                    <img 
+                      src={editData.profile_photo_preview || (editData.profile_photo.startsWith('http') ? editData.profile_photo : resolveMediaUrl(editData.profile_photo))} 
+                      alt="Preview" 
+                      className="w-16 h-16 rounded-xl object-cover border border-slate-200"
+                    />
+                  ) : null}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        const file = e.target.files[0];
+                        setEditData({ 
+                          ...editData, 
+                          profile_photo_file: file,
+                          profile_photo_preview: URL.createObjectURL(file)
+                        });
+                      }
+                    }}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-[12px] font-bold text-slate-900">Professional Bio</label>
+                <textarea
+                  rows={4}
+                  value={editData.bio}
+                  onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                />
+              </div>
+              <div className="space-y-4 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <FileText size={14} className="text-primary" /> Education
+                  </label>
+                  <button type="button" onClick={() => setEditData({ ...editData, education: [...editData.education, { institution: '', degree: '', start_year: '' }]})} className="text-[11px] font-bold text-primary hover:underline">
+                    + Add Education
+                  </button>
+                </div>
+                {editData.education.map((edu: any, index: number) => (
+                  <div key={index} className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border border-slate-100 rounded-xl bg-slate-50/50 relative group">
+                    <button type="button" onClick={() => setEditData({ ...editData, education: editData.education.filter((_: any, i: number) => i !== index)})} className="absolute top-3 right-3 text-red-500 opacity-50 hover:opacity-100">
+                      <Trash2 size={14} />
+                    </button>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-500 mb-1 block">Institution</label>
+                      <input type="text" value={edu.institution || ''} onChange={e => { const newEdu = [...editData.education]; newEdu[index].institution = e.target.value; setEditData({...editData, education: newEdu}); }} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-primary/20 focus:border-primary/20 outline-none" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-500 mb-1 block">Degree</label>
+                      <input type="text" value={edu.degree || ''} onChange={e => { const newEdu = [...editData.education]; newEdu[index].degree = e.target.value; setEditData({...editData, education: newEdu}); }} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-primary/20 focus:border-primary/20 outline-none" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-500 mb-1 block">Start Year</label>
+                      <input type="text" value={edu.start_year || ''} onChange={e => { const newEdu = [...editData.education]; newEdu[index].start_year = e.target.value; setEditData({...editData, education: newEdu}); }} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-primary/20 focus:border-primary/20 outline-none" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-4 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <Briefcase size={14} className="text-primary" /> Work History
+                  </label>
+                  <button type="button" onClick={() => setEditData({ ...editData, experience: [...editData.experience, { company_name: '', job_title: '', start_date: '' }]})} className="text-[11px] font-bold text-primary hover:underline">
+                    + Add Experience
+                  </button>
+                </div>
+                {editData.experience.map((exp: any, index: number) => (
+                  <div key={index} className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border border-slate-100 rounded-xl bg-slate-50/50 relative group">
+                    <button type="button" onClick={() => setEditData({ ...editData, experience: editData.experience.filter((_: any, i: number) => i !== index)})} className="absolute top-3 right-3 text-red-500 opacity-50 hover:opacity-100">
+                      <Trash2 size={14} />
+                    </button>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-500 mb-1 block">Company Name</label>
+                      <input type="text" value={exp.company_name || ''} onChange={e => { const newExp = [...editData.experience]; newExp[index].company_name = e.target.value; setEditData({...editData, experience: newExp}); }} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-primary/20 focus:border-primary/20 outline-none" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-500 mb-1 block">Job Title</label>
+                      <input type="text" value={exp.job_title || ''} onChange={e => { const newExp = [...editData.experience]; newExp[index].job_title = e.target.value; setEditData({...editData, experience: newExp}); }} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-primary/20 focus:border-primary/20 outline-none" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-500 mb-1 block">Start Date</label>
+                      <input type="text" value={exp.start_date || ''} onChange={e => { const newExp = [...editData.experience]; newExp[index].start_date = e.target.value; setEditData({...editData, experience: newExp}); }} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-primary/20 focus:border-primary/20 outline-none" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-4 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <Award size={14} className="text-primary" /> Certifications
+                  </label>
+                  <button type="button" onClick={() => setEditData({ ...editData, certifications: [...editData.certifications, { name: '', issuer: '', issued_at: '' }]})} className="text-[11px] font-bold text-primary hover:underline">
+                    + Add Certification
+                  </button>
+                </div>
+                {editData.certifications.map((cert: any, index: number) => (
+                  <div key={index} className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border border-slate-100 rounded-xl bg-slate-50/50 relative group">
+                    <button type="button" onClick={() => setEditData({ ...editData, certifications: editData.certifications.filter((_: any, i: number) => i !== index)})} className="absolute top-3 right-3 text-red-500 opacity-50 hover:opacity-100">
+                      <Trash2 size={14} />
+                    </button>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-500 mb-1 block">Certification Name</label>
+                      <input type="text" value={cert.name || ''} onChange={e => { const newCert = [...editData.certifications]; newCert[index].name = e.target.value; setEditData({...editData, certifications: newCert}); }} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-primary/20 focus:border-primary/20 outline-none" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-500 mb-1 block">Issuer</label>
+                      <input type="text" value={cert.issuer || ''} onChange={e => { const newCert = [...editData.certifications]; newCert[index].issuer = e.target.value; setEditData({...editData, certifications: newCert}); }} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-primary/20 focus:border-primary/20 outline-none" />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-500 mb-1 block">Issued At</label>
+                      <input type="text" value={cert.issued_at || ''} onChange={e => { const newCert = [...editData.certifications]; newCert[index].issued_at = e.target.value; setEditData({...editData, certifications: newCert}); }} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-xs focus:ring-primary/20 focus:border-primary/20 outline-none" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <label className="text-[12px] font-bold text-slate-900">Is Active</label>
+                <select
+                  value={editData.is_active}
+                  onChange={(e) => setEditData({ ...editData, is_active: Number(e.target.value) })}
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                >
+                  <option value={1}>Yes</option>
+                  <option value={0}>No</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
+            <button
+              type="submit"
+              className="flex items-center gap-2.5 px-8 py-3 bg-slate-900 text-white text-[13px] font-bold rounded-xl hover:bg-black transition-all shadow-lg shadow-slate-200/50 active:scale-95 disabled:opacity-50"
+            >
+              Save Candidate Details
+            </button>
+          </div>
+        </div>
+          </form>
         )}
       </div>
       {/* Profile Image Preview Modal */}

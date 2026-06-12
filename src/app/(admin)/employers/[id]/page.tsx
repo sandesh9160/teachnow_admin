@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from "react";
 import Link from "next/link";
 import {
-  ChevronLeft, MapPin, Building2, Globe, Mail, Phone,
+  ChevronLeft, MapPin, Building, Building2, Globe, Mail, Phone,
   ShieldCheck, ShieldAlert, Star, Calendar, Clock,
   Trash2, Users, Briefcase, ExternalLink, Loader2,
   CheckCircle2, FileText, Hash, Info, Tag, CreditCard,
@@ -31,6 +31,49 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
   const [rejectFeedback, setRejectFeedback] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rejectingDoc, setRejectingDoc] = useState<any>(null);
+  
+  const [editData, setEditData] = useState<any>({
+    company_name: "", company_description: "", about_company: "", industry: "",
+    institution_type: "", website: "", address: "", email: "", phone: "",
+    country: "", city: "", is_active: 1, is_profile_verified: 0,
+    is_verified: 0, is_featured: 0, company_featured: 0,
+    map_link: "", latitude: "", longitude: "", company_logo: ""
+  });
+
+  useEffect(() => {
+    if (employer) {
+      setEditData({
+        company_name: employer.company_name || "",
+        company_description: employer.company_description || "",
+        about_company: employer.about_company || "",
+        industry: employer.industry || "",
+        institution_type: employer.institution_type || "",
+        website: employer.website || "",
+        address: employer.address || "",
+        email: employer.email || "",
+        phone: employer.phone || "",
+        country: employer.country || "",
+        city: employer.city || "",
+        is_active: employer.is_active ?? 1,
+        is_profile_verified: employer.is_profile_verified ?? 0,
+        is_verified: employer.is_verified ?? 0,
+        is_featured: employer.is_featured ?? 0,
+        company_featured: employer.company_featured ?? 0,
+        map_link: employer.map_link || "",
+        latitude: employer.latitude || "",
+        longitude: employer.longitude || "",
+        company_logo: employer.company_logo || ""
+      });
+    }
+  }, [employer]);
+
+  // TODO: API INTEGRATION - Update Employer
+  // Implement the API call here when ready.
+  const handleUpdateEmployer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Submit employer edit data:", editData);
+    toast.success("Employer updated locally (API integration pending)");
+  };
 
   const setDocStatus = async (docId: number, status: "Approved" | "Rejected", feedback?: string) => {
     if (!docId) return;
@@ -96,7 +139,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
     }
   };
 
-  const tabs = ["Overview", "Recruiters", "Jobs", "Documents", "SEO"];
+  const tabs = ["Overview", "Edit Institute", "Recruiters", "Jobs", "Documents", "SEO"];
 
   useEffect(() => {
     if (!isNaN(Number(resolvedParams.id))) {
@@ -204,7 +247,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <>
-      <div className="max-w-6xl mx-auto space-y-6 pb-20 antialiased animate-fade-in-up px-4">
+      <div className="w-full space-y-5 pb-10 antialiased">
         <Link
           href="/employers"
           className="flex items-center w-fit gap-2 text-[12px] font-semibold text-slate-600 hover:text-primary transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
@@ -771,6 +814,242 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                 </div>
               )}
             </div>
+          )}
+
+          {activeTab === "Edit Institute" && (
+            <form onSubmit={handleUpdateEmployer} className="lg:col-span-3 w-full space-y-8 animate-in fade-in duration-300">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
+                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <Building size={20} className="text-primary" /> Edit Institute Details
+                  </h3>
+                  <p className="text-[13px] font-medium text-slate-500 mt-1">Update the company profile and associated configurations.</p>
+                </div>
+                <div className="p-6 md:p-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <Building2 size={14} className="text-primary" /> Company Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.company_name}
+                    onChange={(e) => setEditData({ ...editData, company_name: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <Briefcase size={14} className="text-primary" /> Industry
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.industry}
+                    onChange={(e) => setEditData({ ...editData, industry: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <Building size={14} className="text-primary" /> Institution Type
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.institution_type}
+                    onChange={(e) => setEditData({ ...editData, institution_type: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <Mail size={14} className="text-primary" /> Email
+                  </label>
+                  <input
+                    type="email"
+                    value={editData.email}
+                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <Phone size={14} className="text-primary" /> Phone
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.phone}
+                    onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <Globe size={14} className="text-primary" /> Website
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.website}
+                    onChange={(e) => setEditData({ ...editData, website: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <MapPin size={14} className="text-primary" /> City
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.city}
+                    onChange={(e) => setEditData({ ...editData, city: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <MapPin size={14} className="text-primary" /> Country
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.country}
+                    onChange={(e) => setEditData({ ...editData, country: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <MapPin size={14} className="text-primary" /> Address
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={editData.address}
+                    onChange={(e) => setEditData({ ...editData, address: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <MapPin size={14} className="text-primary" /> Map Link
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.map_link}
+                    onChange={(e) => setEditData({ ...editData, map_link: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <MapPin size={14} className="text-primary" /> Latitude
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.latitude}
+                    onChange={(e) => setEditData({ ...editData, latitude: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <MapPin size={14} className="text-primary" /> Longitude
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.longitude}
+                    onChange={(e) => setEditData({ ...editData, longitude: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <ImageIcon size={14} className="text-primary" /> Company Logo Upload
+                  </label>
+                  <div className="flex items-center gap-4">
+                    {editData.company_logo_preview || editData.company_logo ? (
+                      <img 
+                        src={editData.company_logo_preview || (editData.company_logo.startsWith('http') ? editData.company_logo : resolveMediaUrl(editData.company_logo))} 
+                        alt="Preview" 
+                        className="w-16 h-16 rounded-xl object-contain border border-slate-200"
+                      />
+                    ) : null}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          const file = e.target.files[0];
+                          setEditData({ 
+                            ...editData, 
+                            company_logo_file: file,
+                            company_logo_preview: URL.createObjectURL(file)
+                          });
+                        }
+                      }}
+                      className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <FileText size={14} className="text-primary" /> About Company
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={editData.about_company}
+                    onChange={(e) => setEditData({ ...editData, about_company: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <CheckCircle2 size={14} className="text-primary" /> Is Active
+                  </label>
+                  <select
+                    value={editData.is_active}
+                    onChange={(e) => setEditData({ ...editData, is_active: Number(e.target.value) })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  >
+                    <option value={1}>Yes</option>
+                    <option value={0}>No</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <ShieldCheck size={14} className="text-primary" /> Is Verified
+                  </label>
+                  <select
+                    value={editData.is_verified}
+                    onChange={(e) => setEditData({ ...editData, is_verified: Number(e.target.value) })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  >
+                    <option value={1}>Yes</option>
+                    <option value={0}>No</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <Star size={14} className="text-primary" /> Is Featured
+                  </label>
+                  <select
+                    value={editData.is_featured}
+                    onChange={(e) => setEditData({ ...editData, is_featured: Number(e.target.value) })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  >
+                    <option value={1}>Yes</option>
+                    <option value={0}>No</option>
+                  </select>
+                </div>
+                  </div>
+                </div>
+                <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
+                  <button
+                    type="submit"
+                    className="flex items-center gap-2.5 px-8 py-3 bg-slate-900 text-white text-[13px] font-bold rounded-xl hover:bg-black transition-all shadow-lg shadow-slate-200/50 active:scale-95 disabled:opacity-50"
+                  >
+                    Save Institute Details
+                  </button>
+                </div>
+              </div>
+            </form>
           )}
 
         </div>

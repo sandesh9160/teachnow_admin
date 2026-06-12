@@ -129,7 +129,7 @@ export default function EmployerJobDetailPage({ params }: { params: Promise<{ id
     if (!job) return;
     setProcessing(true);
     try {
-      await updateJob(job.id, editData);
+      await updateJob(job.id, editData as Partial<Job>);
       toast.success("Job content updated");
       fetchJobDetails();
     } catch (error) {

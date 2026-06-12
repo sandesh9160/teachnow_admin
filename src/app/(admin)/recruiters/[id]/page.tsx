@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   Briefcase, Building2, Calendar, ChevronLeft, Loader2, Mail,
   Phone, ShieldCheck, UserCheck, Activity, MapPin, Hash, Trash2,
-  XCircle, CheckCircle2
+  XCircle, CheckCircle2, User as UserIcon, Image as ImageIcon, CheckCircle, Lock
 } from "lucide-react";
 import { getRecruiter, deleteRecruiter, disableRecruiter } from "@/services/admin.service";
 import { Recruiter } from "@/types";
@@ -27,7 +27,33 @@ export default function RecruiterDetailPage({
   const [recruiter, setRecruiter] = useState<Recruiter | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState<"Overview" | "Jobs">("Overview");
+  const [activeTab, setActiveTab] = useState<"Overview" | "Jobs" | "Edit Recruiter">("Overview");
+
+  const [editData, setEditData] = useState<any>({
+    name: "",
+    email: "",
+    password: "",
+    is_active: 1
+  });
+
+  useEffect(() => {
+    if (recruiter) {
+      setEditData({
+        name: recruiter.name || "",
+        email: recruiter.email || "",
+        password: "",
+        is_active: recruiter.is_active ? 1 : 0
+      });
+    }
+  }, [recruiter]);
+
+  // TODO: API INTEGRATION - Update Recruiter
+  // Implement the API call here when ready.
+  const handleUpdateRecruiter = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Submit recruiter edit data:", editData);
+    toast.success("Recruiter updated locally (API integration pending)");
+  };
 
   useEffect(() => {
     fetchDetails();
@@ -170,7 +196,7 @@ export default function RecruiterDetailPage({
           </div>
 
           <div className="flex items-center gap-8 border-b border-slate-200 px-2 overflow-x-auto scrollbar-hide">
-              {(["Overview", "Jobs"] as const).map((t) => (
+              {(["Overview", "Edit Recruiter", "Jobs"] as const).map((t) => (
                   <button
                       key={t}
                       onClick={() => setActiveTab(t)}
@@ -309,6 +335,78 @@ export default function RecruiterDetailPage({
                     </table>
                  </div>
              </div>
+          )}
+
+          {activeTab === "Edit Recruiter" && (
+            <form onSubmit={handleUpdateRecruiter} className="lg:col-span-3 w-full space-y-8 animate-in fade-in duration-300">
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-6 md:p-8 border-b border-slate-100 bg-slate-50/50">
+                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <UserIcon size={20} className="text-primary" /> Edit Recruiter Details
+                  </h3>
+                  <p className="text-[13px] font-medium text-slate-500 mt-1">Update the recruiter's profile and account access.</p>
+                </div>
+                <div className="p-6 md:p-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <UserIcon size={14} className="text-primary" /> Name
+                  </label>
+                  <input
+                    type="text"
+                    value={editData.name}
+                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <Mail size={14} className="text-primary" /> Email
+                  </label>
+                  <input
+                    type="email"
+                    value={editData.email}
+                    onChange={(e) => setEditData({ ...editData, email: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <Lock size={14} className="text-primary" /> Password
+                  </label>
+                  <input
+                    type="password"
+                    value={editData.password}
+                    onChange={(e) => setEditData({ ...editData, password: e.target.value })}
+                    placeholder="Leave blank to keep unchanged"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                    <CheckCircle size={14} className="text-primary" /> Is Active
+                  </label>
+                  <select
+                    value={editData.is_active}
+                    onChange={(e) => setEditData({ ...editData, is_active: Number(e.target.value) })}
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all text-[13px] font-semibold text-slate-900 bg-white"
+                  >
+                    <option value={1}>Yes</option>
+                    <option value={0}>No</option>
+                  </select>
+                </div>
+                  </div>
+                </div>
+                <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
+                  <button
+                    type="submit"
+                    className="flex items-center gap-2.5 px-8 py-3 bg-slate-900 text-white text-[13px] font-bold rounded-xl hover:bg-black transition-all shadow-lg shadow-slate-200/50 active:scale-95 disabled:opacity-50"
+                  >
+                    Save Recruiter Details
+                  </button>
+                </div>
+              </div>
+            </form>
           )}
       </div>
 
