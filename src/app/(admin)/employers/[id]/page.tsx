@@ -354,7 +354,7 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
                   <h3 className="text-[14px] font-semibold text-slate-900 flex items-center gap-2">
                     <Info size={16} className="text-primary" /> Organization Summary
                   </h3>
-                  <p className="text-[14px] text-slate-900 font-medium leading-relaxed">
+                  <p className="text-[14px] text-slate-900 font-medium leading-relaxed break-words whitespace-pre-wrap">
                     {employer.company_description || employer.about_company || "No description provided."}
                   </p>
                 </div>
@@ -856,11 +856,11 @@ export default function InstituteDetailPage({ params }: { params: Promise<{ id: 
 
 function Field({ label, value, icon: Icon }: { label: string; value?: React.ReactNode | string | number | null; icon?: any }) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5 min-w-0">
       <p className="text-[11px] font-bold text-black">{label}</p>
-      <div className="flex items-start gap-2 min-h-[20px]">
+      <div className="flex items-start gap-2 min-h-[20px] min-w-0">
         {Icon && <Icon size={14} className="text-slate-400 shrink-0 mt-0.5" />}
-        <div className="text-[14px] text-slate-900 font-medium leading-relaxed break-words">
+        <div className="text-[14px] text-slate-900 font-medium leading-relaxed break-words whitespace-pre-wrap min-w-0">
           {value || <span className="text-slate-400 font-medium">—</span>}
         </div>
       </div>
