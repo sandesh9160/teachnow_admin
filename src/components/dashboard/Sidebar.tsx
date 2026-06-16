@@ -134,6 +134,9 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
         href: "/content",
         icon: ScrollText,
         children: [
+          { title: "Home Page", href: "/content/home" },
+          { title: "AI Resume Builder", href: "/content/ai-resume-builder" },
+          { title: "Hire Now", href: "/content/hire-now" },
           { title: "About Us", href: "/content/about" },
           { title: "Contact Us", href: "/content/contact" },
           { title: "FAQs", href: "/content/faqs" },

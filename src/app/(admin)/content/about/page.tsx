@@ -206,6 +206,7 @@ export default function AboutUsPage() {
             </div>
           </div>
           <button
+            suppressHydrationWarning
             onClick={handleSaveMeta}
             disabled={savingMeta}
             className="h-9 px-4 rounded border border-[#0284c7] bg-[#0284c7] text-white text-[13px] hover:bg-[#0369a1] transition-all font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -223,6 +224,7 @@ export default function AboutUsPage() {
               Meta Title
             </label>
             <input
+              suppressHydrationWarning
               id="about-meta-title"
               type="text"
               placeholder="e.g. About Us | TeachNow — Connecting Teachers & Schools"
@@ -259,6 +261,7 @@ export default function AboutUsPage() {
               Meta Keywords
             </label>
             <input
+              suppressHydrationWarning
               id="about-meta-keywords"
               type="text"
               placeholder="e.g. about us, teachnow, teaching jobs, educators, school hiring"

@@ -165,6 +165,7 @@ export default function FAQPage() {
             </div>
           </div>
           <button
+            suppressHydrationWarning
             onClick={handleSaveMeta}
             disabled={savingMeta}
             className="h-9 px-4 rounded border border-[#0284c7] bg-[#0284c7] text-white text-[13px] hover:bg-[#0369a1] transition-all font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -179,6 +180,7 @@ export default function FAQPage() {
               <Tag size={11} /> Meta Title
             </label>
             <input
+              suppressHydrationWarning
               id="faqs-meta-title"
               type="text"
               placeholder="e.g. FAQs | TeachNow — Frequently Asked Questions"
@@ -209,6 +211,7 @@ export default function FAQPage() {
               <Tag size={11} /> Meta Keywords
             </label>
             <input
+              suppressHydrationWarning
               id="faqs-meta-keywords"
               type="text"
               placeholder="e.g. faqs, teachnow, teacher questions, school hiring, education platform"

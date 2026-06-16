@@ -188,6 +188,7 @@ export default function TermsAndConditionsPage() {
             </div>
           </div>
           <button
+            suppressHydrationWarning
             onClick={handleSaveMeta}
             disabled={savingMeta}
             className="h-9 px-4 rounded border border-[#0284c7] bg-[#0284c7] text-white text-[13px] hover:bg-[#0369a1] transition-all font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -202,6 +203,7 @@ export default function TermsAndConditionsPage() {
               <Tag size={11} /> Meta Title
             </label>
             <input
+              suppressHydrationWarning
               id="terms-meta-title"
               type="text"
               placeholder="e.g. Terms & Conditions | TeachNow"
@@ -232,6 +234,7 @@ export default function TermsAndConditionsPage() {
               <Tag size={11} /> Meta Keywords
             </label>
             <input
+              suppressHydrationWarning
               id="terms-meta-keywords"
               type="text"
               placeholder="e.g. terms and conditions, teachnow policy, user agreement, legal terms"
@@ -344,21 +347,21 @@ export default function TermsAndConditionsPage() {
                   </div>
 
                   <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4 no-scrollbar">
-                      <div className="space-y-1">
-                          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter ml-1">Section Heading</label>
-                          <input 
+                      <div className="space-y-2">
+                          <label className="text-[11px] font-bold text-slate-600 uppercase tracking-[0.08em] ml-1">Section Heading</label>
+                          <input
                             type="text"
                             placeholder="Enter Heading..."
                             value={editorData.title}
                             onChange={e => setEditorData({...editorData, title: e.target.value})}
-                            className="w-full text-xl font-bold text-slate-900 border-none outline-hidden placeholder:text-slate-200"
+                            className="w-full h-10 px-4 bg-white border border-slate-300 rounded-md text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all font-medium"
                           />
                       </div>
                       
                       <div className="h-px bg-slate-50 w-full" />
 
-                      <div className="space-y-1">
-                          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter ml-1">Terms Content</label>
+                      <div className="space-y-2">
+                          <label className="text-[11px] font-bold text-slate-600 uppercase tracking-[0.08em] ml-1">Terms Content</label>
                           <TipTapEditor 
                             value={editorData.content || ""} 
                             onChange={(val) => setEditorData({...editorData, content: val})} 
