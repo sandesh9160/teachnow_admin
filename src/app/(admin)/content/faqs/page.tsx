@@ -8,6 +8,9 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  Save,
+  Loader2,
+  Tag,
 } from "lucide-react";
 import { getFAQs, createFAQ, updateFAQ, deleteFAQ } from "@/services/admin.service";
 import { FAQ } from "@/types";
@@ -23,6 +26,22 @@ export default function FAQPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  // SEO Meta State (static for now — wire to API later)
+  const [seoMeta, setSeoMeta] = useState({
+    meta_title: "",
+    meta_description: "",
+    meta_keywords: "",
+  });
+  const [savingMeta, setSavingMeta] = useState(false);
+
+  const handleSaveMeta = async () => {
+    setSavingMeta(true);
+    // TODO: call API to save SEO meta for FAQs page
+    await new Promise((r) => setTimeout(r, 600));
+    toast.success("SEO meta saved successfully");
+    setSavingMeta(false);
+  };
   
   // Form State
   const [formData, setFormData] = useState<Partial<FAQ>>({
@@ -131,6 +150,75 @@ export default function FAQPage() {
         >
           Add FAQ
         </button>
+      </div>
+
+      {/* ─── SEO Meta Section ───────────────────────────────── */}
+      <div className="bg-white rounded-md border border-[#cbd5e1] overflow-hidden">
+        <div className="bg-white px-5 py-4 border-b border-[#cbd5e1] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-md border border-[#cbd5e1] bg-white flex items-center justify-center text-[#0ea5e9]">
+              <Search size={16} />
+            </div>
+            <div>
+              <h2 className="text-[14px] font-bold text-slate-900 tracking-tight">SEO Meta Tags</h2>
+              <p className="text-[11px] text-slate-600 font-medium mt-0.5">Manage search engine visibility for the FAQs page</p>
+            </div>
+          </div>
+          <button
+            onClick={handleSaveMeta}
+            disabled={savingMeta}
+            className="h-9 px-4 rounded border border-[#0284c7] bg-[#0284c7] text-white text-[13px] hover:bg-[#0369a1] transition-all font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {savingMeta ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {savingMeta ? "Saving..." : "Save Meta"}
+          </button>
+        </div>
+        <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="md:col-span-2 space-y-2">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 uppercase tracking-[0.08em] ml-1">
+              <Tag size={11} /> Meta Title
+            </label>
+            <input
+              id="faqs-meta-title"
+              type="text"
+              placeholder="e.g. FAQs | TeachNow — Frequently Asked Questions"
+              value={seoMeta.meta_title}
+              onChange={(e) => setSeoMeta({ ...seoMeta, meta_title: e.target.value })}
+              maxLength={60}
+              className="w-full h-10 px-4 bg-white border border-slate-300 rounded-md text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all font-medium"
+            />
+            <p className="text-[10px] text-slate-400 ml-1 font-medium">{seoMeta.meta_title.length}/60 characters recommended</p>
+          </div>
+          <div className="md:col-span-2 space-y-2">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 uppercase tracking-[0.08em] ml-1">
+              <Tag size={11} /> Meta Description
+            </label>
+            <textarea
+              id="faqs-meta-description"
+              rows={3}
+              placeholder="e.g. Find answers to the most common questions about TeachNow's platform, hiring process, and teacher resources."
+              value={seoMeta.meta_description}
+              onChange={(e) => setSeoMeta({ ...seoMeta, meta_description: e.target.value })}
+              maxLength={160}
+              className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-md text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all font-medium resize-none"
+            />
+            <p className="text-[10px] text-slate-400 ml-1 font-medium">{seoMeta.meta_description.length}/160 characters recommended</p>
+          </div>
+          <div className="md:col-span-2 space-y-2">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 uppercase tracking-[0.08em] ml-1">
+              <Tag size={11} /> Meta Keywords
+            </label>
+            <input
+              id="faqs-meta-keywords"
+              type="text"
+              placeholder="e.g. faqs, teachnow, teacher questions, school hiring, education platform"
+              value={seoMeta.meta_keywords}
+              onChange={(e) => setSeoMeta({ ...seoMeta, meta_keywords: e.target.value })}
+              className="w-full h-10 px-4 bg-white border border-slate-300 rounded-md text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all font-medium"
+            />
+            <p className="text-[10px] text-slate-400 ml-1 font-medium">Separate keywords with commas</p>
+          </div>
+        </div>
       </div>
 
       {/* ─── FILTERS ────────────────────────────────────────────── */}

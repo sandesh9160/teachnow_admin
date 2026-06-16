@@ -187,9 +187,9 @@ const MenuButton = ({
     disabled={disabled}
     title={title}
     className={clsx(
-      "h-8 min-w-[30px] px-1.5 transition-all flex items-center justify-center shrink-0 cursor-pointer bg-white relative",
+      "h-8 min-w-[30px] px-1.5 transition-all flex items-center justify-center shrink-0 cursor-pointer relative",
       !noBorderRight && "border-r border-[#cbd5e1]",
-      isActive ? "bg-[#e0f2fe] text-[#0ea5e9]" : "text-[#0ea5e9] hover:bg-slate-50",
+      isActive ? "bg-[#0ea5e9] text-white" : "bg-white text-slate-500 hover:bg-slate-50 hover:text-[#0ea5e9]",
       disabled && "opacity-50 cursor-not-allowed",
       className
     )}
@@ -222,6 +222,8 @@ export function TipTapEditor({
   const [isHtmlView, setIsHtmlView] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
+  // Forces toolbar to re-render whenever selection or formatting changes
+  const [_tick, setTick] = useState(0);
 
   const headingMenuRef = useRef<HTMLDivElement>(null);
   const sizeMenuRef = useRef<HTMLDivElement>(null);
@@ -268,6 +270,13 @@ export function TipTapEditor({
     content: value,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
+      setTick(t => t + 1);
+    },
+    onSelectionUpdate: () => {
+      setTick(t => t + 1);
+    },
+    onTransaction: () => {
+      setTick(t => t + 1);
     },
     editorProps: {
       attributes: {
@@ -353,6 +362,28 @@ export function TipTapEditor({
 
   if (!editor) return null;
 
+  // Returns the actual font size for the current selection (explicit or node default)
+  const getCurrentFontSize = (): string => {
+    const explicit = editor.getAttributes('textStyle').fontSize;
+    if (explicit) return explicit.replace('px', '');
+    if (editor.isActive('heading', { level: 1 })) return '24';
+    if (editor.isActive('heading', { level: 2 })) return '20';
+    if (editor.isActive('heading', { level: 3 })) return '18';
+    return '14'; // default paragraph
+  };
+
+  // Returns the current block type label
+  const getCurrentHeadingType = (): string => {
+    if (editor.isActive('heading', { level: 1 })) return 'H1';
+    if (editor.isActive('heading', { level: 2 })) return 'H2';
+    if (editor.isActive('heading', { level: 3 })) return 'H3';
+    return 'P';
+  };
+
+  const currentFontSize = getCurrentFontSize();
+  const currentHeadingType = getCurrentHeadingType();
+  const hasExplicitFontSize = !!editor.getAttributes('textStyle').fontSize;
+
   return (
     <div className={clsx(
       "border border-[#cbd5e1] rounded-md bg-white flex flex-col transition-all relative cursor-text",
@@ -394,14 +425,14 @@ export function TipTapEditor({
         
         <ButtonGroup>
           <div className="relative" ref={sizeMenuRef}>
-            <MenuButton onClick={() => setShowSizeMenu(!showSizeMenu)} title="Font Size" noBorderRight>
-               <span className="text-[12px] font-medium leading-none">{editor.getAttributes('textStyle').fontSize?.replace('px', '') || '11'}</span>
+            <MenuButton onClick={() => setShowSizeMenu(!showSizeMenu)} isActive={hasExplicitFontSize || showSizeMenu} title="Font Size" noBorderRight>
+               <span className="text-[12px] font-medium leading-none">{currentFontSize}</span>
                <ChevronDown size={11} className="opacity-70 ml-1" />
             </MenuButton>
             {showSizeMenu && (
               <div className="absolute top-full left-0 mt-1 w-16 bg-white border border-slate-200 rounded-md shadow-lg z-[50] py-1">
                   {['11px', '12px', '14px', '16px', '18px', '24px', '32px'].map((size) => (
-                      <button key={size} type="button" onMouseDown={(e) => { e.preventDefault(); (editor.commands as any).setFontSize(size); setShowSizeMenu(false); }} className="w-full px-3 py-1.5 text-center text-[12px] hover:bg-slate-50 text-slate-700">
+                      <button key={size} type="button" onMouseDown={(e) => { e.preventDefault(); (editor.commands as any).setFontSize(size); setShowSizeMenu(false); }} className={clsx("w-full px-3 py-1.5 text-center text-[12px] transition-colors", currentFontSize === size.replace('px','') ? "bg-[#0ea5e9] text-white font-semibold" : "hover:bg-slate-50 text-slate-700")}>
                           {size.replace('px', '')}
                       </button>
                   ))}
@@ -412,16 +443,16 @@ export function TipTapEditor({
 
         <ButtonGroup>
           <div className="relative" ref={headingMenuRef}>
-            <MenuButton onClick={() => setShowHeadingMenu(!showHeadingMenu)} title="Format" noBorderRight>
-               <span className="text-[12px] font-medium leading-none">{editor.isActive('heading', { level: 1 }) ? 'H1' : editor.isActive('heading', { level: 2 }) ? 'H2' : editor.isActive('heading', { level: 3 }) ? 'H3' : 'P'}</span>
+            <MenuButton onClick={() => setShowHeadingMenu(!showHeadingMenu)} isActive={editor.isActive('heading') || showHeadingMenu} title="Format" noBorderRight>
+               <span className="text-[12px] font-medium leading-none">{currentHeadingType}</span>
                <ChevronDown size={11} className="opacity-70 ml-1" />
             </MenuButton>
             {showHeadingMenu && (
-              <div className="absolute top-full left-0 mt-1 w-24 bg-white border border-slate-200 rounded-md shadow-lg z-[50] py-1">
-                  <button type="button" onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().setParagraph().run(); setShowHeadingMenu(false); }} className="w-full px-3 py-1.5 text-left text-[12px] hover:bg-slate-50 text-slate-700">Paragraph</button>
-                  <button type="button" onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 1 }).run(); setShowHeadingMenu(false); }} className="w-full px-3 py-1.5 text-left text-[12px] font-bold hover:bg-slate-50 text-slate-900">Heading 1</button>
-                  <button type="button" onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 2 }).run(); setShowHeadingMenu(false); }} className="w-full px-3 py-1.5 text-left text-[12px] font-bold hover:bg-slate-50 text-slate-800">Heading 2</button>
-                  <button type="button" onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 3 }).run(); setShowHeadingMenu(false); }} className="w-full px-3 py-1.5 text-left text-[12px] font-bold hover:bg-slate-50 text-slate-700">Heading 3</button>
+              <div className="absolute top-full left-0 mt-1 w-28 bg-white border border-slate-200 rounded-md shadow-lg z-[50] py-1">
+                  <button type="button" onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().setParagraph().run(); setShowHeadingMenu(false); }} className={clsx("w-full px-3 py-1.5 text-left text-[12px] transition-colors", currentHeadingType === 'P' ? "bg-[#0ea5e9] text-white font-semibold" : "hover:bg-slate-50 text-slate-700")}>Paragraph</button>
+                  <button type="button" onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 1 }).run(); setShowHeadingMenu(false); }} className={clsx("w-full px-3 py-1.5 text-left text-[12px] font-bold transition-colors", currentHeadingType === 'H1' ? "bg-[#0ea5e9] text-white" : "hover:bg-slate-50 text-slate-900")}>Heading 1</button>
+                  <button type="button" onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 2 }).run(); setShowHeadingMenu(false); }} className={clsx("w-full px-3 py-1.5 text-left text-[12px] font-bold transition-colors", currentHeadingType === 'H2' ? "bg-[#0ea5e9] text-white" : "hover:bg-slate-50 text-slate-800")}>Heading 2</button>
+                  <button type="button" onMouseDown={(e) => { e.preventDefault(); editor.chain().focus().toggleHeading({ level: 3 }).run(); setShowHeadingMenu(false); }} className={clsx("w-full px-3 py-1.5 text-left text-[12px] font-bold transition-colors", currentHeadingType === 'H3' ? "bg-[#0ea5e9] text-white" : "hover:bg-slate-50 text-slate-700")}>Heading 3</button>
               </div>
             )}
           </div>
@@ -566,7 +597,7 @@ export function TipTapEditor({
 
         <ButtonGroup>
           <div className="relative" ref={alignMenuRef}>
-            <MenuButton onClick={() => setShowAlignMenu(!showAlignMenu)} title="Text Alignment" noBorderRight>
+            <MenuButton onClick={() => setShowAlignMenu(!showAlignMenu)} isActive={editor.isActive({ textAlign: 'center' }) || editor.isActive({ textAlign: 'right' }) || editor.isActive({ textAlign: 'justify' }) || showAlignMenu} title="Text Alignment" noBorderRight>
                {editor.isActive({ textAlign: 'center' }) ? <AlignCenter size={13} /> :
                 editor.isActive({ textAlign: 'right' }) ? <AlignRight size={13} /> :
                 editor.isActive({ textAlign: 'justify' }) ? <AlignJustify size={13} /> :

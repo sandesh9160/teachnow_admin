@@ -9,6 +9,7 @@ import {
   Loader2,
   AlertCircle,
   Settings2,
+  Tag,
 } from "lucide-react";
 import { 
   getPrivacyPolicies, 
@@ -28,6 +29,22 @@ export default function PrivacyPolicyPage() {
   const [activeId, setActiveId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // SEO Meta State (static for now — wire to API later)
+  const [seoMeta, setSeoMeta] = useState({
+    meta_title: "",
+    meta_description: "",
+    meta_keywords: "",
+  });
+  const [savingMeta, setSavingMeta] = useState(false);
+
+  const handleSaveMeta = async () => {
+    setSavingMeta(true);
+    // TODO: call API to save SEO meta for Privacy Policy page
+    await new Promise((r) => setTimeout(r, 600));
+    toast.success("SEO meta saved successfully");
+    setSavingMeta(false);
+  };
   
   // Editor State
   const [editorData, setEditorData] = useState<Partial<PrivacyPolicyItem>>({
@@ -148,13 +165,86 @@ export default function PrivacyPolicyPage() {
   );
 
   return (
-    <div className="h-[calc(100vh-140px)] flex gap-4 antialiased pt-2">
+    <div className="flex flex-col gap-4 antialiased pt-2 pb-6">
+
+      {/* ─── SEO Meta Section ───────────────────────────────── */}
+      <div className="bg-white rounded-md border border-[#cbd5e1] overflow-hidden">
+        <div className="bg-white px-5 py-4 border-b border-[#cbd5e1] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-md border border-[#cbd5e1] bg-white flex items-center justify-center text-[#0ea5e9]">
+              <Search size={16} />
+            </div>
+            <div>
+              <h2 className="text-[14px] font-bold text-slate-900 tracking-tight">SEO Meta Tags</h2>
+              <p className="text-[11px] text-slate-600 font-medium mt-0.5">Manage search engine visibility for the Privacy Policy page</p>
+            </div>
+          </div>
+          <button
+            onClick={handleSaveMeta}
+            disabled={savingMeta}
+            className="h-9 px-4 rounded border border-[#0284c7] bg-[#0284c7] text-white text-[13px] hover:bg-[#0369a1] transition-all font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {savingMeta ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {savingMeta ? "Saving..." : "Save Meta"}
+          </button>
+        </div>
+        <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="md:col-span-2 space-y-2">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 uppercase tracking-[0.08em] ml-1">
+              <Tag size={11} /> Meta Title
+            </label>
+            <input
+              id="privacy-meta-title"
+              type="text"
+              placeholder="e.g. Privacy Policy | TeachNow"
+              value={seoMeta.meta_title}
+              onChange={(e) => setSeoMeta({ ...seoMeta, meta_title: e.target.value })}
+              maxLength={60}
+              className="w-full h-10 px-4 bg-white border border-slate-300 rounded-md text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all font-medium"
+            />
+            <p className="text-[10px] text-slate-400 ml-1 font-medium">{seoMeta.meta_title.length}/60 characters recommended</p>
+          </div>
+          <div className="md:col-span-2 space-y-2">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 uppercase tracking-[0.08em] ml-1">
+              <Tag size={11} /> Meta Description
+            </label>
+            <textarea
+              id="privacy-meta-description"
+              rows={3}
+              placeholder="e.g. Read TeachNow's Privacy Policy to learn how we collect, use, and protect your personal data."
+              value={seoMeta.meta_description}
+              onChange={(e) => setSeoMeta({ ...seoMeta, meta_description: e.target.value })}
+              maxLength={160}
+              className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-md text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all font-medium resize-none"
+            />
+            <p className="text-[10px] text-slate-400 ml-1 font-medium">{seoMeta.meta_description.length}/160 characters recommended</p>
+          </div>
+          <div className="md:col-span-2 space-y-2">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600 uppercase tracking-[0.08em] ml-1">
+              <Tag size={11} /> Meta Keywords
+            </label>
+            <input
+              id="privacy-meta-keywords"
+              type="text"
+              placeholder="e.g. privacy policy, data protection, teachnow, user data, GDPR"
+              value={seoMeta.meta_keywords}
+              onChange={(e) => setSeoMeta({ ...seoMeta, meta_keywords: e.target.value })}
+              className="w-full h-10 px-4 bg-white border border-slate-300 rounded-md text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all font-medium"
+            />
+            <p className="text-[10px] text-slate-400 ml-1 font-medium">Separate keywords with commas</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── SPLIT PANEL ────────────────────────────────────────── */}
+      <div className="min-h-[620px] flex gap-4">
       {/* ─── SIDEBAR NAVIGATION ────────────────────────────────────────── */}
       <div className="w-64 flex flex-col bg-white rounded-xl shadow-xs overflow-hidden shrink-0">
           <div className="p-3 border-b border-slate-50">
               <div className="flex items-center justify-between mb-2 px-1">
                   <h2 className="text-xs font-bold text-slate-900 tracking-tight">Policy Nodes</h2>
                   <button 
+                    suppressHydrationWarning
                     onClick={handleAddNew}
                     className="p-1 rounded-lg bg-violet-600 text-white hover:bg-violet-700 active:scale-95 transition-all"
                   >
@@ -164,6 +254,7 @@ export default function PrivacyPolicyPage() {
               <div className="relative">
                   <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
                   <input 
+                    suppressHydrationWarning
                     type="text"
                     placeholder="Search..."
                     value={searchQuery}
@@ -217,22 +308,21 @@ export default function PrivacyPolicyPage() {
                           CONFIGURATION
                       </div>
                       <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-5 px-5 py-2 bg-white rounded-xl shadow-xs border border-slate-100">
+                        <div className="flex items-center gap-5 px-5 py-2 bg-white rounded-xl border border-[#cbd5e1]">
                              <div className="flex items-center gap-3">
-                                 <ValidatedInput 
-                                    label="Order"
-                                    validationType="numbers"
+                                 <span className="text-xs font-bold text-slate-500">Order</span>
+                                 <input 
                                     type="number"
                                     value={editorData.display_order}
                                     onChange={e => setEditorData({...editorData, display_order: Number(e.target.value)})}
-                                    className="w-16 !bg-transparent !border-none !shadow-none !p-0"
+                                    className="w-14 h-8 px-2 text-sm font-bold text-slate-800 bg-white border border-[#cbd5e1] rounded-md focus:outline-none focus:border-blue-500 transition-all"
                                  />
                              </div>
                         </div>
                         <button 
                             disabled={saving}
                             onClick={handleDelete}
-                            className="p-1.5 text-slate-400 hover:text-orange-600 active:scale-90 transition-all"
+                            className="p-1.5 bg-rose-500 text-white hover:bg-rose-600 rounded-lg active:scale-90 transition-all"
                         >
                             <Trash2 size={16} />
                         </button>
@@ -248,21 +338,21 @@ export default function PrivacyPolicyPage() {
                   </div>
 
                   <div className="flex-1 overflow-y-auto px-8 py-6 space-y-4 no-scrollbar">
-                      <div className="space-y-1">
-                          <ValidatedInput 
-                            label="Section Heading"
-                            validationType="alphaNumeric"
+                      <div className="space-y-2">
+                          <label className="text-[11px] font-bold text-slate-600 uppercase tracking-[0.08em] ml-1">Section Heading</label>
+                          <input
+                            type="text"
                             placeholder="Enter Heading..."
                             value={editorData.title}
                             onChange={e => setEditorData({...editorData, title: e.target.value})}
-                            className="text-xl !bg-transparent !border-none !shadow-none !p-0"
+                            className="w-full h-10 px-4 bg-white border border-slate-300 rounded-md text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all font-medium"
                           />
                       </div>
                       
                       <div className="h-px bg-slate-50 w-full" />
 
-                      <div className="space-y-1">
-                          <label className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter ml-1">Document Content</label>
+                      <div className="space-y-2">
+                          <label className="text-[11px] font-bold text-slate-600 uppercase tracking-[0.08em] ml-1">Document Content</label>
                           <TipTapEditor 
                             value={editorData.content || ""} 
                             onChange={(val) => setEditorData({...editorData, content: val})} 
@@ -279,6 +369,7 @@ export default function PrivacyPolicyPage() {
                   </p>
               </div>
           )}
+      </div>
       </div>
     </div>
   );

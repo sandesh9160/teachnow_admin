@@ -27,7 +27,12 @@ import {
   Clock,
   Mail,
   Newspaper,
-  Banknote
+  Banknote,
+  Info,
+  Phone,
+  HelpCircle,
+  ScrollText,
+  Lock
 } from "lucide-react";
 import { adminSignOut } from "@/lib/auth";
 import { clsx } from "clsx";
@@ -115,6 +120,20 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
           { title: "Footer Links", href: "/cms/footer-links" },
           { title: "Company Title & Logo", href: "/cms/branding" },
           { title: "Popular Searches", href: "/cms/popular-searches" },
+        ]
+      },
+    ]
+  },
+  {
+    label: "Content Pages",
+    color: "text-indigo-500",
+    headerIcon: null,
+    items: [
+      {
+        title: "Content Pages",
+        href: "/content",
+        icon: ScrollText,
+        children: [
           { title: "About Us", href: "/content/about" },
           { title: "Contact Us", href: "/content/contact" },
           { title: "FAQs", href: "/content/faqs" },

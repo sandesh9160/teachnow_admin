@@ -250,6 +250,9 @@ export const updateEmployerSEO = (id: number, data: any) =>
 export const getApplications = (params?: Record<string, unknown>) =>
   dashboardServerFetch<PaginatedResponse<Application>>("/admin/applications", { params });
 
+export const getApplication = (id: string | number) =>
+  dashboardServerFetch<ApiResponse<Application>>(`/admin/applications/${id}`);
+
 export const updateApplication = (id: number, data: Partial<Application>) =>
   dashboardServerFetch(`/admin/applications/${id}`, { method: "PUT", data });
 

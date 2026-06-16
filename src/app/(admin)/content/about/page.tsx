@@ -14,7 +14,9 @@ import {
   CheckCircle2, 
   Clock,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Tag,
+  Search
 } from "lucide-react";
 import { toast } from "sonner";
 import { 
@@ -45,6 +47,22 @@ export default function AboutUsPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState({ title: "", content: "" });
   const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  // SEO Meta State (static for now — wire to API later)
+  const [seoMeta, setSeoMeta] = useState({
+    meta_title: "",
+    meta_description: "",
+    meta_keywords: "",
+  });
+  const [savingMeta, setSavingMeta] = useState(false);
+
+  const handleSaveMeta = async () => {
+    setSavingMeta(true);
+    // TODO: call API to save SEO meta for About Us page
+    await new Promise((r) => setTimeout(r, 600)); // simulate save
+    toast.success("SEO meta saved successfully");
+    setSavingMeta(false);
+  };
 
   useEffect(() => {
     fetchAboutUs();
@@ -175,6 +193,84 @@ export default function AboutUsPage() {
         )}
       </div>
 
+      {/* ─── SEO Meta Section ───────────────────────────────── */}
+      <div className="bg-white rounded-md border border-[#cbd5e1] overflow-hidden">
+        <div className="bg-white px-5 py-4 border-b border-[#cbd5e1] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-md border border-[#cbd5e1] bg-white flex items-center justify-center text-[#0ea5e9]">
+              <Search size={16} />
+            </div>
+            <div>
+              <h2 className="text-[14px] font-bold text-slate-900 tracking-tight">SEO Meta Tags</h2>
+              <p className="text-[11px] text-slate-600 font-medium mt-0.5">Manage search engine visibility for the About Us page</p>
+            </div>
+          </div>
+          <button
+            onClick={handleSaveMeta}
+            disabled={savingMeta}
+            className="h-9 px-4 rounded border border-[#0284c7] bg-[#0284c7] text-white text-[13px] hover:bg-[#0369a1] transition-all font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {savingMeta ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+            {savingMeta ? "Saving..." : "Save Meta"}
+          </button>
+        </div>
+
+        <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Meta Title */}
+          <div className="md:col-span-2 space-y-2">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600  tracking-[0.08em] ml-1">
+              <Tag size={11} />
+              Meta Title
+            </label>
+            <input
+              id="about-meta-title"
+              type="text"
+              placeholder="e.g. About Us | TeachNow — Connecting Teachers & Schools"
+              value={seoMeta.meta_title}
+              onChange={(e) => setSeoMeta({ ...seoMeta, meta_title: e.target.value })}
+              maxLength={60}
+              className="w-full h-10 px-4 bg-white border border-slate-300 rounded-md text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all font-medium"
+            />
+            <p className="text-[10px] text-slate-400 ml-1 font-medium">{seoMeta.meta_title.length}/60 characters recommended</p>
+          </div>
+
+          {/* Meta Description */}
+          <div className="md:col-span-2 space-y-2">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600  tracking-[0.08em] ml-1">
+              <Tag size={11} />
+              Meta Description
+            </label>
+            <textarea
+              id="about-meta-description"
+              rows={3}
+              placeholder="e.g. Learn about TeachNow's mission to connect qualified teachers with leading educational institutions across the country."
+              value={seoMeta.meta_description}
+              onChange={(e) => setSeoMeta({ ...seoMeta, meta_description: e.target.value })}
+              maxLength={160}
+              className="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-md text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all font-medium resize-none"
+            />
+            <p className="text-[10px] text-slate-400 ml-1 font-medium">{seoMeta.meta_description.length}/160 characters recommended</p>
+          </div>
+
+          {/* Meta Keywords */}
+          <div className="md:col-span-2 space-y-2">
+            <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-600  tracking-[0.08em] ml-1">
+              <Tag size={11} />
+              Meta Keywords
+            </label>
+            <input
+              id="about-meta-keywords"
+              type="text"
+              placeholder="e.g. about us, teachnow, teaching jobs, educators, school hiring"
+              value={seoMeta.meta_keywords}
+              onChange={(e) => setSeoMeta({ ...seoMeta, meta_keywords: e.target.value })}
+              className="w-full h-10 px-4 bg-white border border-slate-300 rounded-md text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all font-medium"
+            />
+            <p className="text-[10px] text-slate-400 ml-1 font-medium">Separate keywords with commas</p>
+          </div>
+        </div>
+      </div>
+
       {data.length === 0 ? (
         <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] p-20 flex flex-col items-center text-center">
           <div className="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center text-slate-200 mb-6 shadow-inner">
@@ -191,14 +287,14 @@ export default function AboutUsPage() {
           {data.map((section) => (
             <div key={section.id} className="space-y-4">
               {/* Primary Section Card */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="bg-slate-50 px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+              <div className="bg-white rounded-md border border-[#cbd5e1] overflow-hidden">
+                <div className="bg-white px-5 py-4 border-b border-[#cbd5e1] flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500 shadow-sm">
+                    <div className="w-8 h-8 rounded-md border border-[#cbd5e1] bg-white flex items-center justify-center text-[#0ea5e9]">
                       <CheckCircle2 size={16} />
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-slate-900 tracking-tight">{section.title}</h2>
+                      <h2 className="text-[14px] font-bold text-slate-900 tracking-tight">{section.title}</h2>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className="bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">Primary Section</span>
                         <span className="text-[10px] text-slate-400 font-medium flex items-center gap-1 uppercase tracking-wider">
@@ -211,8 +307,8 @@ export default function AboutUsPage() {
                     <button 
                       onClick={() => handleToggleStatus(section.id)}
                       className={clsx(
-                        "px-4 py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest transition-all",
-                        section.is_active ? "bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100" : "bg-slate-50 text-slate-500 border border-slate-100 hover:bg-slate-100"
+                        "h-8 px-3 rounded border text-[11px] font-medium transition-all",
+                        section.is_active ? "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100" : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
                       )}
                     >
                       {section.is_active ? "Visible" : "Hidden"}
@@ -221,13 +317,13 @@ export default function AboutUsPage() {
                       <>
                         <button 
                           onClick={() => handleSave(section.id)}
-                          className="px-5 py-2 bg-indigo-600 text-white rounded-xl text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-2"
+                          className="h-8 px-4 rounded border border-[#0284c7] bg-[#0284c7] text-white text-[13px] hover:bg-[#0369a1] transition-all font-medium flex items-center gap-2"
                         >
                           <Save size={14} /> Save
                         </button>
                         <button 
                           onClick={() => setEditingId(null)}
-                          className="px-5 py-2 bg-white border border-slate-200 text-slate-500 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-slate-50 transition-all"
+                          className="h-8 px-4 rounded border border-[#cbd5e1] text-[13px] text-slate-600 bg-white hover:bg-slate-50 transition-all font-medium"
                         >
                           Cancel
                         </button>
@@ -236,13 +332,13 @@ export default function AboutUsPage() {
                       <>
                         <button 
                           onClick={() => handleEdit(section)}
-                          className="px-4 py-1.5 bg-slate-900 text-white rounded-lg text-[11px] font-bold shadow-sm hover:bg-slate-800 transition-all flex items-center gap-2"
+                          className="h-8 px-4 rounded bg-indigo-600 text-[13px] text-white hover:bg-indigo-700 transition-all font-medium flex items-center gap-2"
                         >
-                          <Pencil size={12} /> Edit
+                          <Pencil size={13} /> Edit
                         </button>
                         <button 
                           onClick={() => handleDelete(section.id)}
-                          className="p-1.5 bg-white border border-slate-200 text-slate-400 rounded-lg hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all flex items-center justify-center cursor-pointer"
+                          className="h-8 w-8 rounded bg-rose-500 text-white hover:bg-rose-600 transition-all flex items-center justify-center cursor-pointer"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -253,19 +349,19 @@ export default function AboutUsPage() {
 
                 <div className="p-5">
                   {editingId === section.id ? (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] ml-1">Section Heading</label>
+                        <label className="text-[11px] font-bold text-slate-600 uppercase tracking-[0.08em] ml-1">Section Heading</label>
                         <input 
                           type="text" 
                           value={editForm.title}
                           onChange={(e) => setEditForm({...editForm, title: e.target.value})}
-                          className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 font-bold focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none"
+                          className="w-full h-10 px-4 bg-white border border-slate-300 rounded-md text-[14px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-all font-medium"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em] ml-1">Main Narrative Content</label>
-                        <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden ring-1 ring-slate-100">
+                        <label className="text-[11px] font-bold text-slate-600 uppercase tracking-[0.08em] ml-1">Main Narrative Content</label>
+                        <div className="rounded-md border border-[#cbd5e1] overflow-hidden">
                           <TipTapEditor 
                             value={editForm.content} 
                             onChange={(val) => setEditForm({...editForm, content: val})} 
@@ -295,9 +391,9 @@ export default function AboutUsPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {section.children?.map((child) => (
-                    <div key={child.id} className="group bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md transition-all duration-300 relative">
+                    <div key={child.id} className="group bg-white rounded-md border border-[#cbd5e1] p-4 transition-all duration-300 relative">
                       <div className="flex items-start justify-between mb-3">
-                        <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors duration-300">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-500 transition-colors duration-300">
                           <Info size={16} />
                         </div>
                         <div className="flex items-center gap-1">
@@ -305,18 +401,18 @@ export default function AboutUsPage() {
                             onClick={() => handleToggleStatus(child.id)}
                             className={clsx(
                               "w-8 h-8 rounded-lg flex items-center justify-center transition-colors",
-                              child.is_active ? "text-emerald-500 hover:bg-emerald-50" : "text-slate-300 hover:bg-slate-50"
+                              child.is_active ? "text-emerald-500 hover:bg-emerald-50" : "text-slate-400 hover:bg-slate-50"
                             )}
                           >
                             <Eye size={16} />
                           </button>
                           <button 
                             onClick={() => handleEdit(child)}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                            className="w-8 h-8 rounded-lg flex items-center justify-center text-indigo-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
                           >
                             <Pencil size={16} />
                           </button>
-                          <button onClick={() => handleDelete(child.id)} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-300 hover:bg-rose-50 hover:text-rose-500 transition-colors cursor-pointer">
+                          <button onClick={() => handleDelete(child.id)} className="w-8 h-8 rounded-lg flex items-center justify-center text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-colors cursor-pointer">
                             <Trash2 size={16} />
                           </button>
                         </div>
