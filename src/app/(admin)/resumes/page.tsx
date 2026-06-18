@@ -81,12 +81,12 @@ export default function ResumesPage() {
 
   return (
     <>
-      <div className="p-6 space-y-6 animate-fade-in">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="space-y-4 pb-6 antialiased animate-fade-in-up">
+        {/* Page Header */}
+        <div className="page-header">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Resume Management</h1>
-            <p className="text-[13px] font-medium text-slate-500 mt-1">
+            <h1 className="page-title">Resume Management</h1>
+            <p className="page-subtitle">
               Manage all uploaded and system-generated candidate resumes.
             </p>
           </div>
@@ -162,7 +162,7 @@ export default function ResumesPage() {
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
             suppressHydrationWarning
-            className="w-full pl-11 pr-6 py-3 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/20 transition-all" 
+            className="w-full pl-11 pr-6 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500/20 transition-all" 
           />
         </div>
 
@@ -171,12 +171,12 @@ export default function ResumesPage() {
           <div className="overflow-x-auto no-scrollbar">
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
-                  <th className="px-6 py-4 text-[13px] font-bold text-slate-900 tracking-wider">Candidate</th>
-                  <th className="px-6 py-4 text-[13px] font-bold text-slate-900 tracking-wider">File Name</th>
-                  <th className="px-6 py-4 text-[13px] font-bold text-slate-900 tracking-wider">Type</th>
-                  <th className="px-6 py-4 text-[13px] font-bold text-slate-900 tracking-wider">Created Date</th>
-                  <th className="px-6 py-4 text-[13px] font-bold text-slate-900 tracking-wider text-center">Actions</th>
+                <tr className="border-b border-slate-200 bg-slate-50/50 sticky top-0 z-10">
+                  <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Candidate</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">File Name</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Type</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Created Date</th>
+                  <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -191,18 +191,17 @@ export default function ResumesPage() {
                   </tr>
                 ) : filtered.length > 0 ? (
                   filtered.map((row) => (
-                    <tr key={row.id} className="group hover:bg-slate-50/30 transition-all duration-200">
-                      <td className="px-6 py-2.5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100 text-indigo-600 group-hover:scale-110 transition-transform">
+                    <tr key={row.id} className="group hover:bg-slate-50/80 transition-all duration-200">
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100 text-indigo-600 group-hover:scale-110 transition-transform">
                             <User size={14} />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-[12.5px] font-bold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
+                            <p className="text-xs font-medium text-slate-900 group-hover:text-primary transition-colors truncate">
                               {row.job_seeker?.name || "Unknown Candidate"}
                             </p>
                             <div className="flex items-center gap-1 mt-0.5">
-                              <Mail size={10} className="text-slate-400" />
                               <span className="text-[10px] text-slate-500 font-medium truncate max-w-[200px]">
                                 {row.job_seeker?.email}
                               </span>
@@ -210,17 +209,17 @@ export default function ResumesPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-2.5">
+                      <td className="px-4 py-2.5">
                         <div className="flex items-center gap-2 max-w-[300px]">
                           <FileText size={12} className="text-slate-400 shrink-0" />
-                          <span className="text-[12.5px] text-slate-600 font-semibold truncate hover:text-indigo-600 transition-colors">
+                          <span className="text-xs text-slate-600 font-medium truncate hover:text-indigo-600 transition-colors">
                             {row.title}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-2.5">
+                      <td className="px-4 py-2.5">
                         <span className={clsx(
-                          "inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border tracking-tight",
+                          "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium border tracking-tight",
                           activeTab === "uploaded" 
                               ? "bg-indigo-50 text-indigo-600 border-indigo-100" 
                               : "bg-purple-50 text-purple-600 border-purple-100"
@@ -228,9 +227,9 @@ export default function ResumesPage() {
                           {activeTab === "uploaded" ? "Upload" : "Generated"}
                         </span>
                       </td>
-                      <td className="px-6 py-2.5">
-                        <div className="flex items-center gap-2">
-                          <Calendar size={12} className="text-slate-400" />
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar size={10} className="text-slate-400" />
                           <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
                             {new Date(row.created_at).toLocaleDateString(undefined, { 
                               month: 'short', 
@@ -240,21 +239,21 @@ export default function ResumesPage() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-2.5 text-center">
-                        <div className="flex items-center justify-center gap-2">
+                      <td className="px-4 py-2.5 text-center">
+                        <div className="flex items-center justify-center gap-1">
                           <button 
                             onClick={() => setPreviewDoc(row)}
-                            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all active:scale-90"
+                            className="text-slate-400 hover:text-indigo-500 transition-colors"
                             title="View Resume"
                           >
-                            <Eye size={18} />
+                            <Eye size={14} />
                           </button>
                           <button 
                             onClick={() => handleDownload(resolveMediaUrl(row.file_url), row.title)}
-                            className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all active:scale-90"
+                            className="text-slate-400 hover:text-emerald-500 transition-colors"
                             title="Download"
                           >
-                            <Download size={18} />
+                            <Download size={14} />
                           </button>
                         </div>
                       </td>

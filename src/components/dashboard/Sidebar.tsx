@@ -137,11 +137,31 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
           { title: "Home Page", href: "/content/home" },
           { title: "AI Resume Builder", href: "/content/ai-resume-builder" },
           { title: "Hire Now", href: "/content/hire-now" },
+          { title: "Jobs Page", href: "/content/jobs" },
+          { title: "Resources Page", href: "/content/resources" },
+          { title: "Institutes Page", href: "/content/institute" },
+          { title: "Pricing Plans", href: "/content/pricing-plans" },
           { title: "About Us", href: "/content/about" },
           { title: "Contact Us", href: "/content/contact" },
           { title: "FAQs", href: "/content/faqs" },
           { title: "Terms & Conditions", href: "/content/terms" },
           { title: "Privacy Policy", href: "/content/privacy" },
+        ]
+      },
+    ]
+  },
+  {
+    label: "Custom Pages",
+    color: "text-pink-500",
+    headerIcon: null,
+    items: [
+      {
+        title: "Custom Pages",
+        href: "/custom-pages",
+        icon: FileText,
+        children: [
+          { title: "All Pages", href: "/custom-pages" },
+          { title: "Create New Page", href: "/custom-pages/create" },
         ]
       },
     ]

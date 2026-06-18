@@ -155,6 +155,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     admin_featured: 0,
     featured: 0,
     job_status: "open",
+    rejection_reason: "",
     questions: [] as { question: string, question_type: string, recruiter_answer: string }[]
   });
 
@@ -186,6 +187,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         admin_featured: job.admin_featured ? 1 : 0,
         featured: (job as any).featured ? 1 : 0,
         job_status: job.job_status || "open",
+        rejection_reason: (job as any).rejection_reason || "",
         questions: Array.isArray((job as any).questions) ? (job as any).questions : []
       });
       setSeoConfig({
@@ -431,6 +433,16 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
               {/* Right Column: Statistics & Actions */}
               <div className="space-y-4">
+                {job.status === "rejected" && (
+                  <div className="p-4 bg-red-50 rounded-2xl border border-red-200 shadow-sm">
+                    <h4 className="text-[12px] font-bold text-red-800 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                      <XCircle size={14} /> Rejection Reason
+                    </h4>
+                    <p className="text-[13px] font-medium text-red-600 leading-relaxed">
+                      {(job as any).rejection_reason || "No specific reason provided for rejection."}
+                    </p>
+                  </div>
+                )}
                 {/* Meta Cards Registry */}
                 {[
                   { icon: <Briefcase size={16} />, label: "Subject", value: job.category?.name || "Physics Teaching", theme: "bg-blue-50 text-blue-600" },
@@ -539,6 +551,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                           <th className="px-5 py-4 whitespace-nowrap">Email</th>
                           <th className="px-5 py-4 whitespace-nowrap">Status</th>
                           <th className="px-5 py-4 whitespace-nowrap">Contact Status</th>
+                          <th className="px-5 py-4 whitespace-nowrap">Call Status</th>
+                          <th className="px-5 py-4 whitespace-nowrap">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
@@ -589,10 +603,27 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                                     {app.contact_status || "Pending"}
                                   </span>
                                 </td>
+                                <td className="px-5 py-3 whitespace-nowrap">
+                                  <span className={clsx(
+                                    "text-[13px] font-semibold",
+                                    (app as any).call_status ? "text-slate-700 capitalize" : "text-slate-700"
+                                  )}>
+                                    {(app as any).call_status || "-"}
+                                  </span>
+                                </td>
+                                <td className="px-5 py-3 whitespace-nowrap">
+                                  <Link
+                                    href={`/applications/${app.id}`}
+                                    className="p-1.5 bg-white border border-slate-200 text-slate-600 hover:text-primary hover:border-primary/30 rounded-lg transition-all inline-flex shadow-sm"
+                                    title="Edit Application"
+                                  >
+                                    <Edit3 size={14} />
+                                  </Link>
+                                </td>
                               </tr>
                               {answers.length > 0 && (
                                 <tr className="bg-slate-50/30">
-                                  <td colSpan={4} className="px-5 py-4 border-t border-slate-100">
+                                  <td colSpan={6} className="px-5 py-4 border-t border-slate-100">
                                     <div className="space-y-3">
                                       <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Candidate Screening Responses</p>
                                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -753,6 +784,20 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                         <option value="rejected">Rejected</option>
                       </select>
                     </div>
+                    {editData.status === "rejected" && (
+                      <div className="space-y-2 col-span-1 md:col-span-2">
+                        <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
+                          <XCircle size={14} className="text-red-500" /> Rejection Reason
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={editData.rejection_reason}
+                          onChange={(e) => setEditData({ ...editData, rejection_reason: e.target.value })}
+                          placeholder="Provide a reason for rejecting this job..."
+                          className="w-full px-4 py-3 rounded-2xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-red-500/10 focus:border-red-500/30 transition-all text-[13px] font-medium text-slate-900 bg-white resize-none"
+                        />
+                      </div>
+                    )}
                     <div className="space-y-2">
                       <label className="text-[12px] font-bold text-slate-900 flex items-center gap-2 uppercase tracking-tight">
                         <Clock size={14} className="text-primary" /> Application Deadline

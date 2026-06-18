@@ -39,16 +39,18 @@ export default function DataTable<T>({
     )}>
       <table suppressHydrationWarning className="w-full caption-bottom text-sm border-separate border-spacing-0">
         <thead className={clsx(
-            "bg-slate-50 sticky top-0 z-10 border-b border-slate-200",
-            compact && "bg-transparent border-b border-slate-200"
+            "sticky top-0 z-10 border-b border-slate-200",
+            compact ? "bg-slate-50/50" : "bg-slate-50"
         )}>
           <tr className="border-b border-slate-200">
             {columns.map((col, idx) => (
               <th
                 key={col.key}
                 className={clsx(
-                    "px-5 py-3 text-left text-[13px] font-bold text-slate-900 tracking-wider",
-                    compact && "px-4 py-2.5"
+                    "text-left tracking-wider",
+                    compact 
+                        ? "px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap"
+                        : "px-5 py-3 text-[13px] font-bold text-slate-900"
                 )}
                 style={{ width: col.width }}
               >
@@ -84,8 +86,8 @@ export default function DataTable<T>({
                   <td
                     key={col.key}
                     className={clsx(
-                      "align-middle text-slate-700 font-medium transition-colors",
-                      compact ? "py-2.5 px-4 text-[12px] leading-tight" : "py-3.5 px-5 text-[13px]"
+                      "align-middle text-slate-700 transition-colors",
+                      compact ? "py-2.5 px-4 text-xs font-medium leading-tight" : "py-3.5 px-5 text-[13px] font-medium"
                     )}
                   >
                     {col.render

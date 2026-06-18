@@ -36,12 +36,21 @@ import SEOEditModal from "@/components/modals/SEOEditModal";
 const initialMock: Record<string, any[]> = {
     locations: [],
     skills: [],
+    educations: [],
+    call_statuses: [
+        { id: 1, name: "Called", is_active: true },
+        { id: 2, name: "Messaged", is_active: true },
+        { id: 3, name: "Not Picked", is_active: true },
+        { id: 4, name: "Not Reached", is_active: true }
+    ],
 };
 
 const tabs = [
     { key: "categories", label: "Categories" },
     { key: "locations", label: "Locations" },
     { key: "skills", label: "Skills" },
+    { key: "educations", label: "Educational Details" },
+    { key: "call_statuses", label: "Call Statuses" },
 ];
 
 export default function MasterDataPage() {
@@ -50,6 +59,8 @@ export default function MasterDataPage() {
     const [categories, setCategories] = useState<MasterDataItem[]>([]);
     const [locations, setLocations] = useState<MasterDataItem[]>([]);
     const [skills, setSkills] = useState<MasterDataItem[]>([]);
+    const [educations, setEducations] = useState<any[]>([]);
+    const [callStatuses, setCallStatuses] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [pagination, setPagination] = useState<{ currentPage: number; lastPage: number; total: number }>({
@@ -75,6 +86,8 @@ export default function MasterDataPage() {
             if (activeTab === "categories") res = await getCategories(params);
             else if (activeTab === "locations") res = await getLocations(params);
             else if (activeTab === "skills") res = await getSkills(params);
+            else if (activeTab === "educations") res = { status: true, data: { current_page: 1, last_page: 1, total: initialMock.educations.length, data: initialMock.educations } };
+            else if (activeTab === "call_statuses") res = { status: true, data: { current_page: 1, last_page: 1, total: initialMock.call_statuses.length, data: initialMock.call_statuses } };
 
             if (res) {
                 // Handle paginated response: { status: true, data: { current_page: 1, data: [...], ... } }
@@ -84,6 +97,8 @@ export default function MasterDataPage() {
                 if (activeTab === "categories") setCategories(list);
                 else if (activeTab === "locations") setLocations(list);
                 else if (activeTab === "skills") setSkills(list);
+                else if (activeTab === "educations") setEducations(list);
+                else if (activeTab === "call_statuses") setCallStatuses(list);
 
                 if (responseData && typeof responseData === 'object' && 'current_page' in responseData) {
                     setPagination({
@@ -140,7 +155,7 @@ export default function MasterDataPage() {
         }
     };
 
-    const currentList = (activeTab === "categories" ? categories : activeTab === "locations" ? locations : activeTab === "skills" ? skills : (initialMock[activeTab] || []));
+    const currentList = (activeTab === "categories" ? categories : activeTab === "locations" ? locations : activeTab === "skills" ? skills : activeTab === "educations" ? educations : activeTab === "call_statuses" ? callStatuses : (initialMock[activeTab] || []));
     const filtered = Array.isArray(currentList) ? currentList.filter(item => item.name?.toLowerCase().includes(search.toLowerCase())) : [];
 
     const handleSave = async (e: React.FormEvent) => {
@@ -159,6 +174,30 @@ export default function MasterDataPage() {
         try {
             setSaving(true);
             let res: any;
+
+            if (activeTab === "educations" || activeTab === "call_statuses") {
+                const payload = activeTab === "educations" ? {
+                    name: editingItem.name,
+                    education_level: (editingItem as any).education_level,
+                    stream: (editingItem as any).stream,
+                    is_active: (editingItem as any).is_active === 1 || (editingItem as any).is_active === "1" || (editingItem as any).is_active === true
+                } : {
+                    name: editingItem.name,
+                    is_active: (editingItem as any).is_active === 1 || (editingItem as any).is_active === "1" || (editingItem as any).is_active === true
+                };
+                if (editingItem.isNew) {
+                    initialMock[activeTab].unshift({ id: Date.now(), ...payload });
+                    res = { status: true, message: "Entry created successfully" };
+                } else {
+                    initialMock[activeTab] = initialMock[activeTab].map((e: any) => e.id === editingItem.id ? { ...e, ...payload } : e);
+                    res = { status: true, message: "Entry updated successfully" };
+                }
+                toast.success(res.message);
+                setEditingItem(null);
+                setSaving(false);
+                fetchData(1);
+                return;
+            }
 
             console.log("[MasterData] Saving...", { activeTab, isNew: editingItem.isNew, id: editingItem.id });
             if (editingItem.isNew) {
@@ -263,6 +302,12 @@ export default function MasterDataPage() {
             if (activeTab === "categories") await deleteCategory(id);
             else if (activeTab === "locations") await deleteLocation(id);
             else if (activeTab === "skills") await deleteSkill(id);
+            else if (activeTab === "educations" || activeTab === "call_statuses") {
+                initialMock[activeTab] = initialMock[activeTab].filter((e: any) => e.id !== id);
+                toast.success("Entry deleted");
+                fetchData(pagination.currentPage);
+                return;
+            }
 
             toast.success("Entry deleted");
             fetchData(pagination.currentPage);
@@ -280,6 +325,8 @@ export default function MasterDataPage() {
                     <div className="w-8 h-8 rounded bg-surface-50 border border-surface-100 flex items-center justify-center overflow-hidden">
                         {r.icon || r.image ? (
                             <img src={`https://teachnowbackend.jobsvedika.in/${r.icon || r.image}`} alt="" className="w-full h-full object-cover" />
+                        ) : activeTab === "educations" ? (
+                            <Library size={14} className="text-surface-300" />
                         ) : (
                             <Library size={14} className="text-surface-300" />
                         )}
@@ -295,20 +342,37 @@ export default function MasterDataPage() {
                 </div>
             )
         },
+        {
+            key: "education_level",
+            title: "Education Level",
+            render: (v: any, r: any) => activeTab === "educations" ? <span className="text-[13px] font-medium text-surface-700">{r.education_level || "-"}</span> : null
+        },
+        {
+            key: "stream",
+            title: "Stream / Specialization",
+            render: (v: any, r: any) => activeTab === "educations" ? <span className="text-[13px] font-medium text-surface-700">{r.stream || "-"}</span> : null
+        },
         { key: "slug", title: "Slug", render: (v: any) => v ? <span className="text-surface-400 font-medium italic">{v}</span> : <span className="text-surface-300">-</span> },
         {
             key: "is_visible",
             title: "Status",
             render: (v: any, r: any) => {
                 // Handle skills which use is_active instead of is_visible
-                const isActive = activeTab === "skills" ? (Number(r.is_active) === 1 || r.is_active === true) : (Number(v) === 1 || v === true);
+                const isActive = (activeTab === "skills" || activeTab === "educations" || activeTab === "call_statuses") ? (Number(r.is_active) === 1 || r.is_active === true) : (Number(v) === 1 || v === true);
 
-                if (activeTab === "skills") {
+                if (activeTab === "skills" || activeTab === "educations" || activeTab === "call_statuses") {
                     return (
                         <div className="flex items-center gap-3">
                             <button
                                 type="button"
-                                onClick={() => handleToggleSkill(r.id)}
+                                onClick={() => {
+                                    if (activeTab === "skills") handleToggleSkill(r.id);
+                                    else {
+                                        initialMock[activeTab] = initialMock[activeTab].map((e: any) => e.id === r.id ? { ...e, is_active: !isActive } : e);
+                                        fetchData(pagination.currentPage);
+                                        toast.success("Status updated");
+                                    }
+                                }}
                                 className={clsx(
                                     "w-8 h-4.5 rounded-full transition-colors relative cursor-pointer",
                                     isActive ? "bg-primary-600" : "bg-surface-300"
@@ -377,7 +441,8 @@ export default function MasterDataPage() {
             )
         }
     ].filter(col => {
-        if ((activeTab === "categories" || activeTab === "locations") && (col.key === "slug" || col.key === "is_custom")) {
+        if (activeTab !== "educations" && (col.key === "education_level" || col.key === "stream")) return false;
+        if ((activeTab === "categories" || activeTab === "locations" || activeTab === "call_statuses") && (col.key === "slug" || col.key === "is_custom")) {
             return false;
         }
         return true;
@@ -395,6 +460,10 @@ export default function MasterDataPage() {
                         onClick={() => {
                             if (activeTab === "skills") {
                                 setEditingItem({ name: "", is_active: 1, is_custom: 1, isNew: true } as any);
+                            } else if (activeTab === "educations") {
+                                setEditingItem({ name: "", education_level: "School", stream: "", is_active: 1, isNew: true } as any);
+                            } else if (activeTab === "call_statuses") {
+                                setEditingItem({ name: "", is_active: 1, isNew: true } as any);
                             } else if (activeTab === "locations") {
                                 setEditingItem({ name: "", country: "", is_visible: 1, is_featured: 0, isNew: true } as any);
                             } else {
@@ -462,7 +531,7 @@ export default function MasterDataPage() {
                         <button
                             disabled={pagination.currentPage === 1 || loading}
                             onClick={() => fetchData(pagination.currentPage - 1)}
-                            className="h-9 px-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[11px] font-bold active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+                            className="h-9 px-4 flex items-center gap-2 rounded-xl border border-primary-100 bg-primary-50 text-primary-700 disabled:opacity-50 disabled:hover:bg-primary-50 hover:bg-primary-100 transition-all shadow-sm text-[11px] font-bold active:scale-95 cursor-pointer disabled:cursor-not-allowed"
                         >
                             <ChevronLeft size={14} strokeWidth={2.5} /> Previous
                         </button>
@@ -480,7 +549,7 @@ export default function MasterDataPage() {
                         <button
                             disabled={pagination.currentPage === pagination.lastPage || loading}
                             onClick={() => fetchData(pagination.currentPage + 1)}
-                            className="h-9 px-4 flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-700 disabled:opacity-30 hover:bg-slate-50 transition-all shadow-sm text-[11px] font-bold active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+                            className="h-9 px-4 flex items-center gap-2 rounded-xl border border-primary-100 bg-primary-50 text-primary-700 disabled:opacity-50 disabled:hover:bg-primary-50 hover:bg-primary-100 transition-all shadow-sm text-[11px] font-bold active:scale-95 cursor-pointer disabled:cursor-not-allowed"
                         >
                             Next <ChevronRight size={14} strokeWidth={2.5} />
                         </button>
@@ -490,21 +559,26 @@ export default function MasterDataPage() {
 
             {editingItem && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-surface-900/40 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-surface-100 animate-in fade-in zoom-in duration-200">
-                        <div className="px-5 py-3 border-b border-surface-100 flex items-center justify-between bg-surface-50/30">
-                            <div>
-                                <h3 className="text-sm font-bold text-surface-900 leading-none">
-                                    {(editingItem as any).isNew ? "Create New Entry" : "Edit Entry"}
-                                </h3>
-                                <p className="text-[10px] text-surface-400 font-medium mt-1">Configure entry details</p>
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl min-h-[500px] flex flex-col max-h-[90vh] overflow-hidden border border-surface-100 animate-in fade-in zoom-in duration-200">
+                        <div className="px-5 py-4 border-b border-primary-100/50 flex items-center justify-between bg-gradient-to-r from-primary-50/80 via-white to-white">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
+                                    {(editingItem as any).isNew ? <Plus size={16} strokeWidth={2.5} /> : <Pencil size={14} strokeWidth={2.5} />}
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-900 leading-none">
+                                        {(editingItem as any).isNew ? "Create New Entry" : "Edit Entry"}
+                                    </h3>
+                                    <p className="text-[10px] text-slate-500 font-medium mt-1">Configure entry details</p>
+                                </div>
                             </div>
-                            <button onClick={() => setEditingItem(null)} className="p-1 hover:bg-surface-100 rounded-lg text-surface-400 transition-colors">
+                            <button onClick={() => setEditingItem(null)} className="p-1.5 hover:bg-rose-50 rounded-lg text-slate-400 hover:text-rose-500 transition-colors">
                                 <X size={16} />
                             </button>
                         </div>
 
-                        <form onSubmit={handleSave} className="p-5">
-                            <div className="grid grid-cols-12 gap-5">
+                        <form onSubmit={handleSave} className="p-5 flex flex-col flex-1 overflow-y-auto">
+                            <div className="grid grid-cols-12 gap-5 flex-1 content-start">
 
                                 {/* ─── IMAGE UPLOAD (Categories & Locations Only) ─── */}
                                 {(activeTab === "categories" || activeTab === "locations") && (
@@ -555,18 +629,49 @@ export default function MasterDataPage() {
                                 )}
 
                                 {/* ─── NAME AND SLUG (Varies by Tab) ─── */}
-                                <div className={activeTab === "skills" ? "col-span-8 space-y-4" : "col-span-7"}>
+                                <div className={activeTab === "skills" ? "col-span-8 space-y-4" : activeTab === "educations" ? "col-span-8 space-y-4" : activeTab === "call_statuses" ? "col-span-8 space-y-4" : "col-span-7"}>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className={activeTab === "skills" ? "col-span-2" : "col-span-2"}>
-                                            <label className="text-[10px] font-bold text-surface-900 uppercase tracking-wider block mb-1">Name</label>
+                                        <div className={activeTab === "skills" || activeTab === "educations" || activeTab === "call_statuses" ? "col-span-2" : "col-span-2"}>
+                                            <label className="text-[10px] font-bold text-surface-900 uppercase tracking-wider block mb-1">
+                                                {activeTab === "educations" ? "Qualification Name" : "Name"}
+                                            </label>
                                             <input
                                                 type="text"
-                                                placeholder={activeTab === 'locations' ? "e.g. New York" : activeTab === 'skills' ? "e.g. Next.js" : "e.g. Data Science"}
+                                                placeholder={activeTab === 'locations' ? "e.g. New York" : activeTab === 'skills' ? "e.g. Next.js" : activeTab === 'educations' ? "e.g. SSC / 10th" : activeTab === 'call_statuses' ? "e.g. Called" : "e.g. Data Science"}
                                                 value={editingItem.name || ""}
                                                 onChange={(e) => setEditingItem({ ...editingItem, name: e.target.value })}
                                                 className="w-full px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-[13px] text-surface-700 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-medium"
                                             />
                                         </div>
+                                        {activeTab === "educations" && (
+                                            <>
+                                                <div className="col-span-1">
+                                                    <label className="text-[10px] font-bold text-surface-900 uppercase tracking-wider block mb-1">Education Level</label>
+                                                    <select
+                                                        value={(editingItem as any).education_level || "School"}
+                                                        onChange={(e) => setEditingItem({ ...editingItem, education_level: e.target.value } as any)}
+                                                        className="w-full px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-[13px] text-surface-700 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-medium"
+                                                    >
+                                                        <option value="School">School</option>
+                                                        <option value="Intermediate">Intermediate</option>
+                                                        <option value="Diploma">Diploma</option>
+                                                        <option value="Undergraduate">Undergraduate</option>
+                                                        <option value="Postgraduate">Postgraduate</option>
+                                                        <option value="Doctorate">Doctorate</option>
+                                                    </select>
+                                                </div>
+                                                <div className="col-span-1">
+                                                    <label className="text-[10px] font-bold text-surface-900 uppercase tracking-wider block mb-1">Stream / Specialization</label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="e.g. Computer Science (Optional)"
+                                                        value={(editingItem as any).stream || ""}
+                                                        onChange={(e) => setEditingItem({ ...editingItem, stream: e.target.value } as any)}
+                                                        className="w-full px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-[13px] text-surface-700 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-medium"
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
                                         {(activeTab === "categories" || activeTab === "locations") && (
                                             <div className={activeTab === "locations" ? "col-span-1" : "col-span-2"}>
                                                 <label className="text-[10px] font-bold text-surface-900 uppercase tracking-wider block mb-1">Slug (Auto-generated)</label>
@@ -596,7 +701,7 @@ export default function MasterDataPage() {
                                 </div>
 
                                 {/* ─── STATUS AND TOGGLES ─── */}
-                                <div className={activeTab === "skills" ? "col-span-4 space-y-2" : "col-span-5 space-y-2"}>
+                                <div className={(activeTab === "skills" || activeTab === "educations" || activeTab === "call_statuses") ? "col-span-4 space-y-2" : "col-span-5 space-y-2"}>
                                     <label className="text-[10px] font-bold text-surface-900 uppercase tracking-wider block mb-1">Status & Visibility</label>
 
                                     {(activeTab === "categories" || activeTab === "locations") && (
@@ -653,7 +758,7 @@ export default function MasterDataPage() {
                                         </div>
                                     )}
 
-                                    {activeTab === "skills" && (
+                                    {(activeTab === "skills" || activeTab === "educations" || activeTab === "call_statuses") && (
                                         <>
                                             <div className="flex items-center justify-between p-2.5 bg-primary-50/30 rounded-xl border border-primary-100/50">
                                                 <div className="flex items-center gap-2">
@@ -682,33 +787,35 @@ export default function MasterDataPage() {
                                                     )} />
                                                 </button>
                                             </div>
-                                            <div className="flex items-center justify-between p-2.5 bg-surface-50 rounded-xl border border-surface-100">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-7 h-7 rounded-lg bg-white border border-surface-100 flex items-center justify-center text-surface-600">
-                                                        <Plus size={12} />
+                                            {activeTab === "skills" && (
+                                                <div className="flex items-center justify-between p-2.5 bg-surface-50 rounded-xl border border-surface-100">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-7 h-7 rounded-lg bg-white border border-surface-100 flex items-center justify-center text-surface-600">
+                                                            <Plus size={12} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-[11px] font-bold text-surface-700">Custom Skill</p>
+                                                            <p className="text-[9px] text-surface-400 font-medium">User suggested</p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-[11px] font-bold text-surface-700">Custom Skill</p>
-                                                        <p className="text-[9px] text-surface-400 font-medium">User suggested</p>
-                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const val = (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" ? 0 : 1;
+                                                            setEditingItem({ ...editingItem, is_custom: val } as any);
+                                                        }}
+                                                        className={clsx(
+                                                            "w-8 h-4.5 rounded-full transition-colors relative",
+                                                            (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" ? "bg-indigo-500" : "bg-surface-300"
+                                                        )}
+                                                    >
+                                                        <div className={clsx(
+                                                            "absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm",
+                                                            (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" ? "right-0.5" : "left-0.5"
+                                                        )} />
+                                                    </button>
                                                 </div>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        const val = (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" ? 0 : 1;
-                                                        setEditingItem({ ...editingItem, is_custom: val } as any);
-                                                    }}
-                                                    className={clsx(
-                                                        "w-8 h-4.5 rounded-full transition-colors relative",
-                                                        (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" ? "bg-indigo-500" : "bg-surface-300"
-                                                    )}
-                                                >
-                                                    <div className={clsx(
-                                                        "absolute top-0.5 w-3.5 h-3.5 bg-white rounded-full transition-all shadow-sm",
-                                                        (editingItem as any).is_custom === 1 || (editingItem as any).is_custom === "1" ? "right-0.5" : "left-0.5"
-                                                    )} />
-                                                </button>
-                                            </div>
+                                            )}
                                         </>
                                     )}
                                 </div>
@@ -755,18 +862,18 @@ export default function MasterDataPage() {
                                 )}
                             </div>
 
-                            <div className="mt-5 pt-4 border-t border-surface-50 flex items-center justify-end gap-3">
+                            <div className="mt-auto pt-4 border-t border-surface-50 flex items-center justify-end gap-3 shrink-0">
                                 <button
                                     type="button"
                                     onClick={() => setEditingItem(null)}
-                                    className="px-5 py-2 rounded-lg text-[12px] font-bold text-surface-500 hover:bg-surface-50 transition-all cursor-pointer"
+                                    className="px-5 py-2.5 rounded-xl text-[12px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-100 transition-all cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="px-5 py-2 rounded-xl bg-primary-600 text-white text-[12px] font-bold hover:bg-primary-700 shadow-md shadow-primary-500/10 transition-all flex items-center gap-2 cursor-pointer"
+                                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary-600 to-indigo-600 text-white text-[12px] font-bold hover:from-primary-700 hover:to-indigo-700 shadow-md shadow-primary-500/20 transition-all flex items-center gap-2 cursor-pointer border border-transparent"
                                 >
                                     {saving ? <Loader2 size={14} className="animate-spin" /> : <><Check size={14} /> Save Changes</>}
                                 </button>

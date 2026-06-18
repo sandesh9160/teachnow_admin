@@ -42,15 +42,23 @@ export default function HomePageContent() {
               <p className="text-[11px] text-slate-600 font-medium mt-0.5">Manage search engine visibility for the Home page</p>
             </div>
           </div>
-          <button
-            suppressHydrationWarning
-            onClick={handleSaveMeta}
-            disabled={savingMeta}
-            className="h-9 px-4 rounded border border-[#0284c7] bg-[#0284c7] text-white text-[13px] hover:bg-[#0369a1] transition-all font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {savingMeta ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            {savingMeta ? "Saving..." : "Save Meta"}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              suppressHydrationWarning
+              onClick={handleSaveMeta}
+              disabled={savingMeta}
+              className="h-9 px-4 rounded border border-[#0284c7] bg-[#0284c7] text-white text-[13px] hover:bg-[#0369a1] transition-all font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {savingMeta ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+              {savingMeta ? "Saving..." : "Save Meta"}
+            </button>
+            <button
+              onClick={() => {}}
+              className="h-9 px-4 rounded bg-purple-600 text-white text-[13px] hover:bg-purple-700 transition-all font-medium flex items-center gap-2"
+            >
+              Rewrite with AI
+            </button>
+          </div>
         </div>
         <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="md:col-span-2 space-y-2">

@@ -195,7 +195,7 @@ export default function RecruitersPage({
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5 pb-16 antialiased animate-fade-in-up">
+    <div className="space-y-4 pb-6 antialiased animate-fade-in-up">
       {/* Page Header */}
       <div className="page-header">
         <div>
@@ -241,7 +241,7 @@ export default function RecruitersPage({
           placeholder="Search by name, company or email..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-5 py-2 bg-white border border-slate-200 rounded-xl text-[12px] font-medium text-slate-900 placeholder:text-slate-400 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all"
+          className="w-full pl-10 pr-5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all"
         />
       </div>
 
@@ -250,12 +250,12 @@ export default function RecruitersPage({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
-                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Recruiter</th>
-                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Organization</th>
-                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Status</th>
-                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-right">Joined</th>
-                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Actions</th>
+              <tr className="border-b border-slate-200 bg-slate-50/50 sticky top-0 z-10">
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Recruiter</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Organization</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-center">Status</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-right">Joined</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -266,12 +266,12 @@ export default function RecruitersPage({
                   return (
                   <tr
                     key={i}
-                    className="group hover:bg-slate-50/30 transition-all duration-200 cursor-pointer"
+                    className="group hover:bg-slate-50/80 transition-all duration-200 cursor-pointer"
                     onClick={() => router.push(`/recruiters/${row.id}`)}
                   >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="relative w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <div className="relative w-7 h-7 rounded bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
                           {employer?.company_logo ? (
                             <Image
                               // Combines the Base API URL with the image path
@@ -279,30 +279,30 @@ export default function RecruitersPage({
 
                               alt="Company Logo"
                               fill
-                              sizes="32px"
+                              sizes="28px"
                               className="object-cover"
                             />
 
                           ) : (
-                            <span className="text-slate-400 font-bold text-[11px]">
+                            <span className="text-slate-400 font-bold text-[10px]">
                               {employer?.company_name?.charAt(0) || "C"}
                             </span>
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[13px] font-semibold text-slate-900 leading-tight group-hover:text-primary transition-colors">
+                          <p className="text-xs font-medium text-slate-900 group-hover:text-primary transition-colors truncate">
                             {row.name}
                           </p>
-                          <p className="text-[10px] text-slate-900 font-medium mt-0.2 tracking-tight">
+                          <p className="text-[10px] text-slate-500 font-medium tracking-tight truncate">
                             {row.email}
                           </p>
                         </div>
                       </div>
                     </td>
 
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5 text-[12px] text-slate-700 font-medium">
-                        <div className="w-5 h-5 rounded bg-slate-50 flex items-center justify-center text-slate-400">
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium">
+                        <div className="w-5 h-5 rounded bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
                           <Building2 size={10} />
                         </div>
                         <div className="max-w-[180px]">
@@ -317,12 +317,12 @@ export default function RecruitersPage({
                       </div>
                     </td>
 
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-4 py-2.5 text-center">
                       <div className="inline-flex">
                         <Badge
                           variant={row.is_active ? "success" : "danger"}
                           dot
-                          className="capitalize"
+                          className="capitalize text-[10px] px-2 py-0.5"
                         >
                           {row.is_active ? "Active" : "Inactive"}
                         </Badge>
@@ -330,7 +330,7 @@ export default function RecruitersPage({
                     </td>
 
                     <td
-                      className="px-4 py-3 text-right text-[11px] text-slate-900 font-medium"
+                      className="px-4 py-2.5 text-right text-[11px] text-slate-500"
                       suppressHydrationWarning
                     >
                       {new Date(row.created_at).toLocaleDateString(undefined, {
@@ -341,33 +341,33 @@ export default function RecruitersPage({
                     </td>
 
                     <td
-                      className="px-4 py-3"
+                      className="px-4 py-2.5"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-1">
                         <button
                           onClick={() => router.push(`/recruiters/${row.id}`)}
                           title="View Profile"
-                          className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all active:scale-95"
+                          className="text-slate-400 hover:text-indigo-500 transition-colors"
                         >
-                          <Eye size={15} />
+                          <Eye size={14} />
                         </button>
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-xl border border-slate-200 shadow-sm">
-                          <span className="text-[11px] font-semibold text-slate-600">
+                        <div className="flex items-center gap-1 px-2 py-1 bg-white rounded border border-slate-200">
+                          <span className="text-[10px] font-medium text-slate-500">
                             {row.is_active ? "Active" : "Inactive"}
                           </span>
                           <button
                             onClick={() => handleAction(row.id, "disable")}
                             disabled={processingId === row.id}
                             className={clsx(
-                              "relative w-11 h-6 rounded-full transition-all duration-300 shadow-sm",
+                              "relative w-8 h-4 rounded-full transition-all duration-300",
                               row.is_active ? "bg-emerald-500" : "bg-slate-300",
                             )}
                           >
                             <div
                               className={clsx(
-                                "absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-md transition-all duration-300",
-                                row.is_active ? "left-5" : "left-0.5",
+                                "absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all duration-300",
+                                row.is_active ? "left-[18px]" : "left-0.5",
                               )}
                             />
                           </button>
@@ -376,9 +376,9 @@ export default function RecruitersPage({
                           onClick={() => handleAction(row.id, "delete")}
                           disabled={processingId === row.id}
                           title="Delete account"
-                          className="p-1.5 bg-red-600 text-white hover:bg-red-700 rounded-xl transition-all active:scale-95 shadow-lg shadow-red-100"
+                          className="text-slate-400 hover:text-rose-500 transition-colors disabled:opacity-30"
                         >
-                          <Trash2 size={15} />
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </td>

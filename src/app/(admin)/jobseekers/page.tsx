@@ -189,7 +189,7 @@ export default function JobSeekersPage() {
 
 
   return (
-    <div className="space-y-5 pb-20 antialiased animate-fade-in-up">
+    <div className="space-y-4 pb-6 antialiased animate-fade-in-up">
       {/* Page Header */}
       <div className="page-header">
         <div>
@@ -236,7 +236,7 @@ export default function JobSeekersPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               suppressHydrationWarning
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[12px] font-semibold text-slate-900 placeholder:text-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all"
+              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all"
             />
           </div>
 
@@ -269,23 +269,23 @@ export default function JobSeekersPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
-                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Jobseeker</th>
-                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Location</th>
-                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Contact</th>
-                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Experience</th>
-                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-right">Joined On</th>
-                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Actions</th>
+              <tr className="border-b border-slate-200 bg-slate-50/50 sticky top-0 z-10">
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Jobseeker</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Location</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Contact</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-center">Experience</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-right">Joined On</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {!loading && filtered.map((row: JobSeeker, i: number) => {
                 return (
-                  <tr key={i} className="group hover:bg-slate-50/30 transition-all duration-200 cursor-pointer" onClick={() => router.push(`/jobseekers/${row.id}`)}>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
+                  <tr key={i} className="group hover:bg-slate-50/80 transition-all duration-200 cursor-pointer" onClick={() => router.push(`/jobseekers/${row.id}`)}>
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-2">
                         <div
-                          className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 group/img transition-all relative cursor-zoom-in"
+                          className="w-8 h-8 rounded bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 group/img transition-all relative cursor-zoom-in"
                           onClick={(e) => {
                             e.stopPropagation();
                             if (row.profile_photo) setPreviewImage(resolveMediaUrl(row.profile_photo));
@@ -294,40 +294,40 @@ export default function JobSeekersPage() {
                           {row.profile_photo ? (
                             <img src={resolveMediaUrl(row.profile_photo)} alt="" className="w-full h-full object-cover transition-transform group-hover/img:scale-110" />
                           ) : (
-                            <UserCircle size={20} className="text-slate-700" />
+                            <UserCircle size={16} className="text-slate-400" />
                           )}
                           <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white">
-                            <EyeIcon size={18} />
+                            <EyeIcon size={14} />
                           </div>
-                          <div className={clsx("absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white z-10", row.is_active ? "bg-emerald-500" : "bg-red-500")} />
+                          <div className={clsx("absolute bottom-0 right-0 w-2 h-2 rounded-full border-2 border-white z-10", row.is_active ? "bg-emerald-500" : "bg-red-500")} />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[13px] font-semibold text-slate-900 leading-tight group-hover:text-primary transition-colors">{row.user?.name}</p>
-                          <p className="text-[10px] text-primary font-bold mt-0.5 tracking-wide">{row.title || "Educator"}</p>
+                          <p className="text-xs font-medium text-slate-900 group-hover:text-primary transition-colors truncate">{row.user?.name}</p>
+                          <p className="text-[10px] text-primary font-bold tracking-wide truncate">{row.title || "Educator"}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5 text-[12px] font-medium text-slate-900">
-                        <MapPinIcon size={12} className="text-slate-700" />
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+                        <MapPinIcon size={10} className="text-slate-400" />
                         {row.location || 'Remote'}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5 text-[12px] font-medium text-slate-900">
-                        <Phone size={12} className="text-slate-700" />
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500">
+                        <Phone size={10} className="text-slate-400" />
                         {row.phone || "No Contact"}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <span className="text-[12px] font-bold text-slate-700">
+                    <td className="px-4 py-2.5 text-center">
+                      <span className="text-[11px] font-medium text-slate-500">
                         {row.experience_years || 0} Years
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right text-[11px] text-slate-900 font-medium">
+                    <td className="px-4 py-2.5 text-right text-[11px] text-slate-500">
                       {row.created_at ? new Date(row.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                     </td>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-4 py-2.5" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-3">
                         <button
                           onClick={(e) => {
@@ -357,9 +357,9 @@ export default function JobSeekersPage() {
                         <button
                           onClick={() => router.push(`/jobseekers/${row.id}`)}
                           title="View Account Profile"
-                          className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all active:scale-95"
+                          className="text-slate-400 hover:text-indigo-500 transition-colors"
                         >
-                          <EyeIcon size={15} />
+                          <EyeIcon size={14} />
                         </button>
                       </div>
                     </td>

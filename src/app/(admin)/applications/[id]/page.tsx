@@ -25,6 +25,7 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
   const [editData, setEditData] = useState<{
     status: string;
     contact_status: string;
+    call_status: string;
     cover_letter: string;
     resume_type: string;
     resume_id: string | number;
@@ -32,6 +33,7 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
   }>({
     status: 'applied',
     contact_status: '',
+    call_status: '',
     cover_letter: '',
     resume_type: '',
     resume_id: '',
@@ -63,6 +65,7 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
       setEditData({
         status: applicationData.status || 'applied',
         contact_status: applicationData.contact_status || '',
+        call_status: applicationData.call_status || '',
         cover_letter: applicationData.cover_letter || '',
         resume_type: applicationData.resume_type || '',
         resume_id: applicationData.resume_id || '',
@@ -333,6 +336,20 @@ export default function ApplicationDetailPage({ params }: { params: Promise<{ id
                   <option value="Emailed">Emailed</option>
                   <option value="Not Reached">Not Reached</option>
                   <option value="Not Responded">Not Responded</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold text-slate-900 uppercase tracking-tight">Call Status</label>
+                <select
+                  value={editData.call_status}
+                  onChange={(e) => setEditData({ ...editData, call_status: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 text-[13px] font-semibold text-slate-900 bg-white transition-all"
+                >
+                  <option value="">Select Call Status</option>
+                  <option value="Called">Called</option>
+                  <option value="Messaged">Messaged</option>
+                  <option value="Not Picked">Not Picked</option>
+                  <option value="Not Reached">Not Reached</option>
                 </select>
               </div>
             </div>

@@ -156,6 +156,7 @@ interface TipTapEditorProps {
   onChange: (value: string) => void;
   placeholder?: string;
   stickyOffset?: number;
+  minHeight?: string;
 }
 
 const ButtonGroup = ({ children }: { children: React.ReactNode }) => (
@@ -202,7 +203,8 @@ export function TipTapEditor({
   value, 
   onChange, 
   placeholder = "Start typing...",
-  stickyOffset = 0 
+  stickyOffset = 0,
+  minHeight = "400px"
 }: TipTapEditorProps) {
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
@@ -280,7 +282,8 @@ export function TipTapEditor({
     },
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none focus:outline-none min-h-[400px] px-8 pt-6 pb-20 text-[14px] font-medium text-slate-700 leading-relaxed",
+        class: "prose prose-sm max-w-none focus:outline-none px-8 pt-6 pb-20 text-[14px] font-medium text-slate-700 leading-relaxed",
+        style: `min-height: ${minHeight};`,
       },
     },
   });
@@ -387,7 +390,7 @@ export function TipTapEditor({
   return (
     <div className={clsx(
       "border border-[#cbd5e1] rounded-md bg-white flex flex-col transition-all relative cursor-text",
-      isFullscreen ? "fixed inset-0 z-[100] m-0 rounded-none shadow-2xl overflow-hidden" : "min-h-[500px]"
+      isFullscreen ? "fixed inset-0 z-[100] m-0 rounded-none shadow-2xl overflow-hidden" : ""
     )}>
       {/* Toolbar */}
       {!isPreview && (
@@ -704,9 +707,10 @@ export function TipTapEditor({
 
       {/* Editor Content Area */}
       <div className={clsx("flex-1 bg-white overflow-visible transition-all rounded-b-md", isFullscreen && "h-full overflow-y-auto")}>
-         {isHtmlView ? (
+          {isHtmlView ? (
            <textarea
-             className="w-full h-full min-h-[400px] p-6 text-sm font-mono text-slate-700 bg-slate-50 focus:outline-none resize-none rounded-b-md"
+             className="w-full h-full p-6 text-sm font-mono text-slate-700 bg-slate-50 focus:outline-none resize-none rounded-b-md"
+             style={{ minHeight }}
              value={editor.getHTML()}
              onChange={(e) => editor.commands.setContent(e.target.value)}
            />
@@ -737,7 +741,7 @@ export function TipTapEditor({
           margin-top: 1.5em !important;
           margin-bottom: 0.5em !important;
           line-height: 1.3 !important;
-          color: #0f172a !important;
+          color: #0f172a;
         }
         .prose h2 {
           font-size: 20px !important;
@@ -745,7 +749,7 @@ export function TipTapEditor({
           margin-top: 1.5em !important;
           margin-bottom: 0.5em !important;
           line-height: 1.35 !important;
-          color: #0f172a !important;
+          color: #0f172a;
         }
         .prose h3 {
           font-size: 18px !important;
@@ -753,14 +757,14 @@ export function TipTapEditor({
           margin-top: 1.25em !important;
           margin-bottom: 0.5em !important;
           line-height: 1.4 !important;
-          color: #0f172a !important;
+          color: #0f172a;
         }
         .prose p {
           font-size: 14px !important;
           line-height: 1.7142857 !important;
           margin-top: 0 !important;
           margin-bottom: 1em !important;
-          color: #475569 !important;
+          color: #475569;
         }
         .prose ul {
           list-style-type: disc;

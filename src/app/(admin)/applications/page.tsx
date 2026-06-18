@@ -63,18 +63,18 @@ export default function ApplicationsPage() {
       title: "Educational Personnel", 
       render: (_: unknown, row: ApplicationRow) => (
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+          <div className="w-8 h-8 rounded bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0 shadow-sm group-hover:scale-110 transition-transform">
             {row.job_seeker?.profile_photo ? (
                 <img src={`https://teachnowbackend.jobsvedika.in/${row.job_seeker.profile_photo}`} alt="" className="w-full h-full object-cover" />
             ) : (
-                <div className="w-full h-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                <div className="w-full h-full bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-[10px]">
                     {row.job_seeker?.user?.name?.charAt(0)}
                 </div>
             )}
           </div>
           <div className="min-w-0">
-            <p className="font-bold text-slate-900 leading-tight truncate tracking-tight">{row.job_seeker?.user?.name}</p>
-            <div className="flex items-center gap-1.5 mt-1">
+            <p className="text-xs font-medium text-slate-900 group-hover:text-primary transition-colors truncate">{row.job_seeker?.user?.name}</p>
+            <div className="flex items-center gap-1.5 mt-0.5">
                 <Phone size={10} className="text-slate-400" />
                 <p className="text-[10px] text-slate-500 font-medium">{row.job_seeker?.phone}</p>
             </div>
@@ -87,10 +87,10 @@ export default function ApplicationsPage() {
         title: "Target Deployment", 
         render: (_: unknown, row: ApplicationRow) => (
             <div className="flex items-center gap-2 max-w-[220px]">
-                <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600 shrink-0 border border-indigo-100/50">
-                    <Briefcase size={12} strokeWidth={2.5} />
+                <div className="p-1 rounded bg-indigo-50 text-indigo-600 shrink-0 border border-indigo-100/50">
+                    <Briefcase size={12} strokeWidth={2} />
                 </div>
-                <p className="font-bold text-slate-700 text-[12px] truncate leading-tight tracking-tight">
+                <p className="text-[11px] font-medium text-slate-700 truncate leading-tight tracking-tight">
                     {row.job?.title}
                 </p>
             </div>
@@ -141,10 +141,10 @@ export default function ApplicationsPage() {
         <div className="flex items-center justify-end">
           <button 
             onClick={(e) => { e.stopPropagation(); router.push(`/jobseekers/${row.job_seeker_id}`); }}
-            className="p-2 bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-100 rounded-lg transition-all shadow-sm hover:shadow-md active:scale-95"
+            className="text-slate-400 hover:text-indigo-500 transition-colors"
             title="Review Applicant"
           >
-            <Eye size={16} />
+            <Eye size={14} />
           </button>
         </div>
       )
@@ -152,36 +152,32 @@ export default function ApplicationsPage() {
   ];
 
   return (
-    <div className="space-y-6 pb-12">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-cyan-50 flex items-center justify-center text-cyan-600 border border-cyan-100 shadow-sm">
-            <ClipboardList size={22} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-surface-900 tracking-tight uppercase">Application Queue</h1>
-            <p className="text-xs text-surface-500 font-medium uppercase tracking-wider">Monitor all candidate-to-job matches</p>
-          </div>
+    <div className="space-y-4 pb-6 antialiased animate-fade-in-up">
+      {/* Page Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Application Queue</h1>
+          <p className="page-subtitle">Monitor all candidate-to-job matches</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-surface-200 text-surface-700 text-xs font-bold hover:bg-surface-50 transition-all shadow-sm uppercase">
-            <Download size={16} /> Export Queue
+          <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 text-[11px] font-bold rounded-xl hover:bg-slate-50 transition-all shadow-sm">
+            <Download size={14} /> Export Queue
           </button>
         </div>
       </div>
 
-      <div className="bg-white p-3 rounded-2xl border border-surface-200 shadow-sm flex flex-col sm:flex-row items-center gap-3">
+      <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center gap-3 relative z-10">
         <div className="relative flex-1 w-full">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input 
             type="text" 
             placeholder="Search by candidate name or position..." 
             value={search} 
             onChange={(e) => setSearch(e.target.value)} 
-            className="w-full pl-10 pr-4 py-2 bg-surface-50 border border-surface-100 rounded-xl text-sm text-surface-700 placeholder:text-surface-400 shadow-inner focus:outline-none focus:ring-2 focus:ring-primary-500/10 focus:border-primary-400 transition-all" 
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all" 
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-50 border border-surface-100 text-surface-600 text-[11px] font-black uppercase tracking-widest hover:bg-surface-100 transition-all shrink-0">
+        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium hover:bg-slate-100 transition-all shrink-0">
           <Filter size={14} /> Filter Queue
         </button>
       </div>
@@ -191,6 +187,7 @@ export default function ApplicationsPage() {
         data={filtered as ApplicationRow[]} 
         loading={loading}
         emptyMessage="The application queue is currently empty."
+        compact
       />
     </div>
   );

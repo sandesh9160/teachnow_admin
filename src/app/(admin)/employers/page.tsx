@@ -328,7 +328,7 @@ export default function EmployersPage() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5 pb-16 antialiased animate-fade-in-up">
+    <div className="space-y-4 pb-6 antialiased animate-fade-in-up">
       {/* Page Header */}
       <div className="page-header">
         <div>
@@ -379,7 +379,7 @@ export default function EmployersPage() {
             placeholder="Search by name, email or location..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-11 pr-5 py-3 bg-white border border-slate-200 rounded-xl text-[13px] font-medium text-slate-900 placeholder:text-slate-900 shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all font-semibold"
+            className="w-full pl-11 pr-5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary/20 transition-all"
             suppressHydrationWarning
           />
         </div>
@@ -427,29 +427,29 @@ export default function EmployersPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[900px]" suppressHydrationWarning>
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
-                <th className="px-5 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Organization</th>
-                <th className="px-5 py-3 text-[13px] font-bold text-slate-900 tracking-wider">Location</th>
-                <th className="px-5 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Status</th>
-                <th className="px-5 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Joined</th>
-                <th className="px-5 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Featured</th>
-                <th className="px-5 py-3 text-[13px] font-bold text-slate-900 tracking-wider text-center">Actions</th>
+              <tr className="border-b border-slate-200 bg-slate-50/50 sticky top-0 z-10">
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Organization</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Location</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-center">Status</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-center">Joined</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-center">Featured</th>
+                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {!loading && filtered.map((row: Employer, i: number) => (
-                <tr key={i} className="group hover:bg-white transition-all duration-200 cursor-pointer" onClick={() => router.push(`/employers/${row.id}`)}>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3.5">
-                      <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-[12px] shrink-0 group-hover:scale-105 transition-transform overflow-hidden">
+                <tr key={i} className="group hover:bg-slate-50/80 transition-all duration-200 cursor-pointer" onClick={() => router.push(`/employers/${row.id}`)}>
+                  <td className="px-4 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-[10px] shrink-0 overflow-hidden">
                         {row.company_logo ? (
                           <img src={resolveMediaUrl(row.company_logo)} alt="" className="w-full h-full object-cover" />
                         ) : row.company_name?.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                           <p className="text-[13px] font-semibold text-slate-900 leading-tight group-hover:text-primary transition-colors truncate">{row.company_name}</p>
-                           <Badge variant="indigo" className="capitalize tracking-tight">
+                           <p className="text-xs font-medium text-slate-900 group-hover:text-primary transition-colors truncate">{row.company_name}</p>
+                           <Badge variant="indigo" className="capitalize text-[10px] px-2 py-0.5 tracking-tight">
                               {((row.institution_type === 'UG' || row.institution_type === 'PG' || row.institution_type?.toLowerCase() === 'intermediate') ? 'Institute' : (row.institution_type || 'Institute')).toLowerCase()}
                            </Badge>
                         </div>
@@ -457,14 +457,14 @@ export default function EmployersPage() {
                     </div>
                   </td>
 
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-2.5">
                     <div className="flex items-center gap-1.5">
-                      <MapPin size={12} className="text-slate-700" />
-                      <span className="text-[12px] font-medium text-slate-900 truncate">{row.city || '—'}</span>
+                      <MapPin size={10} className="text-slate-400" />
+                      <span className="text-[11px] font-medium text-slate-500 truncate">{row.city || '—'}</span>
                     </div>
                   </td>
 
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-4 py-2.5 text-center">
                     <div className="inline-flex">
                       <Badge
                         variant={
@@ -475,7 +475,7 @@ export default function EmployersPage() {
                             : "warning"
                         }
                         dot
-                        className="capitalize"
+                        className="capitalize text-[10px] px-2 py-0.5"
                       >
                         {
                           (row.is_verified || Number(row.is_profile_verified) === 1)
@@ -488,11 +488,11 @@ export default function EmployersPage() {
                     </div>
                   </td>
 
-                  <td className="px-6 py-4 text-center text-[12px] text-slate-600 font-semibold" suppressHydrationWarning>
+                  <td className="px-4 py-2.5 text-center text-[11px] text-slate-500" suppressHydrationWarning>
                     {new Date(row.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                   </td>
 
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-4 py-2.5 text-center">
                       {(() => {
                         const isFeatured = row.is_featured || Number(row.is_featured) === 1;
                         const isExpired = row.featured_until ? new Date(row.featured_until) < new Date() : false;
@@ -500,7 +500,7 @@ export default function EmployersPage() {
 
                         if (isFeatured && !isExpired) {
                           return (
-                            <Badge variant="warning" className="capitalize">
+                            <Badge variant="warning" className="capitalize text-[10px] px-2 py-0.5">
                               Admin Featured
                             </Badge>
                           );
@@ -508,7 +508,7 @@ export default function EmployersPage() {
                         
                         if (isFeatured && isExpired) {
                           return (
-                            <Badge variant="danger" dot className="capitalize">
+                            <Badge variant="danger" dot className="capitalize text-[10px] px-2 py-0.5">
                               Expired
                             </Badge>
                           );
@@ -516,29 +516,27 @@ export default function EmployersPage() {
 
                         if (isPending) {
                           return (
-                            <Badge variant="warning" dot className="capitalize">
+                            <Badge variant="warning" dot className="capitalize text-[10px] px-2 py-0.5">
                               Pending Request
                             </Badge>
                           );
                         }
 
                         return (
-                          <Badge variant="default" className="capitalize">
-                            Not Requested
-                          </Badge>
+                          <span className="text-[11px] text-slate-300">—</span>
                         );
                       })()}
                   </td>
 
-                  <td className="px-6 py-4 text-center" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center justify-center">
+                  <td className="px-4 py-2.5 text-center" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-center gap-1">
                       <button
                         onClick={() => router.push(`/employers/${row.id}`)}
                         title="View profile"
-                        className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all active:scale-95"
+                        className="text-slate-400 hover:text-indigo-500 transition-colors"
                         suppressHydrationWarning
                       >
-                        <Eye size={15} />
+                        <Eye size={14} />
                       </button>
                     </div>
                   </td>

@@ -143,13 +143,6 @@ export default function FAQPage() {
             <h2 className="text-lg font-bold text-slate-900 tracking-tight">FAQs</h2>
             <p className="text-[11px] font-medium text-slate-500 mt-0.5">Manage support questions and answers</p>
         </div>
-
-        <button
-          onClick={() => { setEditingFaq(null); resetForm(); setIsModalOpen(true); }}
-          className="bg-violet-600 text-white px-4 py-1.5 rounded-lg font-bold text-[11px] active:scale-95"
-        >
-          Add FAQ
-        </button>
       </div>
 
       {/* ─── SEO Meta Section ───────────────────────────────── */}
@@ -164,15 +157,23 @@ export default function FAQPage() {
               <p className="text-[11px] text-slate-600 font-medium mt-0.5">Manage search engine visibility for the FAQs page</p>
             </div>
           </div>
-          <button
-            suppressHydrationWarning
-            onClick={handleSaveMeta}
-            disabled={savingMeta}
-            className="h-9 px-4 rounded border border-[#0284c7] bg-[#0284c7] text-white text-[13px] hover:bg-[#0369a1] transition-all font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {savingMeta ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            {savingMeta ? "Saving..." : "Save Meta"}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              suppressHydrationWarning
+              onClick={handleSaveMeta}
+              disabled={savingMeta}
+              className="h-9 px-4 rounded border border-[#0284c7] bg-[#0284c7] text-white text-[13px] hover:bg-[#0369a1] transition-all font-medium flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {savingMeta ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+              {savingMeta ? "Saving..." : "Save Meta"}
+            </button>
+            <button
+              onClick={() => {}}
+              className="h-9 px-4 rounded bg-purple-600 text-white text-[13px] hover:bg-purple-700 transition-all font-medium flex items-center gap-2"
+            >
+              Rewrite with AI
+            </button>
+          </div>
         </div>
         <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="md:col-span-2 space-y-2">
@@ -236,6 +237,12 @@ export default function FAQPage() {
             className="w-full pl-9 pr-4 py-1.5 bg-white rounded-lg text-xs font-bold focus:outline-hidden border-none shadow-xs"
           />
         </div>
+        <button
+          onClick={() => { setEditingFaq(null); resetForm(); setIsModalOpen(true); }}
+          className="bg-violet-600 text-white px-4 py-1.5 rounded-lg font-bold text-[11px] active:scale-95 whitespace-nowrap"
+        >
+          Add FAQ
+        </button>
         <div className="text-[10px] font-bold text-violet-600 pr-3">
             {filteredFaqs.length} entries
         </div>
@@ -277,13 +284,13 @@ export default function FAQPage() {
                         <div className="flex items-center gap-1 shrink-0">
                            <button 
                             onClick={() => openEditModal(faq)}
-                            className="p-1.5 text-slate-500 hover:text-violet-600"
+                            className="p-1.5 text-violet-600 hover:text-violet-700"
                            >
                              <Edit2 size={15} />
                            </button>
                            <button 
                             onClick={() => handleDelete(faq.id)}
-                            className="p-1.5 text-slate-500 hover:text-orange-600"
+                            className="p-1.5 text-orange-600 hover:text-orange-700"
                            >
                              <Trash2 size={15} />
                            </button>

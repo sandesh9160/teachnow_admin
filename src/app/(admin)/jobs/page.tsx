@@ -274,7 +274,7 @@ export default function JobsPage() {
     const hasActiveFilters = search || catFilter.id !== 'all' || locFilter.id !== 'all' || instFilter.id !== 'all' || typeFilter.id !== 'all' || statusFilter.id !== 'all' || featureFilter.id !== 'all';
 
     return (
-        <div className="space-y-5 pb-20 antialiased animate-fade-in-up">
+        <div className="space-y-4 pb-6 antialiased animate-fade-in-up">
             {/* Page Header */}
             <div className="page-header">
                 <div>
@@ -426,14 +426,14 @@ export default function JobsPage() {
                     <table className="w-full text-left border-collapse table-fixed">
                         <colgroup><col className="w-[27%]" /><col className="w-[18%]" /><col className="w-[15%]" /><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[10%]" /></colgroup>
                         <thead>
-                            <tr className="border-b border-slate-200 bg-slate-50 sticky top-0 z-10">
-                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap">Job Title</th>
-                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap">Institute</th>
-                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap">Location</th>
-                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap text-center">Feature</th>
-                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap text-center">Status</th>
-                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap">Posted</th>
-                                <th className="px-4 py-3 text-[13px] font-bold text-slate-900 tracking-wider whitespace-nowrap text-center">Actions</th>
+                            <tr className="border-b border-slate-200 bg-slate-50/50 sticky top-0 z-10">
+                                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Job Title</th>
+                                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Institute</th>
+                                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Location</th>
+                                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-center">Feature</th>
+                                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-center">Status</th>
+                                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap">Posted</th>
+                                <th className="px-4 py-2.5 text-xs font-medium text-slate-500 whitespace-nowrap text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
@@ -446,51 +446,51 @@ export default function JobsPage() {
                                 const isFeatureExpired = (j as any).featured_until ? new Date((j as any).featured_until) < new Date() : false;
 
                                 return (
-                                    <tr key={i} className="group hover:bg-primary/[0.02] transition-colors duration-150 cursor-pointer align-middle" onClick={() => router.push(`/jobs/${j.id}`)}>
+                                    <tr key={i} className="group hover:bg-slate-50/80 transition-colors duration-150 cursor-pointer align-middle" onClick={() => router.push(`/jobs/${j.id}`)}>
                                         {/* Job Title */}
-                                        <td className="px-4 py-3 align-middle">
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200 overflow-hidden">
+                                        <td className="px-4 py-2.5 align-middle">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <div className="w-6 h-6 rounded bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100 overflow-hidden">
                                                     {logo ? (
                                                         <img src={resolveMediaUrl(logo)} alt="" className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <Briefcase size={14} className="text-slate-400" strokeWidth={2} />
+                                                        <Briefcase size={12} className="text-indigo-500" />
                                                     )}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="text-[13px] font-semibold text-slate-800 leading-tight group-hover:text-primary transition-colors truncate">{j.title}</p>
+                                                    <p className="text-xs font-medium text-slate-900 group-hover:text-primary transition-colors truncate">{j.title}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         {/* Institute */}
-                                        <td className="px-4 py-3 align-middle">
-                                            <p className="text-[12px] font-medium text-slate-600 truncate">{j.employer?.company_name || '—'}</p>
+                                        <td className="px-4 py-2.5 align-middle">
+                                            <p className="text-[11px] text-slate-500 truncate">{j.employer?.company_name || '—'}</p>
                                         </td>
                                         {/* Location */}
-                                        <td className="px-4 py-3 align-middle">
-                                            <div className="flex items-center gap-1.5 min-w-0">
-                                                <MapPin size={11} className="text-slate-400 shrink-0" />
-                                                <span className="text-[12px] text-slate-600 font-medium truncate">{j.location || 'Remote'}</span>
+                                        <td className="px-4 py-2.5 align-middle">
+                                            <div className="flex items-center gap-1 min-w-0">
+                                                <MapPin size={10} className="text-rose-500 shrink-0" />
+                                                <span className="text-[11px] text-slate-500 truncate">{j.location || 'Remote'}</span>
                                             </div>
                                         </td>
                                         {/* Feature */}
-                                        <td className="px-4 py-3 align-middle">
+                                        <td className="px-4 py-2.5 align-middle">
                                             <div className="flex justify-center">
                                                 {isFeatureExpired ? (
-                                                    <Badge variant="danger" dot className="capitalize">Expired</Badge>
+                                                    <Badge variant="danger" dot className="capitalize text-[10px] px-2 py-0.5">Expired</Badge>
                                                 ) : (j as any).featured && j.admin_featured ? (
-                                                    <Badge variant="warning" className="capitalize">
-                                                        <Star size={11} fill="currentColor" className="mr-0.5" /> Featured
+                                                    <Badge variant="warning" className="capitalize text-[10px] px-2 py-0.5">
+                                                        <Star size={10} fill="currentColor" className="mr-0.5" /> Featured
                                                     </Badge>
                                                 ) : (j as any).featured && !j.admin_featured ? (
-                                                    <Badge variant="warning" dot className="capitalize">Pending</Badge>
+                                                    <Badge variant="warning" dot className="capitalize text-[10px] px-2 py-0.5">Pending</Badge>
                                                 ) : (
                                                     <span className="text-[11px] text-slate-300">—</span>
                                                 )}
                                             </div>
                                         </td>
                                         {/* Status */}
-                                        <td className="px-4 py-3 align-middle">
+                                        <td className="px-4 py-2.5 align-middle">
                                             <div className="flex justify-center">
                                                 <Badge 
                                                     variant={
@@ -499,28 +499,28 @@ export default function JobsPage() {
                                                         status === "pending" ? "warning" : "danger"
                                                     }
                                                     dot
-                                                    className="capitalize"
+                                                    className="capitalize text-[10px] px-2 py-0.5"
                                                 >
                                                     {isExpired ? "Expired" : status === "approved" ? "Active" : status}
                                                 </Badge>
                                             </div>
                                         </td>
                                         {/* Posted */}
-                                        <td className="px-4 py-3 align-middle whitespace-nowrap">
-                                            <p className="text-[11px] text-slate-500 font-medium" suppressHydrationWarning>
+                                        <td className="px-4 py-2.5 align-middle whitespace-nowrap">
+                                            <p className="text-[11px] text-slate-500" suppressHydrationWarning>
                                                 {j.created_at ? new Date(j.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                                             </p>
                                         </td>
                                         {/* Actions */}
-                                        <td className="px-3 py-3 align-middle overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                                            <div className="flex items-center justify-center gap-0">
-                                                <button title="View" onClick={() => router.push(`/jobs/${j.id}`)} className="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-lg transition-all active:scale-95"><Eye size={14} /></button>
-                                                <button title="Edit" onClick={() => router.push(`/jobs/${j.id}`)} className="p-1.5 text-amber-500 hover:bg-amber-50 rounded-lg transition-all"><Edit2 size={13} /></button>
+                                        <td className="px-3 py-2.5 align-middle overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <button title="View" onClick={() => router.push(`/jobs/${j.id}`)} className="text-indigo-500 hover:text-indigo-600 transition-colors"><Eye size={14} /></button>
+                                                <button title="Edit" onClick={() => router.push(`/jobs/${j.id}`)} className="text-amber-500 hover:text-amber-600 transition-colors"><Edit2 size={13} /></button>
                                                 <button
                                                     title="Delete"
                                                     disabled={deletingId === j.id}
                                                     onClick={(e) => { e.stopPropagation(); handleDelete(j.id); }}
-                                                    className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-all disabled:opacity-30"
+                                                    className="text-rose-500 hover:text-rose-600 transition-colors disabled:opacity-30"
                                                 >
                                                     {deletingId === j.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
                                                 </button>
