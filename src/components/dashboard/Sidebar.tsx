@@ -32,7 +32,8 @@ import {
   Phone,
   HelpCircle,
   ScrollText,
-  Lock
+  Lock,
+  Settings
 } from "lucide-react";
 import { adminSignOut } from "@/lib/auth";
 import { clsx } from "clsx";
@@ -118,7 +119,6 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
           { title: "CTA Section", href: "/cms/cta" },
           { title: "Footer Columns", href: "/cms/footer-sections" },
           { title: "Footer Links", href: "/cms/footer-links" },
-          { title: "Company Title & Logo", href: "/cms/branding" },
           { title: "Popular Searches", href: "/cms/popular-searches" },
         ]
       },
@@ -183,6 +183,7 @@ const navGroups: { label: string; color: string; headerIcon: any; items: Sidebar
       { title: "Resume Templates", href: "/cv-templates", icon: Layout },
       { title: "Email Templates", href: "/email/templates", icon: Mail },
       { title: "Cron Jobs", href: "/cron-jobs", icon: Clock },
+      { title: "Settings", href: "/settings", icon: Settings },
     ]
   },
 ];

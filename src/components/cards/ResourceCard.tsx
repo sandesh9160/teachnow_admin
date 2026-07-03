@@ -31,8 +31,8 @@ export default function ResourceCard({
     return (
         <div className="group rounded-xl border border-slate-200 bg-white overflow-hidden transition-all duration-300 hover:shadow-md hover:border-indigo-100 flex flex-col h-full shrink-0">
             {/* ─── Image & PDF Section ─────────────────────────────────── */}
-            <div className="flex h-32 border-b border-slate-100 bg-slate-50 relative">
-                <div className="w-1/3 h-full overflow-hidden border-r border-slate-100 relative">
+            <div className="flex h-40 border-b border-slate-100 bg-slate-50 relative">
+                <div className="w-[35%] h-full overflow-hidden border-r border-slate-100 relative">
                     {imageUrl ? (
                         <img
                             src={imageUrl}
@@ -41,7 +41,7 @@ export default function ResourceCard({
                         />
                     ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-100">
-                            <Layout size={24} strokeWidth={1.5} />
+                            <Layout size={26} strokeWidth={1.5} />
                         </div>
                     )}
                     {/* Always visible PDF Link overlay attached to image */}
@@ -50,30 +50,30 @@ export default function ResourceCard({
                             href={pdfUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="absolute inset-x-0 bottom-0 bg-slate-900/70 text-white text-[10px] font-semibold py-1.5 flex items-center justify-center gap-1 backdrop-blur-md hover:bg-slate-900 transition-colors"
+                            className="absolute inset-x-0 bottom-0 bg-slate-900/70 text-white text-[10.5px] font-semibold py-2 flex items-center justify-center gap-1 backdrop-blur-md hover:bg-slate-900 transition-colors"
                         >
-                            <Eye size={12} /> View PDF
+                            <Eye size={13} /> View PDF
                         </a>
                     )}
                 </div>
 
                 {/* ─── Information Section ─────────────────────────────────── */}
-                <div className="w-2/3 p-3 flex flex-col justify-between">
+                <div className="w-[65%] p-4 flex flex-col justify-between">
                     <div>
-                        <h3 className="text-[13px] font-bold text-slate-900 leading-tight line-clamp-2" title={resource.title}>
+                        <h3 className="text-[14.5px] font-bold text-slate-900 leading-tight line-clamp-2" title={resource.title}>
                             {resource.title}
                         </h3>
-                        <div className="flex items-center gap-1.5 mt-1.5 text-[10px] font-medium text-slate-500">
-                            <User size={12} className="text-indigo-400" />
+                        <div className="flex items-center gap-1.5 mt-2.5 text-[11px] font-medium text-slate-500">
+                            <User size={13} className="text-indigo-400" />
                             <span className="truncate">{resource.author_name}</span>
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between text-[10px] font-bold text-slate-600 mt-2 bg-slate-100/30 rounded-md p-1.5">
-                        <div className="flex items-center gap-1" title="Pages"><FileText size={12} className="text-indigo-400" /> {resource.total_pages} pg</div>
-                        <div className="flex items-center gap-1" title="Read Time"><Clock size={12} className="text-amber-400" /> {resource.read_time}m</div>
+                    <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 mt-2 bg-slate-100/30 rounded-md p-2">
+                        <div className="flex items-center gap-1" title="Pages"><FileText size={13} className="text-indigo-400" /> {resource.total_pages} pages</div>
+                        <div className="flex items-center gap-1" title="Read Time"><Clock size={13} className="text-amber-400" /> {resource.read_time} minutes</div>
                         <div className="flex items-center gap-1" title="Answers Included?">
-                            <BookOpen size={12} className={(resource.answer_include === "included" || resource.answer_include === "Yes") ? "text-emerald-500" : "text-rose-400"} /> 
+                            <BookOpen size={13} className={(resource.answer_include === "included" || resource.answer_include === "Yes") ? "text-emerald-500" : "text-rose-400"} /> 
                             {(resource.answer_include === "included" || resource.answer_include === "Yes") ? "With Ans" : "No Ans"}
                         </div>
                     </div>
@@ -88,19 +88,19 @@ export default function ResourceCard({
             </div>
 
             {/* ─── Always Visible Action Bar ─────────────────────────────────── */}
-            <div className="p-2.5 flex items-center justify-between bg-white text-[11px] font-bold bg-slate-50/20 border-t border-slate-50">
+            <div className="p-2.5 flex items-center justify-between bg-white text-[11px] font-bold border-t border-slate-100">
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => onEdit?.(resource)}
                         suppressHydrationWarning
-                        className="flex items-center gap-1 text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg transition-all border border-indigo-100/50 active:scale-95"
+                        className="flex items-center gap-1 text-slate-700 bg-white hover:bg-slate-50 px-2.5 py-1.5 rounded-lg transition-all border border-slate-200 active:scale-95 shadow-xs"
                     >
-                        <Pencil size={12} /> Edit
+                        <Pencil size={12} className="text-slate-400" /> Edit
                     </button>
                     <button
                         onClick={() => onDelete?.(resource)}
                         suppressHydrationWarning
-                        className="flex items-center justify-center text-rose-600 bg-rose-50 p-1.5 rounded-lg transition-all border border-rose-100/50 active:scale-95"
+                        className="flex items-center justify-center text-rose-600 bg-white hover:bg-rose-50 hover:border-rose-200 p-1.5 rounded-lg transition-all border border-slate-200 active:scale-95 shadow-xs"
                         title="Delete Resource"
                     >
                         <Trash2 size={13} />
@@ -113,8 +113,8 @@ export default function ResourceCard({
                     className={clsx(
                         "flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all border shadow-xs active:scale-95",
                         resource.is_visible
-                            ? "bg-rose-50 text-rose-600 border-rose-100/50"
-                            : "bg-emerald-50 text-emerald-600 border-emerald-100/50"
+                            ? "bg-slate-800 hover:bg-slate-900 text-white border-slate-800"
+                            : "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600"
                     )}
                 >
                     {resource.is_visible ? "Hide" : "Show"}

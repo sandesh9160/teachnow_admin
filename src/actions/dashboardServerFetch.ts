@@ -109,7 +109,7 @@ export async function dashboardServerFetch<T = any>(
         let statusCode = 500;
 
         if (error.response) {
-            message = error.response.data?.message;
+            message = error.response.data?.error || error.response.data?.message;
             const errors = error.response.data?.errors;
             if (errors && typeof errors === 'object') {
                 const firstError = Object.values(errors)[0];

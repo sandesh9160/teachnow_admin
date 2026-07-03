@@ -86,6 +86,7 @@ export interface MasterDataItem {
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string;
+  image_alt?: string;
   created_at: string;
   updated_at: string;
   isNew?: boolean;

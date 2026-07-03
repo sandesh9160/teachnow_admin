@@ -16,6 +16,7 @@ try {
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
+    unoptimized: true,
     remotePatterns: [
       { protocol: backendProtocol, hostname: backendHostname },
       { protocol: "http", hostname: "localhost" },

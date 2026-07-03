@@ -104,6 +104,8 @@ export default function ManageResourcesPage() {
     author: null,
   });
 
+  const [errors, setErrors] = useState<Record<string, boolean>>({});
+
   // FAQ States
   const [faqSectionHeading, setFaqSectionHeading] = useState("");
   const [faqs, setFaqs] = useState<{question: string, answer: string}[]>([]);
@@ -187,6 +189,7 @@ export default function ManageResourcesPage() {
   };
 
   const handleCreateNew = () => {
+    setErrors({});
     setCurrentResource(null);
     setFormData({
       title: "",
@@ -210,6 +213,7 @@ export default function ManageResourcesPage() {
   };
 
   const handleEdit = (resource: TeachingResource) => {
+    setErrors({});
     setCurrentResource(resource);
     setFormData({
       title: resource.title || "",
@@ -239,6 +243,9 @@ export default function ManageResourcesPage() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setFiles(prev => ({ ...prev, [field]: file }));
+      if (errors[field]) {
+        setErrors(prev => ({ ...prev, [field]: false }));
+      }
 
       if (field === 'resource_photo') {
         const reader = new FileReader();
@@ -253,11 +260,139 @@ export default function ManageResourcesPage() {
   };
 
   const handleSave = async () => {
-    if (!formData.title || !formData.slug) {
-      toast.error("Title and slug are required");
+    const newErrors: Record<string, boolean> = {};
+
+    // 1. Title validation
+    if (!formData.title?.trim() || formData.title.length > 255) {
+      newErrors.title = true;
+    }
+
+    // 2. Slug validation
+    const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+    if (!formData.slug?.trim() || !slugRegex.test(formData.slug) || formData.slug.length > 255) {
+      newErrors.slug = true;
+    }
+
+    // 3. Author validation
+    if (!formData.author_name?.trim() || formData.author_name.length > 150) {
+      newErrors.author_name = true;
+    }
+
+    // 4. Numeric validations
+    if (!formData.total_pages) {
+      newErrors.total_pages = true;
+    } else {
+      const pages = Number(formData.total_pages);
+      if (isNaN(pages) || !Number.isInteger(pages) || pages < 1) {
+        newErrors.total_pages = true;
+      }
+    }
+
+    if (!formData.read_time) {
+      newErrors.read_time = true;
+    } else {
+      const time = Number(formData.read_time);
+      if (isNaN(time) || !Number.isInteger(time) || time < 1) {
+        newErrors.read_time = true;
+      }
+    }
+
+    // 5. PDF validation (required on creation, max 10MB)
+    if (!currentResource && !files.pdf) {
+      newErrors.pdf = true;
+    }
+    if (files.pdf) {
+      const allowedExtensions = ['.pdf', '.ppt', '.pptx'];
+      const fileExtension = files.pdf.name.substring(files.pdf.name.lastIndexOf('.')).toLowerCase();
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (!allowedExtensions.includes(fileExtension) || files.pdf.size > maxSize) {
+        newErrors.pdf = true;
+      }
+    }
+
+    // 6. Cover image validation (required on creation, max 5MB)
+    if (!currentResource && !files.resource_photo) {
+      newErrors.resource_photo = true;
+    }
+    if (files.resource_photo) {
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (!files.resource_photo.type.startsWith('image/') || files.resource_photo.size > maxSize) {
+        newErrors.resource_photo = true;
+      }
+    }
+
+    // 7. Author photo validation (required on creation, max 5MB)
+    if (!currentResource && !files.author_photo) {
+      newErrors.author_photo = true;
+    }
+    if (files.author_photo) {
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (!files.author_photo.type.startsWith('image/') || files.author_photo.size > maxSize) {
+        newErrors.author_photo = true;
+      }
+    }
+
+    // 8. Description / Educational Content validation (required)
+    if (!formData.description?.trim() || formData.description === "<p></p>") {
+      newErrors.description = true;
+    }
+
+    // 9. SEO Metadata validation
+    if (formData.meta_title && formData.meta_title.length > 255) {
+      newErrors.meta_title = true;
+    }
+
+    // If there are errors, update state and show the first toast error
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+
+      // Trigger toast for the first specific error
+      if (newErrors.title) {
+        if (!formData.title?.trim()) toast.error("Resource title is required");
+        else toast.error("Title cannot exceed 255 characters");
+      } else if (newErrors.slug) {
+        if (!formData.slug?.trim()) toast.error("URL slug is required");
+        else if (formData.slug.length > 255) toast.error("Slug cannot exceed 255 characters");
+        else toast.error("URL slug must be lowercase, alphanumeric, and hyphenated (e.g. math-notes)");
+      } else if (newErrors.author_name) {
+        if (!formData.author_name?.trim()) toast.error("Author name is required");
+        else toast.error("Author name cannot exceed 150 characters");
+      } else if (newErrors.total_pages) {
+        if (!formData.total_pages) toast.error("Total pages is required");
+        else toast.error("Total pages must be a positive integer");
+      } else if (newErrors.read_time) {
+        if (!formData.read_time) toast.error("Read time is required");
+        else toast.error("Read time must be a positive integer");
+      } else if (newErrors.pdf) {
+        if (!currentResource && !files.pdf) toast.error("PDF/Document file is required");
+        else if (files.pdf) {
+          const allowedExtensions = ['.pdf', '.ppt', '.pptx'];
+          const fileExtension = files.pdf.name.substring(files.pdf.name.lastIndexOf('.')).toLowerCase();
+          if (!allowedExtensions.includes(fileExtension)) toast.error("Document must be a PDF, PPT, or PPTX file");
+          else toast.error("Document size cannot exceed 10MB");
+        }
+      } else if (newErrors.resource_photo) {
+        if (!currentResource && !files.resource_photo) toast.error("Cover image is required");
+        else if (files.resource_photo) {
+          if (!files.resource_photo.type.startsWith('image/')) toast.error("Cover photo must be an image file");
+          else toast.error("Cover image size cannot exceed 5MB");
+        }
+      } else if (newErrors.author_photo) {
+        if (!currentResource && !files.author_photo) toast.error("Author photo is required");
+        else if (files.author_photo) {
+          if (!files.author_photo.type.startsWith('image/')) toast.error("Author photo must be an image file");
+          else toast.error("Author photo size cannot exceed 5MB");
+        }
+      } else if (newErrors.description) {
+        toast.error("Educational content is required");
+      } else if (newErrors.meta_title) {
+        toast.error("SEO meta title cannot exceed 255 characters");
+      }
+
       return;
     }
 
+    setErrors({});
     setSaveLoading(true);
     try {
       const data = new FormData();
@@ -301,22 +436,28 @@ export default function ManageResourcesPage() {
 
   const handleToggleStatus = async (resource: TeachingResource) => {
     try {
-      await toggleResourceVisibility(resource.id);
+      const res = await toggleResourceVisibility(resource.id);
+      if ((res as any).status === false) {
+        throw new Error((res as any).message || "Failed to update status");
+      }
       fetchResources();
       toast.success("Visibility updated");
-    } catch (error) {
-      toast.error("Failed to update status");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update status");
     }
   };
 
   const handleDelete = async (resource: TeachingResource) => {
     if (!confirm(`Permanently remove "${resource.title}"?`)) return;
     try {
-      await deleteResource(resource.id);
+      const res = await deleteResource(resource.id);
+      if ((res as any).status === false) {
+        throw new Error((res as any).message || "Failed to delete");
+      }
       setResources(prev => prev.filter(r => r.id !== resource.id));
       toast.success("Resource deleted");
-    } catch (error) {
-      toast.error("Failed to delete");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete");
     }
   };
 
@@ -371,7 +512,7 @@ export default function ManageResourcesPage() {
  
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Resource Title</label>
+                            <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Resource Title *</label>
                             <input
                                 required
                                 maxLength={255}
@@ -382,42 +523,72 @@ export default function ManageResourcesPage() {
                                   const title = e.target.value;
                                   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
                                   setFormData({ ...formData, title, slug: currentResource ? formData.slug : slug });
+                                  if (errors.title) {
+                                    setErrors(prev => ({ ...prev, title: false }));
+                                  }
                                 }}
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-[14px] font-bold text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                className={clsx(
+                                  "w-full px-4 py-3 bg-slate-50 border rounded-xl text-[14px] font-bold text-black focus:bg-white focus:border-indigo-500 outline-none transition-all",
+                                  errors.title ? "border-red-500 bg-red-50/10 focus:border-red-500" : "border-slate-300"
+                                )}
                             />
                         </div>
  
                         <div>
-                            <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">URL Slug</label>
+                            <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">URL Slug *</label>
                             <input
                                 maxLength={255}
                                 type="text"
                                 placeholder="physics-class-10-notes"
                                 value={formData.slug}
-                                onChange={e => setFormData({ ...formData, slug: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                onChange={e => {
+                                  setFormData({ ...formData, slug: e.target.value });
+                                  if (errors.slug) {
+                                    setErrors(prev => ({ ...prev, slug: false }));
+                                  }
+                                }}
+                                className={clsx(
+                                  "w-full px-4 py-2.5 bg-slate-50 border rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all",
+                                  errors.slug ? "border-red-500 bg-red-50/10 focus:border-red-500" : "border-slate-300"
+                                )}
                             />
                         </div>
  
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Total Pages</label>
+                                <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Total Pages *</label>
                                 <input
                                     type="number"
                                     placeholder="0"
                                     value={formData.total_pages}
-                                    onChange={e => setFormData({ ...formData, total_pages: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                    onChange={e => {
+                                      setFormData({ ...formData, total_pages: e.target.value });
+                                      if (errors.total_pages) {
+                                        setErrors(prev => ({ ...prev, total_pages: false }));
+                                      }
+                                    }}
+                                    className={clsx(
+                                      "w-full px-4 py-2.5 bg-slate-50 border rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all",
+                                      errors.total_pages ? "border-red-500 bg-red-50/10 focus:border-red-500" : "border-slate-300"
+                                    )}
                                 />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Read Time (min)</label>
+                                <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Read Time (min) *</label>
                                 <input
                                     type="number"
                                     placeholder="0"
                                     value={formData.read_time}
-                                    onChange={e => setFormData({ ...formData, read_time: e.target.value })}
-                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                    onChange={e => {
+                                      setFormData({ ...formData, read_time: e.target.value });
+                                      if (errors.read_time) {
+                                        setErrors(prev => ({ ...prev, read_time: false }));
+                                      }
+                                    }}
+                                    className={clsx(
+                                      "w-full px-4 py-2.5 bg-slate-50 border rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all",
+                                      errors.read_time ? "border-red-500 bg-red-50/10 focus:border-red-500" : "border-slate-300"
+                                    )}
                                 />
                             </div>
                         </div>
@@ -488,19 +659,27 @@ export default function ManageResourcesPage() {
                     
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Author Name</label>
+                            <label className="block text-[10px] font-bold text-black uppercase tracking-wider mb-2 ml-1">Author Name *</label>
                             <input
                                 maxLength={255}
                                 type="text"
                                 placeholder="eg John Doe"
                                 value={formData.author_name}
-                                onChange={e => setFormData({ ...formData, author_name: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                onChange={e => {
+                                  setFormData({ ...formData, author_name: e.target.value });
+                                  if (errors.author_name) {
+                                    setErrors(prev => ({ ...prev, author_name: false }));
+                                  }
+                                }}
+                                className={clsx(
+                                  "w-full px-4 py-2.5 bg-slate-50 border rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all",
+                                  errors.author_name ? "border-red-500 bg-red-50/10 focus:border-red-500" : "border-slate-300"
+                                )}
                             />
                         </div>
  
                         <div>
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Author Photo</label>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Author Photo *</label>
                             <div className="flex items-center gap-4">
                                 <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-200 flex-shrink-0 overflow-hidden shadow-sm">
                                     {previews.author ? (
@@ -518,9 +697,14 @@ export default function ManageResourcesPage() {
                                         onChange={e => handleFileChange(e, 'author_photo')}
                                         className="absolute inset-0 opacity-0 cursor-pointer z-10"
                                     />
-                                    <div className="w-full px-4 py-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex flex-col items-center justify-center gap-1 group-hover:border-indigo-400 group-hover:bg-indigo-50/30 transition-all">
-                                        <Upload size={14} className="text-slate-400 group-hover:text-indigo-500" />
-                                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                    <div className={clsx(
+                                        "w-full px-4 py-4 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-1 transition-all",
+                                        errors.author_photo
+                                            ? "border-red-500 bg-red-50/10 text-red-500"
+                                            : "bg-slate-50 border-slate-200 group-hover:border-indigo-400 group-hover:bg-indigo-50/30"
+                                    )}>
+                                        <Upload size={14} className={errors.author_photo ? "text-red-500" : "text-slate-400 group-hover:text-indigo-500"} />
+                                        <span className={clsx("text-[10px] font-bold uppercase tracking-widest", errors.author_photo ? "text-red-500" : "text-slate-500")}>
                                             {files.author_photo ? "Photo Selected" : "Upload Photo"}
                                         </span>
                                     </div>
@@ -530,7 +714,7 @@ export default function ManageResourcesPage() {
                     </div>
                 </div>
             </div>
-
+ 
             {/* Media Files Section */}
             <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
                 <div className="flex items-center gap-2">
@@ -539,7 +723,7 @@ export default function ManageResourcesPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">PDF File (Uploaded)</label>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">PDF File *</label>
                         <div className="relative group">
                             <input
                                 type="file"
@@ -549,7 +733,11 @@ export default function ManageResourcesPage() {
                             />
                             <div className={clsx(
                                 "w-full px-4 py-5 border-2 border-dashed rounded-xl flex items-center justify-center gap-3 transition-all",
-                                files.pdf ? "bg-rose-50 border-rose-200 text-rose-600" : "bg-slate-50 border-slate-200 text-slate-500 group-hover:border-indigo-400 group-hover:bg-indigo-50"
+                                files.pdf 
+                                    ? "bg-rose-50 border-rose-200 text-rose-600" 
+                                    : errors.pdf 
+                                        ? "bg-red-50/10 border-red-500 text-red-500" 
+                                        : "bg-slate-50 border-slate-200 text-slate-500 group-hover:border-indigo-400 group-hover:bg-indigo-50"
                             )}>
                                 <FileText size={20} />
                                 <span className="text-[11px] font-bold uppercase">
@@ -559,8 +747,11 @@ export default function ManageResourcesPage() {
                         </div>
                     </div>
                     <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Cover Image (Uploaded)</label>
-                        <div className="relative aspect-[16/9] w-full rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all overflow-hidden bg-slate-50 border-slate-200 group hover:border-indigo-300">
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 ml-1">Cover Image *</label>
+                        <div className={clsx(
+                            "relative aspect-[16/9] w-full rounded-xl border-2 border-dashed flex flex-col items-center justify-center transition-all overflow-hidden group hover:border-indigo-300",
+                            errors.resource_photo ? "border-red-500 bg-red-50/10 text-red-500" : "bg-slate-50 border-slate-200"
+                        )}>
                             {previews.resource ? (
                                 <img src={getImageUrl(previews.resource)} alt="Cover" className="w-full h-full object-cover" />
                             ) : (
@@ -579,13 +770,16 @@ export default function ManageResourcesPage() {
                     </div>
                 </div>
             </div>
-
+ 
             {/* Editor Area */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-visible">
+            <div className={clsx(
+                "bg-white rounded-xl border shadow-sm overflow-visible transition-all",
+                errors.description ? "border-red-500 bg-red-50/5 ring-1 ring-red-500" : "border-slate-200"
+            )}>
                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/30 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <Layers size={16} className="text-indigo-600" />
-                        <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Educational Content</h3>
+                        <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Educational Content *</h3>
                     </div>
                     <span className="text-[10px] font-bold text-emerald-500 uppercase flex items-center gap-1.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -594,11 +788,16 @@ export default function ManageResourcesPage() {
                 </div>
                 <TipTapEditor
                     value={formData.description}
-                    onChange={(val) => setFormData({ ...formData, description: val })}
+                    onChange={(val) => {
+                      setFormData({ ...formData, description: val });
+                      if (errors.description) {
+                        setErrors(prev => ({ ...prev, description: false }));
+                      }
+                    }}
                     stickyOffset={82}
                 />
             </div>
-
+ 
             {/* SEO Settings Section */}
             <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-5">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -626,8 +825,16 @@ export default function ManageResourcesPage() {
                                 type="text"
                                 placeholder="Search engine title..."
                                 value={formData.meta_title}
-                                onChange={e => setFormData({ ...formData, meta_title: e.target.value })}
-                                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                                onChange={e => {
+                                  setFormData({ ...formData, meta_title: e.target.value });
+                                  if (errors.meta_title) {
+                                    setErrors(prev => ({ ...prev, meta_title: false }));
+                                  }
+                                }}
+                                className={clsx(
+                                  "w-full px-4 py-2.5 bg-slate-50 border rounded-lg text-[13px] font-medium text-black focus:bg-white focus:border-indigo-500 outline-none transition-all",
+                                  errors.meta_title ? "border-red-500 bg-red-50/10 focus:border-red-500" : "border-slate-300"
+                                )}
                             />
                         </div>
                         <div>

@@ -218,6 +218,7 @@ export default function MasterDataPage() {
                     formData.append("meta_title", editingItem.meta_title || "");
                     formData.append("meta_description", editingItem.meta_description || "");
                     formData.append("meta_keywords", editingItem.meta_keywords || "");
+                    formData.append("image_alt", (editingItem as any).image_alt || "");
 
                     if (activeTab === "locations") {
                         formData.append("country", (editingItem as any).country || "INDIA");
@@ -245,6 +246,7 @@ export default function MasterDataPage() {
                     formData.append("meta_title", editingItem.meta_title || "");
                     formData.append("meta_description", editingItem.meta_description || "");
                     formData.append("meta_keywords", editingItem.meta_keywords || "");
+                    formData.append("image_alt", (editingItem as any).image_alt || "");
 
                     if (editingItem.icon_file) {
                         formData.append("icon", editingItem.icon_file);
@@ -262,6 +264,7 @@ export default function MasterDataPage() {
                     formData.append("meta_title", editingItem.meta_title || "");
                     formData.append("meta_description", editingItem.meta_description || "");
                     formData.append("meta_keywords", editingItem.meta_keywords || "");
+                    formData.append("image_alt", (editingItem as any).image_alt || "");
 
                     if (editingItem.icon_file) {
                         formData.append("image", editingItem.icon_file);
@@ -457,6 +460,7 @@ export default function MasterDataPage() {
                 </div>
                 <div className="flex items-center gap-2">
                     <button
+                        suppressHydrationWarning
                         onClick={() => {
                             if (activeTab === "skills") {
                                 setEditingItem({ name: "", is_active: 1, is_custom: 1, isNew: true } as any);
@@ -483,6 +487,7 @@ export default function MasterDataPage() {
                     {tabs.map((tab) => (
                         <button
                             key={tab.key}
+                            suppressHydrationWarning
                             onClick={() => setActiveTab(tab.key)}
                             className={clsx(
                                 "pb-3 text-[13px] font-semibold transition-all whitespace-nowrap relative px-0.5 flex items-center gap-1.5 cursor-pointer",
@@ -502,6 +507,7 @@ export default function MasterDataPage() {
                         className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                     />
                     <input
+                        suppressHydrationWarning
                         type="text"
                         placeholder="Search..."
                         value={search}
@@ -848,6 +854,18 @@ export default function MasterDataPage() {
                                                 />
                                             </div>
                                             <div className="col-span-2">
+                                                <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">
+                                                    {activeTab === "categories" ? "Icon Alt Text" : "Image Alt Text"}
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Description of the icon/image for search engines..."
+                                                    value={(editingItem as any).image_alt || ""}
+                                                    onChange={(e) => setEditingItem({ ...editingItem, image_alt: e.target.value } as any)}
+                                                    className="w-full px-3 py-1.5 bg-white border border-surface-200 rounded-lg text-[12px] text-surface-700 focus:outline-none focus:border-primary-500 transition-all"
+                                                />
+                                            </div>
+                                            <div className="col-span-2">
                                                 <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1">Meta Description</label>
                                                 <textarea
                                                     rows={2}
@@ -861,7 +879,7 @@ export default function MasterDataPage() {
                                     </div>
                                 )}
                             </div>
-
+ 
                             <div className="mt-auto pt-4 border-t border-surface-50 flex items-center justify-end gap-3 shrink-0">
                                 <button
                                     type="button"
@@ -882,7 +900,7 @@ export default function MasterDataPage() {
                     </div>
                 </div>
             )}
-
+ 
             <SEOEditModal
                 isOpen={seoModal.isOpen}
                 onClose={() => setSeoModal({ isOpen: false, item: null })}
@@ -891,6 +909,7 @@ export default function MasterDataPage() {
                     meta_title: seoModal.item?.meta_title || "",
                     meta_description: seoModal.item?.meta_description || "",
                     meta_keywords: seoModal.item?.meta_keywords || "",
+                    image_alt: seoModal.item?.image_alt || "",
                 }}
                 title={`Edit ${activeTab.replace(/s$/i, '')} SEO: ${seoModal.item?.name}`}
             />

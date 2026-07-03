@@ -9,6 +9,7 @@ interface SEOData {
   meta_title: string;
   meta_description: string;
   meta_keywords: string;
+  image_alt?: string;
 }
 
 interface SEOEditModalProps {
@@ -32,6 +33,7 @@ export default function SEOEditModal({
     meta_title: "",
     meta_description: "",
     meta_keywords: "",
+    image_alt: "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -41,6 +43,7 @@ export default function SEOEditModal({
         meta_title: initialData.meta_title || "",
         meta_description: initialData.meta_description || "",
         meta_keywords: initialData.meta_keywords || "",
+        image_alt: initialData.image_alt || "",
       });
     }
   }, [initialData, isOpen]);
@@ -118,6 +121,24 @@ export default function SEOEditModal({
               />
               <p className="text-[10px] text-surface-400 mt-1 ml-1">
                 Separate keywords with commas
+              </p>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold text-surface-400 uppercase tracking-wider block mb-1.5">
+                Image Alt Text
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Mathematics teaching category icon or Delhi city background image"
+                value={data.image_alt || ""}
+                onChange={(e) =>
+                  setData({ ...data, image_alt: e.target.value })
+                }
+                className="w-full px-4 py-2 bg-white border border-surface-200 rounded-xl text-[13px] text-surface-700 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all font-medium"
+              />
+              <p className="text-[10px] text-surface-400 mt-1 ml-1">
+                Alternative text for search engines and screen readers (SEO)
               </p>
             </div>
 

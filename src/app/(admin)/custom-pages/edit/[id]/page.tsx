@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -27,7 +27,9 @@ interface Block {
   data: any;
 }
 
-export default function CreateCustomPage() {
+export default function EditCustomPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = React.use(params);
+
   const router = useRouter();
   const [saveLoading, setSaveLoading] = useState(false);
 
@@ -43,6 +45,24 @@ export default function CreateCustomPage() {
 
   // Blocks State
   const [blocks, setBlocks] = useState<Block[]>([]);
+
+  // Simulated Fetch
+  useEffect(() => {
+    setSaveLoading(true);
+    // Simulate an API call to load existing page data
+    setTimeout(() => {
+      setFormData({
+        title: "Sample Edited Page",
+        slug: "/sample-edited-page",
+        status: "published",
+        meta_title: "Sample Meta Title",
+        meta_keywords: "sample, page",
+        meta_description: "This is a sample edit page."
+      });
+      // Note: You can populate `setBlocks` with existing blocks here.
+      setSaveLoading(false);
+    }, 800);
+  }, [id]);
 
   // Helpers
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,12 +134,12 @@ export default function CreateCustomPage() {
         blocks
       };
 
-      console.log(" CREATING NEW DYNAMIC PAGE:", payload);
-      toast.success("Custom page created successfully");
+      console.log("🚀 UPDATING DYNAMIC PAGE:", payload);
+      toast.success("Custom page updated successfully");
       router.push("/custom-pages");
     } catch (error) {
-      console.error("Failed to create page:", error);
-      toast.error("Failed to create page");
+      console.error("Failed to update page:", error);
+      toast.error("Failed to update page");
       setSaveLoading(false);
     } finally {
       setSaveLoading(false);
@@ -141,7 +161,7 @@ export default function CreateCustomPage() {
             </div>
             <div>
               <h4 className="text-[9px] font-bold text-indigo-600 tracking-wider uppercase mb-0.5">Dynamic Builder</h4>
-              <h1 className="text-lg font-semibold text-slate-900 leading-none">Create New Page</h1>
+              <h1 className="text-lg font-semibold text-slate-900 leading-none">Edit Page</h1>
             </div>
           </div>
         </div>
@@ -153,7 +173,7 @@ export default function CreateCustomPage() {
             className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {saveLoading ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-            Publish Page
+            Save Changes
           </button>
         </div>
       </div>
